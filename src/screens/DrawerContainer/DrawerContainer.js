@@ -87,6 +87,14 @@ export default function DrawerContainer(props) {
                navigation.closeDrawer();
              }}
             />
+            <MenuButton
+             title="CLIENT LIST"
+             source={require("../../../assets/icons/clients.png")}
+             onPress={() => {
+               navigation.navigate("Clients");
+               navigation.closeDrawer();
+             }}
+            />
           </View>
         )}
 

@@ -25,7 +25,7 @@ export default function HomeScreen(props) {
         if (isAdmin) {
           return (
             <TouchableOpacity
-              onPress={() => navigation.navigate("Home")}
+              onPress={() => navigation.navigate("Clients")}
               style={styles.searchButton}
             >
               <Image
