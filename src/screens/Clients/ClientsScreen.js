@@ -43,13 +43,18 @@ export default function AddStockScreen(props) {
   const fetchClient = async () => {
     try {
       const clientSnapshot = await getDocs(collection(db, 'Client'));
+      const userSnapshot = await getDocs(collection(db, 'Users'));
+  
       const clientArray = [];
       clientSnapshot.forEach((doc) => {
         const data = doc.data();
         const NamaClient = data?.NamaClient;
         const NamaPT = data?.NamaPT;
         const Progress = data?.Progress;
-        const PIC = data?.PIC;
+  
+        const user = userSnapshot.docs.find((doc) => doc.id === data?.PIC);
+        const PIC = user ? user.data().Nama : '';
+  
         if (NamaClient) {
           clientArray.push({
             NamaClient,
@@ -139,7 +144,8 @@ export default function AddStockScreen(props) {
         <View style={styles.itemContainer}>
           <Text style={styles.title}>{item.NamaClient}</Text>
           <Text style={styles.category}>{item.NamaPT}</Text>
-          <Text style={styles.category}>{item.Progress}</Text>
+          <Text>-  -  -  -  -  -  -  -  -  -  -  -  -  -  -</Text>
+          <Text style={styles.category}>Status: {item.Progress}</Text>
           <Text style={styles.category}>PIC: {item.PIC}</Text>
         </View>
       </View>
