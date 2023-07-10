@@ -210,8 +210,8 @@ export default function AddStockScreen(props) {
           contentContainerStyle={styles.optionContainer}
           renderItem={({ item }) => (
             <TouchableOpacity
-              style={[styles.option, selectedProgressOption === item && styles.selectedOption]}
-              onPress={() => setSelectedProgressOption(item)}
+              style={[styles.option, selectedByOption === item && styles.selectedOption]}
+              onPress={() => setSelectedByOption(item)}
             >
               <Text style={styles.optionText}>{item}</Text>
             </TouchableOpacity>
