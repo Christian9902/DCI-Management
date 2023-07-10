@@ -4,7 +4,6 @@ import styles from './styles';
 import MenuImage from "../../components/MenuImage/MenuImage";
 import { auth, db } from '../Login/LoginScreen';
 import { collection, addDoc,  getDocs, query, where } from 'firebase/firestore';
-import ToastNotification from "./toast";
 
 export default function AddStockScreen(props) {
   const [nama, setNama] = useState('');
@@ -14,7 +13,6 @@ export default function AddStockScreen(props) {
   const [isPTActive, setIsPTActive] = useState(false);
   const [PTRekomendasi, setPTRekomendasi] = useState([]);
   const [PTList, setPTList] = useState([]);
-  const [showAnimation, setShowAnimation] = useState(false);
 
   const { navigation } = props;
 
@@ -118,7 +116,6 @@ export default function AddStockScreen(props) {
 
   return (
     <View style={styles.container}>
-      {showAnimation && <ToastNotification userName={userName} />}
       <TextInput
         style={styles.input}
         placeholder="Nama Supplier"
