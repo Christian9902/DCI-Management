@@ -14,6 +14,12 @@ export default function AddStockScreen(props) {
   const [isPTActive, setIsPTActive] = useState(false);
   const [PTRekomendasi, setPTRekomendasi] = useState([]);
   const [PTList, setPTList] = useState([]);
+  const [byOptions, setByOptions] = useState(['Email', 'Whatsapp', 'Instagram', 'Telegram', 'Tik Tok','Other']);
+  const [selectedByOption, setSelectedByOption] = useState('');
+  const [progressOptions, setProgressOptions] = useState(['Contacting', 'Compro Sent', 'Appointment', 'Schedule']);
+  const [selectedProgressOption, setSelectedProgressOption] = useState('');
+  const [quoSubmitted, setQuoSubmitted] = useState(false);
+  const [note, setNote] = useState('');
 
   const { navigation } = props;
 
@@ -46,7 +52,6 @@ export default function AddStockScreen(props) {
       });
       const PTArray = Array.from(PTSet).sort();
       setPTList(PTArray);
-      //console.log('Nama PT Client dalam data:', PTList);
     } catch (error) {
       console.log('Terjadi kesalahan saat mengambil data dari Firebase:', error);
     }
@@ -74,6 +79,11 @@ export default function AddStockScreen(props) {
       NoTelp: noTelp,
       Email: Email,
       Alamat: alamat,
+      By: selectedByOption,
+      Progress: selectedProgressOption,
+      QuoSubmitted: quoSubmitted,
+      Note: note,
+      PIC: user.uid,
     };
   
     try {
@@ -105,6 +115,10 @@ export default function AddStockScreen(props) {
     setNoTelp('');
     setEmail('');
     setAlamat('');
+    setSelectedByOption('');
+    setSelectedProgressOption('');
+    setQuoSubmitted(false);
+    setNote('');
   
     navigation.navigate('Home');
   };   
@@ -115,6 +129,10 @@ export default function AddStockScreen(props) {
     setNoTelp('');
     setEmail('');
     setAlamat('');
+    setSelectedByOption('');
+    setSelectedProgressOption('');
+    setQuoSubmitted(false);
+    setNote('');
     
     navigation.navigate('Home');
   };
@@ -138,58 +156,109 @@ export default function AddStockScreen(props) {
 
   return (
     <View style={styles.container}>
-      <TextInput
-        style={styles.input}
-        placeholder="Nama Client"
-        value={nama}
-        onChangeText={setNama}
-      />
-      <TextInput
-        style={styles.input}
-        placeholder="Nama PT Client"
-        value={PT}
-        onChangeText={handlePTChange}
-        autoCompleteType="off"
-        autoCorrect={false}
-        dataDetectorTypes="none"
-        spellCheck={false}
-        onFocus={() => setIsPTActive(true)}
-        onBlur={() => setIsPTActive(false)}
-      />
-      {isPTActive && PTRekomendasi.length > 0 && (
-        <FlatList
-          data={PTRekomendasi}
-          renderItem={renderPTRekomendasi}
-          keyExtractor={(item) => item}
-          style={styles.rekomendasiContainer}
-          keyboardShouldPersistTaps="always"
+      <View style={styles.formContainer}>
+        <TextInput
+          style={styles.input}
+          placeholder="Nama Client"
+          value={nama}
+          onChangeText={setNama}
         />
-      )}
-      <TextInput
-        style={styles.input}
-        placeholder="No. Telp"
-        value={noTelp}
-        onChangeText={setNoTelp}
-      />
-      <TextInput
-        style={styles.input}
-        placeholder="Email"
-        value={Email}
-        onChangeText={setEmail}
-      />
-      <TextInput
-        style={styles.additionalInfoInput}
-        placeholder="Alamat"
-        value={alamat}
-        onChangeText={setAlamat}
-        multiline={true}
-      />
-      <TouchableOpacity style={styles.addButton} onPress={handleAddClient}>
-        <Text style={styles.addButtonText}>Add</Text>
-      </TouchableOpacity>
-      <TouchableOpacity style={styles.cancelButton} onPress={handleCancel}>
-        <Text style={styles.cancelButtonText}>Cancel</Text>
-      </TouchableOpacity>
+        <TextInput
+          style={styles.input}
+          placeholder="Nama PT Client"
+          value={PT}
+          onChangeText={handlePTChange}
+          autoCompleteType="off"
+          autoCorrect={false}
+          dataDetectorTypes="none"
+          spellCheck={false}
+          onFocus={() => setIsPTActive(true)}
+          onBlur={() => setIsPTActive(false)}
+        />
+        {isPTActive && PTRekomendasi.length > 0 && (
+          <FlatList
+            data={PTRekomendasi}
+            renderItem={renderPTRekomendasi}
+            keyExtractor={(item) => item}
+            style={styles.rekomendasiContainer}
+            keyboardShouldPersistTaps="always"
+          />
+        )}
+        <TextInput
+          style={styles.input}
+          placeholder="No. Telp"
+          value={noTelp}
+          onChangeText={setNoTelp}
+        />
+        <TextInput
+          style={styles.input}
+          placeholder="Email"
+          value={Email}
+          onChangeText={setEmail}
+        />
+        <TextInput
+          style={styles.additionalInfoInput}
+          placeholder="Alamat"
+          value={alamat}
+          onChangeText={setAlamat}
+          multiline={true}
+        />
+        <Text style={styles.label}>By:</Text>
+        <FlatList
+          data={byOptions}
+          horizontal={true}
+          contentContainerStyle={styles.optionContainer}
+          renderItem={({ item }) => (
+            <TouchableOpacity
+              style={[styles.option, selectedProgressOption === item && styles.selectedOption]}
+              onPress={() => setSelectedProgressOption(item)}
+            >
+              <Text style={styles.optionText}>{item}</Text>
+            </TouchableOpacity>
+          )}
+          keyExtractor={(item) => item}
+        />
+        <Text style={styles.label}>Progress:</Text>
+        <FlatList
+          data={progressOptions}
+          horizontal={true}
+          contentContainerStyle={styles.optionContainer}
+          renderItem={({ item }) => (
+            <TouchableOpacity
+              style={[styles.option, selectedProgressOption === item && styles.selectedOption]}
+              onPress={() => setSelectedProgressOption(item)}
+            >
+              <Text style={styles.optionText}>{item}</Text>
+            </TouchableOpacity>
+          )}
+          keyExtractor={(item) => item}
+        />
+        <TouchableOpacity
+          style={styles.checkboxContainer}
+          onPress={() => {
+            setQuoSubmitted(!quoSubmitted);
+          }}
+        >
+          <Text style={styles.label}>Quo Submitted:</Text>
+          <Text style={styles.checkboxIcon}>{quoSubmitted ? '✓' : ''}</Text>
+        </TouchableOpacity>
+        <TextInput
+          style={styles.additionalInfoInput}
+          placeholder="Note"
+          value={note}
+          onChangeText={setNote}
+          multiline={true}
+        />
+      </View>
+
+      <View style={styles.buttonContainer}>
+        <TouchableOpacity style={styles.addButton} onPress={handleAddClient}>
+          <Text style={styles.addButtonText}>Add</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.cancelButton} onPress={handleCancel}>
+          <Text style={styles.cancelButtonText}>Cancel</Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 }
