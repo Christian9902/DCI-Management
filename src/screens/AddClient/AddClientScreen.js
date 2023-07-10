@@ -57,7 +57,9 @@ export default function AddStockScreen(props) {
   }, []);
 
   const handleAddClient = async () => {
+    const user = auth.currentUser;
     const clientRef = collection(db, 'Client');
+    const logDataRef = collection(db, 'Log Data');
     
     const Query = await getDocs(query(clientRef, where('NamaClient', '==', nama), where('NamaPT', '==', PT)));
     if (!Query.empty) {
@@ -77,6 +79,23 @@ export default function AddStockScreen(props) {
     try {
       const docRef = await addDoc(clientRef, data);
       console.log('Data berhasil disimpan di Firestore dengan ID:', docRef.id);
+      
+      const logEntry = {
+        timestamp: new Date().toLocaleString('en-GB', {
+          day: '2-digit',
+          month: '2-digit',
+          year: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit',
+          second: '2-digit',
+        }),
+        action: 'New Client Added',
+        userID: user.uid,
+        refID: docRef.id,
+      };
+  
+      await addDoc(logDataRef, logEntry);
+      console.log('Log entry added successfully.');
     } catch (error) {
       console.log('Terjadi kesalahan saat menyimpan data ke Firestore:', error);
     }

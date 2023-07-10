@@ -13,6 +13,7 @@ export default function AddStockScreen(props) {
   const [isPTActive, setIsPTActive] = useState(false);
   const [PTRekomendasi, setPTRekomendasi] = useState([]);
   const [PTList, setPTList] = useState([]);
+  const [email, setEmail] = useState('');
 
   const { navigation } = props;
 
@@ -56,9 +57,10 @@ export default function AddStockScreen(props) {
   }, []);
 
   const handleAddSupplier = async () => {
-    setShowAnimation(true);
+    const user = auth.currentUser;
     const supplierRef = collection(db, 'Supplier');
-    
+    const logDataRef = collection(db, 'Log Data');
+  
     const Query = await getDocs(query(supplierRef, where('NamaSupplier', '==', nama), where('NamaPT', '==', PT)));
     if (!Query.empty) {
       console.log('Nama Supplier dengan PT yang sama sudah ada dalam database');
@@ -71,28 +73,49 @@ export default function AddStockScreen(props) {
       NamaPT: PT,
       NoTelp: noTelp,
       Alamat: alamat,
+      Email: email,
     };
   
     try {
       const docRef = await addDoc(supplierRef, data);
       console.log('Data berhasil disimpan di Firestore dengan ID:', docRef.id);
+  
+      const logEntry = {
+        timestamp: new Date().toLocaleString('en-GB', {
+          day: '2-digit',
+          month: '2-digit',
+          year: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit',
+          second: '2-digit',
+        }),
+        action: 'New Supplier Added',
+        userID: user.uid,
+        refID: docRef.id,
+      };
+  
+      await addDoc(logDataRef, logEntry);
+      console.log('Log entry added successfully.');
     } catch (error) {
       console.log('Terjadi kesalahan saat menyimpan data ke Firestore:', error);
+      console.log('Error adding log entry:', error);
     }
   
     setNama('');
     setPT('');
     setNoTelp('');
     setAlamat('');
+    setEmail('');
   
     navigation.navigate('Home');
-  };   
+  };       
 
   const handleCancel = () => {
     setNama('');
     setPT('');
     setNoTelp('');
     setAlamat('');
+    setEmail('');
     
     navigation.navigate('Home');
   };
@@ -148,6 +171,12 @@ export default function AddStockScreen(props) {
         placeholder="No. Telp"
         value={noTelp}
         onChangeText={setNoTelp}
+      />
+      <TextInput
+        style={styles.input}
+        placeholder="Email"
+        value={email}
+        onChangeText={setEmail}
       />
       <TextInput
         style={styles.additionalInfoInput}

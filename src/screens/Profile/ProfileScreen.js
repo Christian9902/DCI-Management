@@ -99,7 +99,6 @@ export default function ProfileScreen(props) {
             timestamp: new Date().toISOString(),
             action: 'Profile Updated',
             user: user.uid,
-            nama: nama,
           };
           addDoc(collection(db, 'Log Data'), logEntry)
             .then(() => {

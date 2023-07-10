@@ -93,7 +93,9 @@ export default function AddStockScreen(props) {
   }, []);
 
   const handleAddStock = async () => {
+    const user = auth.currentUser;
     const inventoryRef = collection(db, 'Inventory');
+    const logDataRef = collection(db, 'Log Data');
   
     const inventoryQuery = await getDocs(
       query(inventoryRef, where('NamaBarang', '==', nama), where('NamaSupplier', '==', supplier), where('Status', '==', barangBaru))
@@ -108,6 +110,22 @@ export default function AddStockScreen(props) {
         try {
           await updateDoc(doc.ref, { Jumlah: newJumlah });
           console.log('Data berhasil diupdate di Firestore dengan ID:', doc.id);
+
+          const logEntry = {
+            timestamp: new Date().toLocaleString('en-GB', {
+              day: '2-digit',
+              month: '2-digit',
+              year: 'numeric',
+              hour: '2-digit',
+              minute: '2-digit',
+              second: '2-digit',
+            }),
+            action: 'Adding Stock',
+            userID: user.uid,
+            refID: doc.id,
+          };
+          await addDoc(logDataRef, logEntry);
+          console.log('Log entry added successfully.');
         } catch (error) {
           console.log('Terjadi kesalahan saat mengupdate data di Firestore:', error);
         }
@@ -135,6 +153,22 @@ export default function AddStockScreen(props) {
       try {
         const docRef = await addDoc(inventoryRef, data);
         console.log('Data berhasil disimpan di Firestore dengan ID:', docRef.id);
+
+        const logEntry = {
+          timestamp: new Date().toLocaleString('en-GB', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit',
+          }),
+          action: barangBaru ? 'New Stock Added' : 'Remaining Production Stock Added',
+          userID: user.uid,
+          refID: docRef.id,
+        };
+        await addDoc(logDataRef, logEntry);
+        console.log('Log entry added successfully.');
       } catch (error) {
         console.log('Terjadi kesalahan saat menyimpan data ke Firestore:', error);
       }
