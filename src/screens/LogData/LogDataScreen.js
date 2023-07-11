@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, TouchableOpacity } from "react-native";
+import { ScrollView, Text, TouchableOpacity, View } from "react-native";
 import { collection, getDocs } from 'firebase/firestore';
 import { db } from "../Login/LoginScreen";
 import styles from "./styles";
@@ -30,18 +30,20 @@ export default function LogDataScreen({ navigation }) {
 
   return (
     <View style={styles.container}>
-      {clientData.map((client, index) => (
-        <TouchableOpacity
-          key={index}
-          style={styles.itemContainer}
-          onPress={() => handleClientPress(client)}
-        >
-          <Text style={styles.title}>{client.NamaClient}</Text>
-          <Text style={styles.category}>{client.NamaPT}</Text>
-          <Text style={styles.category}>Status: {client.Progress}</Text>
-          <Text style={styles.category}>PIC: {client.PIC}</Text>
-        </TouchableOpacity>
-      ))}
+      <ScrollView>
+        {clientData.map((client, index) => (
+          <TouchableOpacity
+            key={index}
+            style={styles.itemContainer}
+            onPress={() => handleClientPress(client)}
+          >
+            <Text style={styles.title}>{client.NamaClient}</Text>
+            <Text style={styles.category}>{client.NamaPT}</Text>
+            <Text style={styles.category}>Status: {client.Progress}</Text>
+            <Text style={styles.category}>PIC: {client.PIC}</Text>
+          </TouchableOpacity>
+        ))}
+      </ScrollView>
     </View>
   );
 }
