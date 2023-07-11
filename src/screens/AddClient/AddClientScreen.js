@@ -66,6 +66,14 @@ export default function AddClientScreen(props) {
     const user = auth.currentUser;
     const clientRef = collection(db, 'Client');
     const logDataRef = collection(db, 'Log Data');
+    const time = new Date().toLocaleString('en-GB', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+    });
 
     const Query = await getDocs(
       query(clientRef, where('NamaClient', '==', nama), where('NamaPT', '==', PT))
@@ -88,6 +96,7 @@ export default function AddClientScreen(props) {
       Note: note,
       JobPosition: jobPosition,
       PIC: user.uid,
+      Added: time,
     };
 
     try {
@@ -95,14 +104,7 @@ export default function AddClientScreen(props) {
       console.log('Data berhasil disimpan di Firestore dengan ID:', docRef.id);
 
       const logEntry = {
-        timestamp: new Date().toLocaleString('en-GB', {
-          day: '2-digit',
-          month: '2-digit',
-          year: 'numeric',
-          hour: '2-digit',
-          minute: '2-digit',
-          second: '2-digit',
-        }),
+        timestamp: time,
         action: 'New Client Added',
         userID: user.uid,
         refID: docRef.id,
