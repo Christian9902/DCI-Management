@@ -2,8 +2,8 @@ import React, { useState, useLayoutEffect, useEffect } from 'react';
 import { View, Text, TouchableOpacity, TextInput, FlatList, Image, Pressable } from 'react-native';
 import styles from './styles';
 import MenuImage from "../../components/MenuImage/MenuImage";
-import { auth, db } from '../Login/LoginScreen';
-import { doc, updateDoc, addDoc, collection, getDocs, query, where } from 'firebase/firestore';
+import { db } from '../Login/LoginScreen';
+import { collection, getDocs } from 'firebase/firestore';
 
 
 export default function AddStockScreen(props) {

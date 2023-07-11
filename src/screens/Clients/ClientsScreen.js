@@ -2,8 +2,8 @@ import React, { useState, useLayoutEffect, useEffect } from 'react';
 import { View, Text, TouchableOpacity, TextInput, FlatList, Image, Pressable } from 'react-native';
 import styles from './styles';
 import MenuImage from "../../components/MenuImage/MenuImage";
-import { auth, db } from '../Login/LoginScreen';
-import { doc, updateDoc, addDoc, collection, getDocs, query, where } from 'firebase/firestore';
+import { db } from '../Login/LoginScreen';
+import { collection, getDocs } from 'firebase/firestore';
 
 
 export default function AddStockScreen(props) {
@@ -29,7 +29,7 @@ export default function AddStockScreen(props) {
             style={styles.searchInput}
             onChangeText={handleNamaChange}
             value={nama}
-            placeholder='Baru/Sisa; Barang1, Barang2, ...; Supplier1, ...'
+            placeholder='Nama Client / PT Client'
           />
           <Pressable onPress={() => {setNama(""), handleNamaChange("")}}>
             <Image style={styles.searchIcon} source={require("../../../assets/icons/close.png")} />
@@ -90,49 +90,21 @@ export default function AddStockScreen(props) {
   }, []);   
 
   const handleNamaChange = (text) => {
-    /*
     setNama(text);
     let filteredClient = [];
-  
     if (text === '') {
       filteredClient = clientData;
     } else {
-      const filterText = text.toLowerCase().trim();
-      const filterItems = filterText.split(';').map((item) => item.trim());
-      const filterBaru = filterItems[0].toLowerCase();
-      const filterNamaClient = filterItems[1] ? filterItems[1].split(',').map((item) => item.trim().toLowerCase()) : [];
-      const filterNamaSupplier = filterItems[2] ? filterItems[2].split(',').map((item) => item.trim().toLowerCase()) : [];
-  
       filteredClient = clientData.filter((item) => {
-        if (filterBaru !== 'baru' && filterBaru !== 'sisa') {
-          if (filterNamaClient.length > 0 && !filterNamaClient.some((nama) => item.namaClient.toLowerCase().includes(nama))) {
-            return false;
-          }
-          if (filterNamaSupplier.length > 0 && !filterNamaSupplier.some((nama) => item.namaSupplier.toLowerCase().includes(nama))) {
-            return false;
-          }
-          return true;
-        } else {
-          if (filterBaru === 'baru' && !item.status) {
-            return false;
-          }
-          if (filterBaru === 'sisa' && item.status) {
-            return false;
-          }
-          if (filterNamaClient.length > 0 && !filterNamaClient.some((nama) => item.namaClient.toLowerCase().includes(nama))) {
-            return false;
-          }
-          if (filterNamaSupplier.length > 0 && !filterNamaSupplier.some((nama) => item.namaSupplier.toLowerCase().includes(nama))) {
-            return false;
-          }
-          return true;
-        }
+        const namaClient = item.NamaClient.toLowerCase();
+        const namaPT = item.NamaPT.toLowerCase();
+        const filterText = text.toLowerCase().trim();
+    
+        return namaClient.includes(filterText) || namaPT.includes(filterText);
       });
     }
-  
     setNamaClientRekomendasi(filteredClient);
-    */
-  };        
+  };          
 
   const onPressItem = (item) => {
     navigation.navigate("Home");
@@ -158,7 +130,7 @@ export default function AddStockScreen(props) {
       showsVerticalScrollIndicator={false}
       data={namaClientRekomendasi}
       renderItem={renderItem}
-      keyExtractor={(item, index) => item.namaClient + '-' + item.namaSupplier + '-' + index}
+      keyExtractor={(item, index) => item.NamaClient + '-' + item.NamaPT + '-' + index}
     />
   );
 }
