@@ -3,25 +3,24 @@ import { View, Text, TouchableOpacity, TextInput, FlatList, Image } from 'react-
 import styles from './Styles';
 import MenuImage from "../../components/MenuImage/MenuImage";
 import { auth, db } from '../Login/LoginScreen';
-import { getFirestore, collection, addDoc, doc, getDocs, query, where } from 'firebase/firestore';
+import { collection, addDoc, doc, getDocs, updateDoc, deleteDoc } from 'firebase/firestore';
 
-export default function AddClientScreen(props) {
-  const [nama, setNama] = useState('');
-  const [PT, setPT] = useState('');
-  const [alamat, setAlamat] = useState('');
-  const [noTelp, setNoTelp] = useState('');
-  const [Email, setEmail] = useState('');
+export default function ClientUpdateScreen({ navigation, route }) {
+  const { clientData } = route.params;
+  const [nama, setNama] = useState(clientData.NamaClient);
+  const [PT, setPT] = useState(clientData.NamaPT);
+  const [alamat, setAlamat] = useState(clientData.Alamat);
+  const [noTelp, setNoTelp] = useState(clientData.NoTelp);
+  const [Email, setEmail] = useState(clientData.Email);
   const [isPTActive, setIsPTActive] = useState(false);
   const [PTRekomendasi, setPTRekomendasi] = useState([]);
   const [PTList, setPTList] = useState([]);
   const [byOptions, setByOptions] = useState(['Email', 'Whatsapp', 'Instagram', 'Telegram', 'Tik Tok','Other']);
-  const [selectedByOption, setSelectedByOption] = useState('');
+  const [selectedByOption, setSelectedByOption] = useState(clientData.By);
   const [progressOptions, setProgressOptions] = useState(['Contacting', 'Compro Sent', 'Appointment', 'Schedule']);
-  const [selectedProgressOption, setSelectedProgressOption] = useState('');
-  const [quoSubmitted, setQuoSubmitted] = useState(false);
-  const [note, setNote] = useState('');
-
-  const { navigation } = props;
+  const [selectedProgressOption, setSelectedProgressOption] = useState(clientData.Progress);
+  const [quoSubmitted, setQuoSubmitted] = useState(clientData.Quo);
+  const [note, setNote] = useState(clientData.Note);
 
   useLayoutEffect(() => {
     navigation.setOptions({
@@ -61,19 +60,12 @@ export default function AddClientScreen(props) {
     fetchPT();
   }, []);
 
-  const handleAddClient = async () => {
+  const handleUpdateClient = async () => {
     const user = auth.currentUser;
-    const clientRef = collection(db, 'Client');
+    const clientRef = doc(db, 'Client', clientData.Ref);
     const logDataRef = collection(db, 'Log Data');
-    
-    const Query = await getDocs(query(clientRef, where('NamaClient', '==', nama), where('NamaPT', '==', PT)));
-    if (!Query.empty) {
-      console.log('Nama Client dengan PT yang sama sudah ada dalam database');
-      handleCancel();
-      return;
-    }
   
-    const data = {
+    const updatedData = {
       NamaClient: nama,
       NamaPT: PT,
       NoTelp: noTelp,
@@ -87,9 +79,9 @@ export default function AddClientScreen(props) {
     };
   
     try {
-      const docRef = await addDoc(clientRef, data);
-      console.log('Data berhasil disimpan di Firestore dengan ID:', docRef.id);
-      
+      await updateDoc(clientRef, updatedData);
+      console.log('Data berhasil diperbarui di Firestore dengan ID:', clientRef.id);
+  
       const logEntry = {
         timestamp: new Date().toLocaleString('en-GB', {
           day: '2-digit',
@@ -99,29 +91,50 @@ export default function AddClientScreen(props) {
           minute: '2-digit',
           second: '2-digit',
         }),
-        action: 'New Client Added',
+        action: 'Client Updated',
         userID: user.uid,
-        refID: docRef.id,
+        refID: clientRef.id,
       };
   
       await addDoc(logDataRef, logEntry);
       console.log('Log entry added successfully.');
     } catch (error) {
-      console.log('Terjadi kesalahan saat menyimpan data ke Firestore:', error);
+      console.log('Terjadi kesalahan saat memperbarui data di Firestore:', error);
     }
   
-    setNama('');
-    setPT('');
-    setNoTelp('');
-    setEmail('');
-    setAlamat('');
-    setSelectedByOption('');
-    setSelectedProgressOption('');
-    setQuoSubmitted(false);
-    setNote('');
-  
     navigation.navigate('Home');
-  };   
+  };
+  
+  const handleDeleteClient = async () => {
+    const clientRef = doc(db, 'Client', clientData.Ref);
+    const logDataRef = collection(db, 'Log Data');
+
+    try {
+      await deleteDoc(clientRef);
+      console.log('Client document successfully deleted from Firestore.');
+
+      const logEntry = {
+        timestamp: new Date().toLocaleString('en-GB', {
+          day: '2-digit',
+          month: '2-digit',
+          year: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit',
+          second: '2-digit',
+        }),
+        action: 'Client Deleted',
+        userID: auth.currentUser.uid,
+        refID: clientData.Ref,
+      };
+
+      await addDoc(logDataRef, logEntry);
+      console.log('Log entry added successfully.');
+    } catch (error) {
+      console.log('Error deleting client document:', error);
+    }
+
+    navigation.navigate('Home');
+  };
 
   const handleCancel = () => {
     setNama('');
@@ -134,7 +147,7 @@ export default function AddClientScreen(props) {
     setQuoSubmitted(false);
     setNote('');
     
-    navigation.navigate('Home');
+    navigation.navigate('Clients');
   };
   
   const handlePTChange = (text) => {
@@ -252,8 +265,11 @@ export default function AddClientScreen(props) {
       </View>
 
       <View style={styles.buttonContainer}>
-        <TouchableOpacity style={styles.addButton} onPress={handleAddClient}>
-          <Text style={styles.addButtonText}>Add</Text>
+        <TouchableOpacity style={styles.addButton} onPress={handleUpdateClient}>
+          <Text style={styles.addButtonText}>Update</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.deleteButton} onPress={handleDeleteClient}>
+          <Text style={styles.deleteButtonText}>Delete</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.cancelButton} onPress={handleCancel}>
           <Text style={styles.cancelButtonText}>Cancel</Text>

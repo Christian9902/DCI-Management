@@ -48,19 +48,33 @@ export default function AddStockScreen(props) {
       const clientArray = [];
       clientSnapshot.forEach((doc) => {
         const data = doc.data();
+        const Ref = doc.id;
         const NamaClient = data?.NamaClient;
         const NamaPT = data?.NamaPT;
         const Progress = data?.Progress;
+        const Alamat = data?.Alamat;
+        const By = data?.By;
+        const Email = data?.Email;
+        const NoTelp = data?.NoTelp;
+        const Note = data?.Note;
+        const Quo = data?.QuoSubmitted;
   
         const user = userSnapshot.docs.find((doc) => doc.id === data?.PIC);
         const PIC = user ? user.data().Nama : '';
   
         if (NamaClient) {
           clientArray.push({
+            Ref,
             NamaClient,
             NamaPT,
             Progress,
             PIC,
+            Alamat,
+            By,
+            Email,
+            NoTelp,
+            Note,
+            Quo,
           });
         }
       });
@@ -107,8 +121,8 @@ export default function AddStockScreen(props) {
   };          
 
   const onPressItem = (item) => {
-    navigation.navigate("Home");
-  };
+    navigation.navigate("Client Update", { clientData: item, clientDataRef: item.id });
+  };  
 
   const renderItem = ({ item }) => (
     <TouchableOpacity onPress={() => onPressItem(item)}>
