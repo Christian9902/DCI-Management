@@ -1,18 +1,25 @@
-import { StyleSheet } from 'react-native';
+import { StyleSheet } from "react-native";
 
 const styles = StyleSheet.create({
-  recommendationTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    textAlign: 'center',
-    marginTop: 20,
-    marginLeft: 10,
-  },
   container: {
     flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
+    paddingHorizontal: 16,
+    paddingTop: 16,
+  },
+  itemContainer: {
+    backgroundColor: "#fff",
+    borderRadius: 8,
+    padding: 16,
+    marginBottom: 16,
+  },
+  title: {
+    fontSize: 18,
+    fontWeight: "bold",
+    marginBottom: 8,
+  },
+  category: {
+    fontSize: 16,
+    marginBottom: 4,
   },
 });
 
