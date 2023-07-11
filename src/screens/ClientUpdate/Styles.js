@@ -47,7 +47,7 @@ const styles = StyleSheet.create({
   },
   addButton: {
     width: 0.85 * width,
-    height: 50,
+    height: 40,
     borderRadius: 10,
     backgroundColor: '#000',
     alignItems: 'center',
@@ -62,7 +62,7 @@ const styles = StyleSheet.create({
   },
   deleteButton: {
     width: 0.85 * width,
-    height: 30,
+    height: 25,
     borderRadius: 10,
     backgroundColor: 'red',
     alignItems: 'center',
@@ -73,11 +73,11 @@ const styles = StyleSheet.create({
   deleteButtonText: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: '#000',
+    color: '#fff',
   },
   cancelButton: {
     width: 0.85 * width,
-    height: 30,
+    height: 20,
     borderRadius: 10,
     backgroundColor: '#fff',
     alignItems: 'center',

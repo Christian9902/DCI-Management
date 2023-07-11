@@ -58,6 +58,7 @@ export default function AddStockScreen(props) {
         const NoTelp = data?.NoTelp;
         const Note = data?.Note;
         const Quo = data?.QuoSubmitted;
+        const Job = data?.JobPosition;
   
         const user = userSnapshot.docs.find((doc) => doc.id === data?.PIC);
         const PIC = user ? user.data().Nama : '';
@@ -75,6 +76,7 @@ export default function AddStockScreen(props) {
             NoTelp,
             Note,
             Quo,
+            Job,
           });
         }
       });

@@ -5,7 +5,7 @@ import MenuImage from "../../components/MenuImage/MenuImage";
 import { db, auth } from "../Login/LoginScreen";
 import { doc, getDoc } from 'firebase/firestore';
 
-export default function HomeScreen(props) {
+export default function ClientInfoScreen(props) {
   const { navigation } = props;
   const [isAdmin, setIsAdmin] = useState(false);
 

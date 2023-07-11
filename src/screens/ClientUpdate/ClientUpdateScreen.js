@@ -21,6 +21,7 @@ export default function ClientUpdateScreen({ navigation, route }) {
   const [selectedProgressOption, setSelectedProgressOption] = useState(clientData.Progress);
   const [quoSubmitted, setQuoSubmitted] = useState(clientData.Quo);
   const [note, setNote] = useState(clientData.Note);
+  const [jobPosition, setJobPosition] = useState(clientData.Job);
 
   useLayoutEffect(() => {
     navigation.setOptions({
@@ -75,6 +76,7 @@ export default function ClientUpdateScreen({ navigation, route }) {
       Progress: selectedProgressOption,
       QuoSubmitted: quoSubmitted,
       Note: note,
+      JobPosition: jobPosition,
       PIC: user.uid,
     };
   
@@ -146,6 +148,7 @@ export default function ClientUpdateScreen({ navigation, route }) {
     setSelectedProgressOption('');
     setQuoSubmitted(false);
     setNote('');
+    setJobPosition('');
     
     navigation.navigate('Clients');
   };
@@ -197,6 +200,12 @@ export default function ClientUpdateScreen({ navigation, route }) {
             keyboardShouldPersistTaps="always"
           />
         )}
+        <TextInput
+          style={styles.input}
+          placeholder="Jabatan"
+          value={jobPosition}
+          onChangeText={setJobPosition}
+        />
         <TextInput
           style={styles.input}
           placeholder="No. Telp"

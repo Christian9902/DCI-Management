@@ -3,7 +3,7 @@ import { View, Text, TouchableOpacity, TextInput, FlatList, Image } from 'react-
 import styles from './Styles';
 import MenuImage from "../../components/MenuImage/MenuImage";
 import { auth, db } from '../Login/LoginScreen';
-import { getFirestore, collection, addDoc, doc, getDocs, query, where } from 'firebase/firestore';
+import { collection, addDoc, getDocs, query, where } from 'firebase/firestore';
 
 export default function AddClientScreen(props) {
   const [nama, setNama] = useState('');
@@ -14,12 +14,13 @@ export default function AddClientScreen(props) {
   const [isPTActive, setIsPTActive] = useState(false);
   const [PTRekomendasi, setPTRekomendasi] = useState([]);
   const [PTList, setPTList] = useState([]);
-  const [byOptions, setByOptions] = useState(['Email', 'Whatsapp', 'Instagram', 'Telegram', 'Tik Tok','Other']);
+  const [byOptions, setByOptions] = useState(['Email', 'Whatsapp', 'Instagram', 'Telegram', 'Tik Tok', 'Other']);
   const [selectedByOption, setSelectedByOption] = useState('');
   const [progressOptions, setProgressOptions] = useState(['Contacting', 'Compro Sent', 'Appointment', 'Schedule']);
   const [selectedProgressOption, setSelectedProgressOption] = useState('');
   const [quoSubmitted, setQuoSubmitted] = useState(false);
   const [note, setNote] = useState('');
+  const [jobPosition, setJobPosition] = useState('');
 
   const { navigation } = props;
 
@@ -55,8 +56,8 @@ export default function AddClientScreen(props) {
     } catch (error) {
       console.log('Terjadi kesalahan saat mengambil data dari Firebase:', error);
     }
-  };    
-  
+  };
+
   useEffect(() => {
     fetchPT();
   }, []);
@@ -65,14 +66,16 @@ export default function AddClientScreen(props) {
     const user = auth.currentUser;
     const clientRef = collection(db, 'Client');
     const logDataRef = collection(db, 'Log Data');
-    
-    const Query = await getDocs(query(clientRef, where('NamaClient', '==', nama), where('NamaPT', '==', PT)));
+
+    const Query = await getDocs(
+      query(clientRef, where('NamaClient', '==', nama), where('NamaPT', '==', PT))
+    );
     if (!Query.empty) {
       console.log('Nama Client dengan PT yang sama sudah ada dalam database');
       handleCancel();
       return;
     }
-  
+
     const data = {
       NamaClient: nama,
       NamaPT: PT,
@@ -83,13 +86,14 @@ export default function AddClientScreen(props) {
       Progress: selectedProgressOption,
       QuoSubmitted: quoSubmitted,
       Note: note,
+      JobPosition: jobPosition,
       PIC: user.uid,
     };
-  
+
     try {
       const docRef = await addDoc(clientRef, data);
       console.log('Data berhasil disimpan di Firestore dengan ID:', docRef.id);
-      
+
       const logEntry = {
         timestamp: new Date().toLocaleString('en-GB', {
           day: '2-digit',
@@ -103,13 +107,13 @@ export default function AddClientScreen(props) {
         userID: user.uid,
         refID: docRef.id,
       };
-  
+
       await addDoc(logDataRef, logEntry);
       console.log('Log entry added successfully.');
     } catch (error) {
       console.log('Terjadi kesalahan saat menyimpan data ke Firestore:', error);
     }
-  
+
     setNama('');
     setPT('');
     setNoTelp('');
@@ -119,9 +123,10 @@ export default function AddClientScreen(props) {
     setSelectedProgressOption('');
     setQuoSubmitted(false);
     setNote('');
-  
+    setJobPosition('');
+
     navigation.navigate('Home');
-  };   
+  };
 
   const handleCancel = () => {
     setNama('');
@@ -133,10 +138,11 @@ export default function AddClientScreen(props) {
     setSelectedProgressOption('');
     setQuoSubmitted(false);
     setNote('');
-    
+    setJobPosition('');
+
     navigation.navigate('Home');
   };
-  
+
   const handlePTChange = (text) => {
     setPT(text);
     let filteredPT = PTList.filter((item) =>
@@ -184,6 +190,12 @@ export default function AddClientScreen(props) {
             keyboardShouldPersistTaps="always"
           />
         )}
+        <TextInput
+          style={styles.input}
+          placeholder="Jabatan"
+          value={jobPosition}
+          onChangeText={setJobPosition}
+        />
         <TextInput
           style={styles.input}
           placeholder="No. Telp"
