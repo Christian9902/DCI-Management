@@ -18,12 +18,28 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     paddingHorizontal: 20,
     borderRadius: 5,
-    marginTop: 50,
+    marginTop: 10,
     alignItems: 'center',
     justifyContent: 'center',
   },
   buttonText2: {
     color: 'white',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  button3: {
+    backgroundColor: '#fff',
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 5,
+    marginTop: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderColor: 'gray',
+    borderWidth: 1,
+  },
+  buttonText3: {
+    color: '#000',
     fontSize: 16,
     fontWeight: 'bold',
   },
@@ -36,7 +52,34 @@ const styles = StyleSheet.create({
   },
   point: {
     marginHorizontal: 20,
-  }
+  },
+  datePickerContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  datePickerColumn: {
+    flex: 1,
+    flexDirection: 'column',
+    marginRight: 10,
+  },
+  datePickerText: {
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  datePicker: {
+    fontSize: 16,
+    backgroundColor: '#eee',
+  },
+  buttonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-evenly',
+  },
+  separator: {
+    height: 1,
+    backgroundColor: 'gray',
+    marginVertical: 10,
+  },  
 });
 
 export default styles;
