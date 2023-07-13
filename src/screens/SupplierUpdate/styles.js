@@ -5,24 +5,8 @@ const { width } = Dimensions.get('window');
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'space-between',
-    backgroundColor: '#fff',
-    position: 'relative',
-  },
-  formContainer: {
     alignItems: 'center',
-    paddingTop: 10,
-    paddingBottom: 20,
-    paddingHorizontal: 20,
-  },
-  buttonContainer: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingTop: 10,
+    justifyContent: 'center',
     backgroundColor: '#fff',
   },
   input: {
@@ -45,7 +29,15 @@ const styles = StyleSheet.create({
     marginBottom: 5,
     textAlignVertical: 'top',
   },
-  addButton: {
+  buttonContainer: {
+    width: 0.85 * width,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 'auto',
+    backgroundColor: '#fff',
+    paddingVertical: 10,
+  },
+  updateButton: {
     width: 0.85 * width,
     height: 50,
     borderRadius: 10,
@@ -53,32 +45,92 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     marginTop: 'auto',
+    marginBottom: 5,
   },
-  addButtonText: {
+  updateButtonText: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#fff',
+  },
+  deleteButton: {
+    width: 0.85 * width,
+    height: 50,
+    borderRadius: 10,
+    backgroundColor: 'red',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 'auto',
+    marginBottom: 5,
+  },
+  deleteButtonText: {
     fontSize: 16,
     fontWeight: 'bold',
     color: '#fff',
   },
   cancelButton: {
     width: 0.85 * width,
-    height: 30,
+    height: 50,
     borderRadius: 10,
     backgroundColor: '#fff',
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 15,
-    marginTop: 10,
   },
   cancelButtonText: {
     fontSize: 16,
     fontWeight: 'bold',
     color: '#000',
   },
+  jumlahContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 5,
+    paddingHorizontal: 20,
+    width: '95%',
+  },  
+  jumlahContainer2: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  jumlahButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#ccc',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginHorizontal: 10,
+  },
+  jumlahButtonText: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#000',
+  },
+  jumlahInput: {
+    height: 40,
+    width: 50,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#ccc',
+    paddingHorizontal: 10,
+  },
+  jumlahText: {
+    fontSize: 15,
+    color: '#000',
+  },
+  rekomendasiContainer: {
+    marginBottom: 5,
+    paddingHorizontal: 20,
+    width: '95%',
+  },
   checkboxContainer: {
     width: '95%',
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
+    justifyContent:'space-between',
+    paddingHorizontal: 20,
     marginVertical: 5,
   },
   checkboxText: {
@@ -87,35 +139,7 @@ const styles = StyleSheet.create({
   checkboxIcon: {
     fontSize: 16,
     fontWeight: 'bold',
-  },
-  label: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    marginBottom: 5,
-    width: '95%',
-    paddingHorizontal: 5,
-  },
-  option: {
-    height: 30,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: '#ccc',
-    marginBottom: 5,
-    paddingHorizontal: 10,
-    marginRight: 5,
-  },
-  optionText: {
-    fontSize: 16,
-  },
-  selectedOption: {
-    backgroundColor: '#ccc',
-  },
-  optionContainer: {
-    flexDirection: 'row',
-    paddingHorizontal: 20,
-  },
+  },  
 });
 
 export default styles;
