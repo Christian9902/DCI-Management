@@ -113,7 +113,7 @@ export default function LogData(props) {
           <View style={styles.categoryContainer}>
             <Text style={styles.category}>{item.timestamp}</Text>
           </View>
-          <Text>-  -  -  -  -  -  -  -  -  -  -  -  -  -  -</Text>
+          <Text>-  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -</Text>
           <View style={styles.categoryContainer}>
             <Text style={styles.category}>RefID: {item.refID}</Text>
           </View>
