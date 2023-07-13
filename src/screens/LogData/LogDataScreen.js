@@ -30,7 +30,7 @@ export default function LogData(props) {
             style={styles.searchInput}
             onChangeText={handleActionChange}
             value={action}
-            placeholder='Addclient/AddStock; Timestamp,...'
+            placeholder='Client Updated/Client Deleted; Timestamp,...'
           />
           <Pressable onPress={() => { setAction(""); handleActionChange(""); }}>
             <Image style={styles.searchIcon} source={require("../../../assets/icons/close.png")} />
@@ -61,6 +61,7 @@ export default function LogData(props) {
         }
       });
       setRefID(actionData);
+      setTimestamp(actionData); // Menyimpan data langsung pada state timestamp
     } catch (error) {
       console.log('Terjadi kesalahan saat mengambil data dari Firebase:', error);
     }
@@ -108,10 +109,11 @@ export default function LogData(props) {
     <TouchableOpacity onPress={() => onPressItem(item)}>
       <View style={styles.listItem}>
         <View style={styles.itemContainer}>
-          <Text style={styles.title}>{item.timestamp}</Text>
+          <Text style={styles.title}>{item.action}</Text>
           <View style={styles.categoryContainer}>
-            <Text style={styles.category}>{item.action}</Text>
+            <Text style={styles.category}>{item.timestamp}</Text>
           </View>
+          <Text>-  -  -  -  -  -  -  -  -  -  -  -  -  -  -</Text>
           <View style={styles.categoryContainer}>
             <Text style={styles.category}>RefID: {item.refID}</Text>
           </View>
