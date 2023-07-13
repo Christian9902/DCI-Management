@@ -79,19 +79,20 @@ export default function DrawerContainer(props) {
         {isMarketingGroupOpen && (
           <View style={styles.DropList}>
             
+            
+            <MenuButton
+             title="CLIENTS"
+             source={require("../../../assets/icons/clients.png")}
+             onPress={() => {
+               navigation.navigate("Clients");
+               navigation.closeDrawer();
+             }}
+            />
             <MenuButton
              title="ADD CLIENT"
              source={require("../../../assets/icons/addclient.png")}
              onPress={() => {
                navigation.navigate("Add Client");
-               navigation.closeDrawer();
-             }}
-            />
-            <MenuButton
-             title="CLIENT LIST"
-             source={require("../../../assets/icons/clients.png")}
-             onPress={() => {
-               navigation.navigate("Clients");
                navigation.closeDrawer();
              }}
             />
@@ -113,6 +114,15 @@ export default function DrawerContainer(props) {
                 navigation.closeDrawer();
               }}
             />
+            
+            <MenuButton
+             title="SUPPLIERS"
+             source={require("../../../assets/icons/suppliers.png")}
+             onPress={() => {
+               navigation.navigate("Suppliers");
+               navigation.closeDrawer();
+             }}
+            />
             <MenuButton
               title="ADD STOCK"
               source={require("../../../assets/icons/addstock.png")}
@@ -123,7 +133,7 @@ export default function DrawerContainer(props) {
             />
             <MenuButton
               title="ADD SUPPLIER"
-              source={require("../../../assets/icons/adduser.png")}
+              source={require("../../../assets/icons/addsupplier.png")}
               onPress={() => {
                 navigation.navigate("Add Supplier");
                 navigation.closeDrawer();

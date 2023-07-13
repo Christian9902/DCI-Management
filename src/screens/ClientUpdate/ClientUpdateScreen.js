@@ -1,5 +1,5 @@
 import React, { useState, useLayoutEffect, useEffect } from 'react';
-import { View, Text, TouchableOpacity, TextInput, FlatList, Image } from 'react-native';
+import { View, Text, TouchableOpacity, TextInput, FlatList, KeyboardAvoidingView } from 'react-native';
 import styles from './Styles';
 import MenuImage from "../../components/MenuImage/MenuImage";
 import { auth, db } from '../Login/LoginScreen';
@@ -171,119 +171,124 @@ export default function ClientUpdateScreen({ navigation, route }) {
   );
 
   return (
-    <View style={styles.container}>
-      <View style={styles.formContainer}>
-        <TextInput
-          style={styles.input}
-          placeholder="Nama Client"
-          value={nama}
-          onChangeText={setNama}
-        />
-        <TextInput
-          style={styles.input}
-          placeholder="Nama PT Client"
-          value={PT}
-          onChangeText={handlePTChange}
-          autoCompleteType="off"
-          autoCorrect={false}
-          dataDetectorTypes="none"
-          spellCheck={false}
-          onFocus={() => setIsPTActive(true)}
-          onBlur={() => setIsPTActive(false)}
-        />
-        {isPTActive && PTRekomendasi.length > 0 && (
-          <FlatList
-            data={PTRekomendasi}
-            renderItem={renderPTRekomendasi}
-            keyExtractor={(item) => item}
-            style={styles.rekomendasiContainer}
-            keyboardShouldPersistTaps="always"
+    <KeyboardAvoidingView
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      style={styles.container}
+    >
+      <View style={styles.container}>
+        <View style={styles.formContainer}>
+          <TextInput
+            style={styles.input}
+            placeholder="Nama Client"
+            value={nama}
+            onChangeText={setNama}
           />
-        )}
-        <TextInput
-          style={styles.input}
-          placeholder="Jabatan"
-          value={jobPosition}
-          onChangeText={setJobPosition}
-        />
-        <TextInput
-          style={styles.input}
-          placeholder="No. Telp"
-          value={noTelp}
-          onChangeText={setNoTelp}
-        />
-        <TextInput
-          style={styles.input}
-          placeholder="Email"
-          value={Email}
-          onChangeText={setEmail}
-        />
-        <TextInput
-          style={styles.additionalInfoInput}
-          placeholder="Alamat"
-          value={alamat}
-          onChangeText={setAlamat}
-          multiline={true}
-        />
-        <Text style={styles.label}>By:</Text>
-        <FlatList
-          data={byOptions}
-          horizontal={true}
-          contentContainerStyle={styles.optionContainer}
-          renderItem={({ item }) => (
-            <TouchableOpacity
-              style={[styles.option, selectedByOption === item && styles.selectedOption]}
-              onPress={() => setSelectedByOption(item)}
-            >
-              <Text style={styles.optionText}>{item}</Text>
-            </TouchableOpacity>
+          <TextInput
+            style={styles.input}
+            placeholder="Nama PT Client"
+            value={PT}
+            onChangeText={handlePTChange}
+            autoCompleteType="off"
+            autoCorrect={false}
+            dataDetectorTypes="none"
+            spellCheck={false}
+            onFocus={() => setIsPTActive(true)}
+            onBlur={() => setIsPTActive(false)}
+          />
+          {isPTActive && PTRekomendasi.length > 0 && (
+            <FlatList
+              data={PTRekomendasi}
+              renderItem={renderPTRekomendasi}
+              keyExtractor={(item) => item}
+              style={styles.rekomendasiContainer}
+              keyboardShouldPersistTaps="always"
+            />
           )}
-          keyExtractor={(item) => item}
-        />
-        <Text style={styles.label}>Progress:</Text>
-        <FlatList
-          data={progressOptions}
-          horizontal={true}
-          contentContainerStyle={styles.optionContainer}
-          renderItem={({ item }) => (
-            <TouchableOpacity
-              style={[styles.option, selectedProgressOption === item && styles.selectedOption]}
-              onPress={() => setSelectedProgressOption(item)}
-            >
-              <Text style={styles.optionText}>{item}</Text>
-            </TouchableOpacity>
-          )}
-          keyExtractor={(item) => item}
-        />
-        <TouchableOpacity
-          style={styles.checkboxContainer}
-          onPress={() => {
-            setQuoSubmitted(!quoSubmitted);
-          }}
-        >
-          <Text style={styles.label}>Quo Submitted:</Text>
-          <Text style={styles.checkboxIcon}>{quoSubmitted ? '✓' : ''}</Text>
-        </TouchableOpacity>
-        <TextInput
-          style={styles.additionalInfoInput}
-          placeholder="Note"
-          value={note}
-          onChangeText={setNote}
-          multiline={true}
-        />
-      </View>
+          <TextInput
+            style={styles.input}
+            placeholder="Jabatan"
+            value={jobPosition}
+            onChangeText={setJobPosition}
+          />
+          <TextInput
+            style={styles.input}
+            placeholder="No. Telp"
+            value={noTelp}
+            onChangeText={setNoTelp}
+          />
+          <TextInput
+            style={styles.input}
+            placeholder="Email"
+            value={Email}
+            onChangeText={setEmail}
+          />
+          <TextInput
+            style={styles.additionalInfoInput}
+            placeholder="Alamat"
+            value={alamat}
+            onChangeText={setAlamat}
+            multiline={true}
+          />
+          <TextInput
+            style={styles.additionalInfoInput}
+            placeholder="Note"
+            value={note}
+            onChangeText={setNote}
+            multiline={true}
+          />
+          <Text style={styles.label}>By:</Text>
+          <FlatList
+            data={byOptions}
+            horizontal={true}
+            contentContainerStyle={styles.optionContainer}
+            renderItem={({ item }) => (
+              <TouchableOpacity
+                style={[styles.option, selectedByOption === item && styles.selectedOption]}
+                onPress={() => setSelectedByOption(item)}
+              >
+                <Text style={styles.optionText}>{item}</Text>
+              </TouchableOpacity>
+            )}
+            keyExtractor={(item) => item}
+          />
+          <Text style={styles.label}>Progress:</Text>
+          <FlatList
+            data={progressOptions}
+            horizontal={true}
+            contentContainerStyle={styles.optionContainer}
+            renderItem={({ item }) => (
+              <TouchableOpacity
+                style={[styles.option, selectedProgressOption === item && styles.selectedOption]}
+                onPress={() => setSelectedProgressOption(item)}
+              >
+                <Text style={styles.optionText}>{item}</Text>
+              </TouchableOpacity>
+            )}
+            keyExtractor={(item) => item}
+          />
+          <TouchableOpacity
+            style={styles.checkboxContainer}
+            onPress={() => {
+              setQuoSubmitted(!quoSubmitted);
+            }}
+          >
+            <Text style={styles.label}>Quo Submitted:</Text>
+            <Text style={styles.checkboxIcon}>{quoSubmitted ? '✓' : ''}</Text>
+          </TouchableOpacity>
+        </View>
 
-      <View style={styles.buttonContainer}>
-        <TouchableOpacity style={styles.addButton} onPress={handleUpdateClient}>
-          <Text style={styles.addButtonText}>Update</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.deleteButton} onPress={handleDeleteClient}>
-          <Text style={styles.deleteButtonText}>Delete</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.cancelButton} onPress={handleCancel}>
-          <Text style={styles.cancelButtonText}>Cancel</Text>
-        </TouchableOpacity>
+        <View style={styles.buttonContainer}>
+          <TouchableOpacity style={styles.addButton} onPress={handleUpdateClient}>
+            <Text style={styles.addButtonText}>Update</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.deleteButton} onPress={handleDeleteClient}>
+            <Text style={styles.deleteButtonText}>Delete</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.cancelButton} onPress={handleCancel}>
+            <Text style={styles.cancelButtonText}>Cancel</Text>
+          </TouchableOpacity>
+        </View>
       </View>
-    </View>
+    </KeyboardAvoidingView>
   );
 }

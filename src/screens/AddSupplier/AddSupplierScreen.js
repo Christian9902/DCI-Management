@@ -14,6 +14,7 @@ export default function AddStockScreen(props) {
   const [PTRekomendasi, setPTRekomendasi] = useState([]);
   const [PTList, setPTList] = useState([]);
   const [email, setEmail] = useState('');
+  const [note, setNote] = useState('');
 
   const { navigation } = props;
 
@@ -74,6 +75,7 @@ export default function AddStockScreen(props) {
       NoTelp: noTelp,
       Alamat: alamat,
       Email: email,
+      Note: note,
     };
   
     try {
@@ -106,6 +108,7 @@ export default function AddStockScreen(props) {
     setNoTelp('');
     setAlamat('');
     setEmail('');
+    setNote('');
   
     navigation.navigate('Home');
   };       
@@ -116,6 +119,7 @@ export default function AddStockScreen(props) {
     setNoTelp('');
     setAlamat('');
     setEmail('');
+    setNote('');
     
     navigation.navigate('Home');
   };
@@ -183,6 +187,13 @@ export default function AddStockScreen(props) {
         placeholder="Alamat"
         value={alamat}
         onChangeText={setAlamat}
+        multiline={true}
+      />
+      <TextInput
+        style={styles.additionalInfoInput}
+        placeholder="Note"
+        value={note}
+        onChangeText={setNote}
         multiline={true}
       />
       <TouchableOpacity style={styles.addButton} onPress={handleAddSupplier}>

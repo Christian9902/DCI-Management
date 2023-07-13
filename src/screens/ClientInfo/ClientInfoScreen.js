@@ -377,7 +377,7 @@ export default function ClientInfoScreen(props) {
               <Text style={styles.buttonText2}>Compare</Text>
             </TouchableOpacity>
             <TouchableOpacity onPress={handleReturn} style={styles.button3}>
-              <Text style={styles.buttonText3}>Return</Text>
+              <Text style={styles.buttonText3}>Reset </Text>
             </TouchableOpacity>
           </>
         )}

@@ -12,6 +12,8 @@ import LogDataScreen from './src/screens/LogData/LogDataScreen';
 import StocksScreen from './src/screens/Stocks/StocksScreen';
 import AddStockScreen from './src/screens/AddStock/AddStockScreen';
 import AddSupplierScreen from './src/screens/AddSupplier/AddSupplierScreen';
+import SuppliersScreen from './src/screens/Suppliers/SuppliersScreen';
+import SupplierUpdateScreen from './src/screens/SupplierUpdate/SupplierUpdateScreen';
 import TakeScreen from './src/screens/Take/TakeScreen';
 import ClientInfoScreen from './src/screens/ClientInfo/ClientInfoScreen';
 import AddClientScreen from './src/screens/AddClient/AddClientScreen';
@@ -42,6 +44,8 @@ function MainNavigator() {
       <Stack.Screen name='Stocks' component={StocksScreen} />
       <Stack.Screen name='Add Stock' component={AddStockScreen} />
       <Stack.Screen name='Add Supplier' component={AddSupplierScreen} />
+      <Stack.Screen name='Suppliers' component={SuppliersScreen} />
+      <Stack.Screen name='Supplier Update' component={SupplierUpdateScreen} />
       <Stack.Screen name='Take' component={TakeScreen} />
       <Stack.Screen name='Client Info' component={ClientInfoScreen} />
       <Stack.Screen name='Income' component={IncomeScreen} />

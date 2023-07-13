@@ -26,7 +26,7 @@ const styles = StyleSheet.create({
     borderColor: '#ccc',
     paddingHorizontal: 10,
     paddingVertical: 7.5,
-    marginBottom: 20,
+    marginBottom: 5,
     textAlignVertical: 'top',
   },
   addButton: {
