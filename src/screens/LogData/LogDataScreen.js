@@ -6,11 +6,9 @@ import { db } from '../Login/LoginScreen';
 import { collection, getDocs } from 'firebase/firestore';
 
 export default function LogData(props) {
-  const [action, setAction] = useState('');
-  const [refID, setRefID] = useState([]);
-  const [timestamp, setTimestamp] = useState([]);
-  const [userID, setUserID] = useState([]);
-  const [actionArray, setActionArray] = useState([]);
+  const [logData, setLogData] = useState([]);
+  const [filteredLogData, setfilteredLogData] = useState([]);
+  const [text, setText] = useState('');
 
   const { navigation } = props;
 
@@ -28,78 +26,126 @@ export default function LogData(props) {
           <Image style={styles.searchIcon} source={require("../../../assets/icons/search.png")} />
           <TextInput
             style={styles.searchInput}
-            onChangeText={handleActionChange}
-            value={action}
-            placeholder='Client Updated/Client Deleted; Timestamp,...'
+            onChangeText={handleSearch}
+            value={text}
+            placeholder='Action; Time; User'
           />
-          <Pressable onPress={() => { setAction(""); handleActionChange(""); }}>
+          <Pressable onPress={() => { setText(""); }}>
             <Image style={styles.searchIcon} source={require("../../../assets/icons/close.png")} />
           </Pressable>
         </View>
       ),
       headerRight: () => <View />,
     });
-  }, [action]);
+  }, [text]);
 
   const fetchLogData = async () => {
     try {
       const logdataSnapshot = await getDocs(collection(db, 'Log Data'));
-      const actionData = [];
+      const userSnapshot = await getDocs(collection(db, 'Users'));
+      const logData = [];
       logdataSnapshot.forEach((doc) => {
         const data = doc.data();
         const action = data?.action;
         const refID = data?.refID;
         const timestamp = data?.timestamp;
-        const userID = data?.userID;
-        if (action && refID && timestamp && userID) {
-          actionData.push({
-            action,
-            refID,
-            timestamp,
-            userID,
+        const userRef = userSnapshot.docs.find((doc) => doc.id === data?.userID);
+        const user = userRef ? userRef.data().Nama : '';
+        if (action) {
+          logData.push({
+            Action: action,
+            RefID: refID,
+            Time: timestamp,
+            User: user,
           });
         }
       });
-      setRefID(actionData);
-      setTimestamp(actionData); // Menyimpan data langsung pada state timestamp
+  
+      logData.sort((a, b) => {
+        const timeA = timeToArray(a.Time);
+        const timeB = timeToArray(b.Time);
+  
+        for (let i = 0; i < timeA.length; i++) {
+          if (timeA[i] !== timeB[i]) {
+            return parseInt(timeA[i]) - parseInt(timeB[i]);
+          }
+        }
+  
+        return 0;
+      });
+  
+      setLogData(logData);
+      setfilteredLogData(logData);
     } catch (error) {
       console.log('Terjadi kesalahan saat mengambil data dari Firebase:', error);
     }
-  };
+  };    
 
   useEffect(() => {
     fetchLogData();
   }, []);
 
-  const handleActionChange = (text) => {
-    setAction(text);
-    let filteredData = [];
+  const timeToArray = (time) => {
+    const [day, month, yearOrTimeString] = time.split('/');
+    let year = '';
+    let hour = '';
+    let minute = '';
+    let second = '';
+  
+    if (yearOrTimeString && yearOrTimeString.includes(', ')) {
+      const [yearString, timeString] = yearOrTimeString.split(', ');
+      year = yearString;
+      [hour, minute, second] = timeString.split(':');
+    } else if (yearOrTimeString) {
+      year = yearOrTimeString;
+    }
+  
+    const filterTimestamp = [
+      day || '',
+      month || '',
+      year || '',
+      hour || '',
+      minute || '',
+      second || '',
+    ];
+  
+    return filterTimestamp;
+  };  
 
-    if (text === '') {
-      filteredData = refID;
+  const handleSearch = (x) => {
+    setText(x);
+  
+    if (x === '') {
+      setfilteredLogData(logData);
     } else {
-      const filterText = text.toLowerCase().trim();
+      const filterText = x.toLowerCase().trim();
       const filterItems = filterText.split(';').map((item) => item.trim());
-      const filterAction = filterItems[0].toLowerCase();
-      const filterTimestamp = filterItems[1] ? filterItems[1].split(',').map((item) => item.trim().toLowerCase()) : [];
+      const filterAction = filterItems[0] ? filterItems[0].toLowerCase() : '';
+      const filterTimestamp = filterItems[1] ? timeToArray(filterItems[1]) : [];
       const filterUserID = filterItems[2] ? filterItems[2].toLowerCase() : '';
-
-      filteredData = refID.filter((item) => {
-        if (filterAction !== '' && !item.action.toLowerCase().includes(filterAction)) {
+  
+      const filteredData = logData.filter((item) => {
+        if (filterAction !== '' && !item.Action.toLowerCase().includes(filterAction)) {
           return false;
         }
-        if (filterTimestamp.length > 0 && !filterTimestamp.some((timestamp) => item.timestamp.toLowerCase().includes(timestamp))) {
+        if (
+          filterTimestamp.length !== 0 &&
+          !filterTimestamp.every((filterValue, index) => {
+            const itemValue = item.Time.split(/[\/,: ]/)[index];
+            return itemValue.includes(filterValue);
+          })
+        ) {
           return false;
         }
-        if (filterUserID !== '' && item.userID.toLowerCase() !== filterUserID) {
+        if (filterUserID !== '' && !item.User.toLowerCase().includes(filterUserID)) {
           return false;
         }
         return true;
       });
+  
+      setfilteredLogData(filteredData);
     }
-
-    setTimestamp(filteredData);
-  };
+  };  
 
   const onPressItem = (item) => {
     navigation.navigate("Home");
@@ -109,16 +155,16 @@ export default function LogData(props) {
     <TouchableOpacity onPress={() => onPressItem(item)}>
       <View style={styles.listItem}>
         <View style={styles.itemContainer}>
-          <Text style={styles.title}>{item.action}</Text>
+          <Text style={styles.title}>{item.Action}</Text>
           <View style={styles.categoryContainer}>
-            <Text style={styles.category}>{item.timestamp}</Text>
+            <Text style={styles.category}>{item.Time}</Text>
           </View>
           <Text>-  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -</Text>
           <View style={styles.categoryContainer}>
-            <Text style={styles.category}>RefID: {item.refID}</Text>
+            <Text style={styles.category}>RefID: {item.RefID}</Text>
           </View>
           <View style={styles.categoryContainer}>
-            <Text style={styles.category}>User ID: {item.userID}</Text>
+            <Text style={styles.category}>User: {item.User}</Text>
           </View>
         </View>
       </View>
@@ -129,7 +175,7 @@ export default function LogData(props) {
     <FlatList
       vertical
       showsVerticalScrollIndicator={false}
-      data={timestamp}
+      data={filteredLogData}
       renderItem={renderItem}
       keyExtractor={(item, index) => item.timestamp + '-' + item.action + '-' + index}
     />

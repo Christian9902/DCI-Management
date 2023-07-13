@@ -72,7 +72,7 @@ export default function DrawerContainer(props) {
         />
 
         <MenuButton
-          title={`MARKETING${isMarketingGroupOpen ? "   ↑" : "   ↓"}`}
+          title={`MARKETING${isMarketingGroupOpen ? "   ▲"  : "   ▼"}`}
           source={require("../../../assets/icons/marketing.png")}
           onPress={toggleMarketingGroup}
         />
@@ -100,7 +100,7 @@ export default function DrawerContainer(props) {
         )}
 
         <MenuButton
-          title={`PRODUCTION${isProductionGroupOpen ? "   ↑" : "   ↓"}`}
+          title={`PRODUCTION${isProductionGroupOpen ? "   ▲"  : "   ▼"}`}
           source={require("../../../assets/icons/production.png")}
           onPress={toggleProductionGroup}
         />
@@ -151,7 +151,7 @@ export default function DrawerContainer(props) {
         )}
 
         <MenuButton
-          title={`ANALYTICS${isAnalyticsGroupOpen ? "   ↑" : "   ↓"}`}
+          title={`ANALYTICS${isAnalyticsGroupOpen ? "   ▲"  : "   ▼"}`}
           source={require("../../../assets/icons/analytics.png")}
           onPress={toggleAnalyticsGroup}
         />
