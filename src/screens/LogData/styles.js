@@ -3,22 +3,64 @@ import { StyleSheet } from "react-native";
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 16,
+    backgroundColor: "#FFF",
+  },
+  searchContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#EDEDED",
+    borderRadius: 10,
+    width: 290,
+    justifyContent: "space-around",
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+  },
+  searchIcon: {
+    width: 20,
+    height: 20,
+    tintColor: "grey",
+  },
+  filterIcon: {
+      width: 20,
+      height: 20,
+      marginHorizontal: 10,
+  },
+  searchInput: {
+    backgroundColor: "#EDEDED",
+    color: "black",
+    flex: 1,
+    height: 30,
+    marginLeft: 5,
+    marginRight: 5,
+    paddingLeft: 5,
+    paddingRight: 5,
+    fontSize: 12,
+  },
+  listItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: 10,
+    marginHorizontal: 10,
+    padding: 10,
+    backgroundColor: "#FFF",
+    borderRadius: 10,
+    borderWidth: 1,
   },
   itemContainer: {
-    backgroundColor: "#fff",
-    borderRadius: 8,
-    padding: 16,
-    marginBottom: 16,
+    flex: 1,
+    marginVertical: 10,
   },
   title: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: "bold",
-    marginBottom: 8,
+    marginLeft: 10,
+  },
+  categoryContainer: {
+    marginTop: 5,
   },
   category: {
-    fontSize: 16,
-    marginBottom: 4,
+    fontSize: 14,
+    color: "gray",
   },
 });
 
