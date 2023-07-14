@@ -68,7 +68,11 @@ const LoginScreen = () => {
         const user = userCredentials.user;
         ToastAndroid.show(`Welcome! ${user.email}`, ToastAndroid.SHORT);
       })
-      .catch((error) => alert('Check your email or password again!'));
+      .catch((error) => {
+        alert('Check your email or password again!');
+        setEmail('');
+        setPassword('');
+      });
   };
 
   return (

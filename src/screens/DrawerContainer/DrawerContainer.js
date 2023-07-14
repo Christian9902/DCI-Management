@@ -13,15 +13,6 @@ export default function DrawerContainer(props) {
 
   const handleSignOut = async () => {
     const user = auth.currentUser;
-    if (user) {
-      try {
-        await updateDoc(doc(db, 'Users', user.uid), {
-          Log: "OFF",
-        });
-      } catch (error) {
-        console.log("Error updating user log:", error);
-      }
-    }
   
     auth
       .signOut()
@@ -29,11 +20,6 @@ export default function DrawerContainer(props) {
         navigation.navigate("Login");
       })
       .catch(error => alert(error.message));
-  };
-
-  const handleAddClient = () => {
-    navigation.navigate("Add Client");
-    navigation.closeDrawer();
   };
 
   const { navigation } = props;

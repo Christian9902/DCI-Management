@@ -48,8 +48,6 @@ export default function ProfileScreen(props) {
           setNama(userData.Nama);
           setNoTelp(userData.NoTelp);
           setStatus(userData.Status);
-        } else {
-          console.log('c');
         }
       }
     } catch (error) {
@@ -66,57 +64,82 @@ export default function ProfileScreen(props) {
   
       reauthenticateWithCredential(user, credential)
         .then(() => {
-          updateEmail(user, email)
-          .then(() => {
-            log.push('Email updated successfully');
-          })
-          .catch((error) => {
-            log.push('Error updating email:', error);
-          });
-
+          const updateEmailPromise = updateEmail(user, email)
+            .then(() => {
+              log.push('0');
+            })
+            .catch((error) => {
+              log.push(`1`);
+            });
+  
           const userRef = doc(db, 'Users', user.uid);
-          updateDoc(userRef, {
+          const updateProfilePromise = updateDoc(userRef, {
             Nama: nama,
             NoTelp: noTelp,
           })
             .then(() => {
-              log.push('Name and phone number updated successfully.');
+              log.push('0');
             })
             .catch((error) => {
-              log.push('Error updating name and phone number:', error);
+              log.push(`1`);
             });
-
-          if (password != '') {
-            updatePassword(user, password)
+  
+          const updatePasswordPromise = password !== '' ? updatePassword(user, password)
             .then(() => {
-              log.push('Password updated successfully.');
+              log.push('0');
             })
             .catch((error) => {
-              log.push('Error updating password:', error);
-            });
-          }
-
+              log.push(`1`);
+            }) : Promise.resolve();
+  
           const logEntry = {
-            timestamp: new Date().toISOString(),
+            timestamp: new Date().toLocaleString('en-GB', {
+              day: '2-digit',
+              month: '2-digit',
+              year: 'numeric',
+              hour: '2-digit',
+              minute: '2-digit',
+              second: '2-digit',
+            }),
             action: 'Profile Updated',
             user: user.uid,
           };
-          addDoc(collection(db, 'Log Data'), logEntry)
+          const addLogEntryPromise = addDoc(collection(db, 'Log Data'), logEntry)
             .then(() => {
-              log.push('Log entry added successfully.');
+              log.push('0');
             })
             .catch((error) => {
-              log.push('Error adding log entry:', error);
+              log.push(`1`);
             });
-          
-            ToastAndroid.show(log.join('\n'), ToastAndroid.SHORT);
-
+  
+          Promise.all([updateEmailPromise, updateProfilePromise, updatePasswordPromise, addLogEntryPromise])
+            .then(() => {
+              ToastAndroid.show(log.join('<-'), ToastAndroid.SHORT);
+              setPassword('');
+              setOldPassword('');
+              setShowPassword(false);
+              handleSignOut();
+            })
+            .catch((error) => {
+              ToastAndroid.show(`Terjadi error saat mengupdate data: ${error}`, ToastAndroid.LONG);
+            });
         })
         .catch((error) => {
-          ToastAndroid.show(`Terjadi error saat mengupdate data: ${error}`, ToastAndroid.SHORT);
+          ToastAndroid.show(`Terjadi error saat mengupdate data: ${error}`, ToastAndroid.LONG);
         });
     }
-  };  
+  };    
+  
+  const handleSignOut = async () => {
+    const user = auth.currentUser;
+  
+    auth
+      .signOut()
+      .then(() => {
+        navigation.navigate("Login");
+      })
+      .catch(error => alert(error));
+  };
 
   const handleCancel = () => {
     setEmail('');
@@ -184,7 +207,6 @@ export default function ProfileScreen(props) {
             style={styles.button}
             onPress={() => {
               handleUpdate();
-              navigation.goBack();
             }}
           >
             <Text>Update</Text>
