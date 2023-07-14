@@ -67,7 +67,7 @@ export default function LogData(props) {
   
         for (let i = 0; i < timeA.length; i++) {
           if (timeA[i] !== timeB[i]) {
-            return parseInt(timeA[i]) - parseInt(timeB[i]);
+            return parseInt(timeB[i]) - parseInt(timeA[i]);
           }
         }
   

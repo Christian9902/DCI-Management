@@ -3,7 +3,7 @@ import { View, Text, TouchableOpacity, TextInput, FlatList, KeyboardAvoidingView
 import styles from './styles';
 import MenuImage from "../../components/MenuImage/MenuImage";
 import { auth, db } from '../Login/LoginScreen';
-import { collection, doc, getDocs, updateDoc, deleteDoc } from 'firebase/firestore';
+import { collection, doc, getDocs, updateDoc, deleteDoc, addDoc } from 'firebase/firestore';
 
 export default function UpdateSupplierScreen({ navigation, route }) {
   const { supplierData } = route.params;

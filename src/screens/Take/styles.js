@@ -1,54 +1,129 @@
-import { StyleSheet } from 'react-native';
+import { StyleSheet } from "react-native";
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 20,
+    backgroundColor: "#FFF",
+  },
+  searchContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#EDEDED",
+    borderRadius: 10,
+    width: 290,
+    justifyContent: "space-around",
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+  },
+  searchIcon: {
+    width: 20,
+    height: 20,
+    tintColor: "grey",
+  },
+  filterIcon: {
+    width: 20,
+    height: 20,
+    marginHorizontal: 10,
   },
   searchInput: {
-    height: 40,
+    backgroundColor: "#EDEDED",
+    color: "black",
+    flex: 1,
+    height: 30,
+    marginLeft: 5,
+    marginRight: 5,
+    paddingLeft: 5,
+    paddingRight: 5,
+    fontSize: 12,
+  },
+  listItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: 10,
+    marginHorizontal: 10,
+    padding: 10,
+    backgroundColor: "#FFF",
+    borderRadius: 10,
     borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 5,
-    paddingHorizontal: 10,
-    marginBottom: 10,
   },
   itemContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 10,
-  },
-  itemText: {
     flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginVertical: 10,
   },
-  button: {
+  itemInfoContainer: {
+    flex: 1,
+    marginRight: 10,
+  },
+  quantityContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  title: {
+    fontSize: 16,
+    fontWeight: "bold",
+    marginLeft: 10,
+  },
+  categoryContainer: {
+    marginTop: 5,
+  },
+  category: {
+    fontSize: 14,
+    color: "gray",
+  },
+  quantityButton: {
     width: 30,
     height: 30,
     borderRadius: 15,
-    backgroundColor: '#ccc',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginHorizontal: 5,
+    backgroundColor: "#EDEDED",
+    alignItems: "center",
+    justifyContent: "center",
   },
-  buttonText: {
-    fontSize: 18,
-    fontWeight: 'bold',
-  },
-  jumlahText: {
+  quantityButtonText: {
     fontSize: 16,
-    marginHorizontal: 5,
+    fontWeight: "bold",
+    color: "black",
   },
-  buttonOke: {
-    backgroundColor: '#337ab7',
-    borderRadius: 5,
+  quantityInput: {
+    width: 50,
+    height: 30,
+    backgroundColor: "#EDEDED",
+    marginLeft: 5,
+    marginRight: 5,
+    paddingLeft: 5,
+    paddingRight: 5,
+    fontSize: 12,
+  },
+  buttonContainer: {
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    marginVertical: 20,
+  },
+  addButton: {
+    backgroundColor: "#000",
     paddingVertical: 10,
-    alignItems: 'center',
-    marginTop: 20,
+    paddingHorizontal: 20,
+    borderRadius: 5,
+    marginRight: 10,
   },
-  buttonTextOke: {
-    color: '#fff',
+  addButtonText: {
+    color: "#fff",
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: "bold",
+  },
+  cancelButton: {
+    backgroundColor: "#fff",
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 5,
+  },
+  cancelButtonText: {
+    color: "#000",
+    fontSize: 16,
+    fontWeight: "bold",
   },
 });
 

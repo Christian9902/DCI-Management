@@ -392,7 +392,7 @@ export default function ClientInfoScreen(props) {
         )}
       </Text>
       <Text>
-        Persentase Quo Submitted: {quoSubmittedPercentage}%
+        Quo Submitted: {quoSubmittedPercentage}%
         {showComparison && (
           <Text> // {quoSubmittedPercentage2}%</Text>
         )}
