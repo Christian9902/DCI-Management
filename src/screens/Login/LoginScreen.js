@@ -1,12 +1,11 @@
 import { useNavigation, useBackHandler } from '@react-navigation/native';
 import React, { useEffect, useState } from 'react';
-import { KeyboardAvoidingView, StyleSheet, Text, TextInput, TouchableOpacity, View, Image, BackHandler, Alert } from 'react-native';
-import { onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'firebase/auth';
+import { KeyboardAvoidingView, Text, TextInput, TouchableOpacity, View, Image, BackHandler, Alert, ToastAndroid } from 'react-native';
+import { onAuthStateChanged, signInWithEmailAndPassword } from 'firebase/auth';
 
 import { initializeApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
-import { getStorage } from 'firebase/storage';
 import styles from './styles';
 
 const firebaseConfig = {
@@ -67,14 +66,10 @@ const LoginScreen = () => {
     signInWithEmailAndPassword(auth, (email + "@admin.com"), password)
       .then((userCredentials) => {
         const user = userCredentials.user;
-        console.log('Logged in with:', user.email);
+        ToastAndroid.show(`Welcome! ${user.email}`, ToastAndroid.SHORT);
       })
       .catch((error) => alert('Check your email or password again!'));
   };
-
-  function handlePress() {
-    navigation.navigate("Home");
-  }
 
   return (
     <KeyboardAvoidingView
@@ -108,7 +103,6 @@ const LoginScreen = () => {
       <View style={styles.buttonContainer}>
         <TouchableOpacity
           onPress={handleLogin}
-          // onPress={handlePress}
           style={styles.button}
         >
           <Text style={styles.buttonText}>Login</Text>

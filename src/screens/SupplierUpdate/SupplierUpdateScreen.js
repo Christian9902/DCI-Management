@@ -102,7 +102,6 @@ export default function UpdateSupplierScreen({ navigation, route }) {
   
     try {
       await deleteDoc(supplierRef);
-      console.log('Supplier document successfully deleted from Firestore.');
   
       const logEntry = {
         timestamp: new Date().toLocaleString('en-GB', {
@@ -119,9 +118,9 @@ export default function UpdateSupplierScreen({ navigation, route }) {
       };
   
       await addDoc(logDataRef, logEntry);
-      console.log('Log entry added successfully.');
+      ToastAndroid.show(`Data berhasil diupdate`, ToastAndroid.SHORT);
     } catch (error) {
-      console.log('Error deleting supplier document:', error);
+      ToastAndroid.show(`Terjadi error saat mengupdate data: ${error}`, ToastAndroid.SHORT);
     }
   
     navigation.navigate('Home');

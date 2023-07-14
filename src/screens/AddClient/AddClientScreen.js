@@ -1,5 +1,5 @@
 import React, { useState, useLayoutEffect, useEffect } from 'react';
-import { View, Text, TouchableOpacity, TextInput, FlatList, KeyboardAvoidingView } from 'react-native';
+import { View, Text, TouchableOpacity, TextInput, FlatList, KeyboardAvoidingView, ToastAndroid } from 'react-native';
 import styles from './Styles';
 import MenuImage from "../../components/MenuImage/MenuImage";
 import { auth, db } from '../Login/LoginScreen';
@@ -79,8 +79,7 @@ export default function AddClientScreen(props) {
       query(clientRef, where('NamaClient', '==', nama), where('NamaPT', '==', PT))
     );
     if (!Query.empty) {
-      console.log('Nama Client dengan PT yang sama sudah ada dalam database');
-      handleCancel();
+      ToastAndroid.show('Nama Client dengan PT yang sama sudah ada', ToastAndroid.SHORT);
       return;
     }
 
@@ -101,7 +100,7 @@ export default function AddClientScreen(props) {
 
     try {
       const docRef = await addDoc(clientRef, data);
-      console.log('Data berhasil disimpan di Firestore dengan ID:', docRef.id);
+      ToastAndroid.show('Client Berhasil disimpan', ToastAndroid.SHORT);
 
       const logEntry = {
         timestamp: time,
@@ -111,9 +110,8 @@ export default function AddClientScreen(props) {
       };
 
       await addDoc(logDataRef, logEntry);
-      console.log('Log entry added successfully.');
     } catch (error) {
-      console.log('Terjadi kesalahan saat menyimpan data ke Firestore:', error);
+      ToastAndroid.show(`Terjadi error saat menyimpan data: ${error}`, ToastAndroid.SHORT);
     }
 
     setNama('');

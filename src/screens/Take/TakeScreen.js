@@ -1,5 +1,5 @@
 import React, { useState, useLayoutEffect, useEffect } from 'react';
-import { View, Text, TextInput, FlatList, Image, Pressable, TouchableOpacity } from 'react-native';
+import { ToastAndroid, View, Text, TextInput, FlatList, Image, Pressable, TouchableOpacity } from 'react-native';
 import styles from './styles';
 import MenuImage from "../../components/MenuImage/MenuImage";
 import { auth, db } from '../Login/LoginScreen';
@@ -199,6 +199,7 @@ export default function TakeStockScreen(props) {
       }
     
       await batch.commit();
+      ToastAndroid.show('Stock Have Been Taken Sucessfully', ToastAndroid.SHORT);
     } catch (error) {
       console.log('Failed to update inventory:', error);
     }

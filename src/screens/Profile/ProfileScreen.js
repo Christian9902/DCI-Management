@@ -1,5 +1,5 @@
 import React, { useState, useLayoutEffect, useEffect } from 'react';
-import { View, Text, TextInput, TouchableOpacity } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, ToastAndroid } from 'react-native';
 import { updateEmail, updatePassword, reauthenticateWithCredential, EmailAuthProvider } from 'firebase/auth';
 import { doc, getDoc, addDoc, collection, updateDoc } from 'firebase/firestore';
 import { auth, db } from '../Login/LoginScreen';
@@ -59,6 +59,7 @@ export default function ProfileScreen(props) {
 
   const handleUpdate = async () => {
     const user = auth.currentUser;
+    let log = [];
   
     if (user) {
       const credential = EmailAuthProvider.credential(user.email, oldPassword);
@@ -67,10 +68,10 @@ export default function ProfileScreen(props) {
         .then(() => {
           updateEmail(user, email)
           .then(() => {
-            console.log('Email updated successfully.');
+            log.push('Email updated successfully');
           })
           .catch((error) => {
-            console.log('Error updating email:', error);
+            log.push('Error updating email:', error);
           });
 
           const userRef = doc(db, 'Users', user.uid);
@@ -79,19 +80,19 @@ export default function ProfileScreen(props) {
             NoTelp: noTelp,
           })
             .then(() => {
-              console.log('Name and phone number updated successfully.');
+              log.push('Name and phone number updated successfully.');
             })
             .catch((error) => {
-              console.log('Error updating name and phone number:', error);
+              log.push('Error updating name and phone number:', error);
             });
 
           if (password != '') {
             updatePassword(user, password)
             .then(() => {
-              console.log('Password updated successfully.');
+              log.push('Password updated successfully.');
             })
             .catch((error) => {
-              console.log('Error updating password:', error);
+              log.push('Error updating password:', error);
             });
           }
 
@@ -102,14 +103,17 @@ export default function ProfileScreen(props) {
           };
           addDoc(collection(db, 'Log Data'), logEntry)
             .then(() => {
-              console.log('Log entry added successfully.');
+              log.push('Log entry added successfully.');
             })
             .catch((error) => {
-              console.log('Error adding log entry:', error);
+              log.push('Error adding log entry:', error);
             });
+          
+            ToastAndroid.show(log.join('\n'), ToastAndroid.SHORT);
+
         })
         .catch((error) => {
-          console.log('Error reauthenticating user:', error);
+          ToastAndroid.show(`Terjadi error saat mengupdate data: ${error}`, ToastAndroid.SHORT);
         });
     }
   };  

@@ -1,5 +1,5 @@
 import React, { useState, useLayoutEffect, useEffect } from 'react';
-import { View, Text, TouchableOpacity, TextInput, FlatList, KeyboardAvoidingView } from 'react-native';
+import { View, Text, TouchableOpacity, TextInput, FlatList, KeyboardAvoidingView, ToastAndroid } from 'react-native';
 import styles from './Styles';
 import MenuImage from "../../components/MenuImage/MenuImage";
 import { auth, db } from '../Login/LoginScreen';
@@ -82,7 +82,6 @@ export default function ClientUpdateScreen({ navigation, route }) {
   
     try {
       await updateDoc(clientRef, updatedData);
-      console.log('Data berhasil diperbarui di Firestore dengan ID:', clientRef.id);
   
       const logEntry = {
         timestamp: new Date().toLocaleString('en-GB', {
@@ -99,9 +98,9 @@ export default function ClientUpdateScreen({ navigation, route }) {
       };
   
       await addDoc(logDataRef, logEntry);
-      console.log('Log entry added successfully.');
+      ToastAndroid.show('Client berhasil diupdate', ToastAndroid.SHORT);
     } catch (error) {
-      console.log('Terjadi kesalahan saat memperbarui data di Firestore:', error);
+      ToastAndroid.show(`Terjadi error saat mengupdate data: ${error}`, ToastAndroid.SHORT);
     }
   
     navigation.navigate('Home');
@@ -113,7 +112,6 @@ export default function ClientUpdateScreen({ navigation, route }) {
 
     try {
       await deleteDoc(clientRef);
-      console.log('Client document successfully deleted from Firestore.');
 
       const logEntry = {
         timestamp: new Date().toLocaleString('en-GB', {
@@ -130,9 +128,9 @@ export default function ClientUpdateScreen({ navigation, route }) {
       };
 
       await addDoc(logDataRef, logEntry);
-      console.log('Log entry added successfully.');
+      ToastAndroid.show('Client berhasil dihapus', ToastAndroid.SHORT);
     } catch (error) {
-      console.log('Error deleting client document:', error);
+      ToastAndroid.show(`Terjadi error saat menghapus data: ${error}`,ToastAndroid.SHORT);
     }
 
     navigation.navigate('Home');

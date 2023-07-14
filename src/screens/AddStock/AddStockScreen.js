@@ -1,9 +1,9 @@
 import React, { useState, useLayoutEffect, useEffect } from 'react';
-import { View, Text, TouchableOpacity, TextInput, FlatList, Image } from 'react-native';
+import { View, Text, TouchableOpacity, TextInput, FlatList, ToastAndroid } from 'react-native';
 import styles from './styles';
 import MenuImage from "../../components/MenuImage/MenuImage";
 import { auth, db } from '../Login/LoginScreen';
-import { doc, updateDoc, addDoc, collection, getDocs, query, where } from 'firebase/firestore';
+import { updateDoc, addDoc, collection, getDocs, query, where } from 'firebase/firestore';
 
 
 export default function AddStockScreen(props) {
@@ -50,7 +50,6 @@ export default function AddStockScreen(props) {
       });
       const namaBarangArray = Array.from(namaBarangSet).sort();
       setNamaBarangList(namaBarangArray);
-      //console.log('Nama Barang dalam Inventory:', namaBarangList);
     } catch (error) {
       console.log('Terjadi kesalahan saat mengambil data dari Firebase:', error);
     }
@@ -81,7 +80,6 @@ export default function AddStockScreen(props) {
         mixArray.push(mix);
       });
       setSupplierList(mixArray);
-      //console.log('Data Supplier:', supplierList);
     } catch (error) {
       console.log('Terjadi kesalahan saat mengambil data dari Firebase:', error);
     }
@@ -109,7 +107,7 @@ export default function AddStockScreen(props) {
   
         try {
           await updateDoc(doc.ref, { Jumlah: newJumlah });
-          console.log('Data berhasil diupdate di Firestore dengan ID:', doc.id);
+          ToastAndroid.show('Stock berhasil disimpan', ToastAndroid.SHORT);
 
           const logEntry = {
             timestamp: new Date().toLocaleString('en-GB', {
@@ -125,9 +123,8 @@ export default function AddStockScreen(props) {
             refID: doc.id,
           };
           await addDoc(logDataRef, logEntry);
-          console.log('Log entry added successfully.');
         } catch (error) {
-          console.log('Terjadi kesalahan saat mengupdate data di Firestore:', error);
+          ToastAndroid.show(`Terjadi error saat menyimpan data: ${error}`, ToastAndroid.SHORT);
         }
       });
   

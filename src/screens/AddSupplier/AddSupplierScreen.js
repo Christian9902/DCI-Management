@@ -80,7 +80,7 @@ export default function AddStockScreen(props) {
   
     try {
       const docRef = await addDoc(supplierRef, data);
-      console.log('Data berhasil disimpan di Firestore dengan ID:', docRef.id);
+      ToastAndroid.show('Supplier berhasil disimpan', ToastAndroid.SHORT);
   
       const logEntry = {
         timestamp: new Date().toLocaleString('en-GB', {
@@ -97,10 +97,8 @@ export default function AddStockScreen(props) {
       };
   
       await addDoc(logDataRef, logEntry);
-      console.log('Log entry added successfully.');
     } catch (error) {
-      console.log('Terjadi kesalahan saat menyimpan data ke Firestore:', error);
-      console.log('Error adding log entry:', error);
+      ToastAndroid.show(`Terjadi error saat menyimpan data: ${error}`, ToastAndroid.SHORT);
     }
   
     setNama('');

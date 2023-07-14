@@ -1,5 +1,5 @@
 import React, { useEffect, useLayoutEffect, useState } from "react";
-import { Text, View, TouchableOpacity, Image, StatusBar, Platform } from "react-native";
+import { Text, View, TouchableOpacity, Image, StatusBar, Platform, ToastAndroid } from "react-native";
 import styles from "./styles";
 import MenuImage from "../../components/MenuImage/MenuImage";
 import { db, auth } from "../Login/LoginScreen";
@@ -315,10 +315,22 @@ export default function ClientInfoScreen(props) {
   const handleGoBack = () => {
     navigation.navigate("Home");
   };
-  
+
   const handleCompare = () => {
     setShowComparison(!showComparison);
+    if (showComparison){
+      const formattedStartDate = formatDate(startDate.toLocaleString('en-GB'));
+      const daysDifference = Math.floor((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
+      const x = dateCalculator([...formattedStartDate], daysDifference);
+      const y = dateCalculator([...formattedStartDate], 1);
+      
+      ToastAndroid.show(
+        `Membandingkan dengan data ${x[0]}/${x[1]}/${x[2]} - ${y[0]}/${y[1]}/${y[2]}`,
+        ToastAndroid.SHORT
+      );
+    }
   };
+  
 
   if (!isAdmin) {
     return (
