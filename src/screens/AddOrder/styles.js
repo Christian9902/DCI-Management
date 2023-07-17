@@ -26,7 +26,7 @@ const styles = StyleSheet.create({
     borderColor: '#ccc',
     paddingHorizontal: 10,
     paddingVertical: 7.5,
-    marginBottom: 20,
+    marginBottom: 10,
     textAlignVertical: 'top',
   },
   addButton: {
@@ -147,6 +147,35 @@ const styles = StyleSheet.create({
   checkboxIcon: {
     fontSize: 16,
     fontWeight: 'bold',
+  },
+  attachIcon: {
+    width: 25,
+    height: 25,
+    tintColor: 'grey',
+    marginRight: 20,
+  },
+  attachedFilesContainer: {
+    marginTop: 10,
+    width: '85%',
+  },
+  attachedFilesTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginBottom: 10,
+  },
+  attachedFileItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 5,
+    justifyContent: 'space-between',
+  },
+  attachedFileName: {
+    fontSize: 14,
+    marginRight: 10,
+  },
+  attachedFileSize: {
+    fontSize: 14,
+    color: '#888',
   },  
 });
 

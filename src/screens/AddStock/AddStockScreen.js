@@ -191,7 +191,6 @@ export default function AddStockScreen(props) {
 
     if (!barangBaru) {
       setBarangBaru(true);
-      setBarangSisa(false);
     }
     
     navigation.navigate('Home');
