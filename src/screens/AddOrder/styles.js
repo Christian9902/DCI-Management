@@ -1,182 +1,171 @@
-import { StyleSheet, Dimensions } from 'react-native';
-
-const { width } = Dimensions.get('window');
+import { StyleSheet } from 'react-native';
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#fff',
+    padding: 16,
   },
   input: {
-    width: 0.85 * width,
-    height: 50,
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: '#ccc',
-    paddingHorizontal: 10,
-    marginBottom: 5,
-  },
-  additionalInfoInput: {
-    width: 0.85 * width,
-    height: 100,
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: '#ccc',
-    paddingHorizontal: 10,
-    paddingVertical: 7.5,
-    marginBottom: 10,
-    textAlignVertical: 'top',
-  },
-  addButton: {
-    width: 0.85 * width,
-    height: 50,
-    borderRadius: 10,
-    backgroundColor: '#000',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: 'auto',
-  },
-  addButtonText: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#fff',
-  },
-  cancelButton: {
-    width: 0.85 * width,
-    height: 50,
-    borderRadius: 10,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 20,
-  },
-  cancelButtonText: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#000',
-  },
-  imageButton: {
-    width: 0.85 * width,
-    height: 200,
-    borderRadius: 10,
-    borderColor: '#ccc',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 20,
-    marginTop: 5,
-  },
-  imageButtonText: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#000',
-  },
-  imagePreview: {
-    width: '100%',
-    height: '100%',
-    borderRadius: 10,
-  },
-  removePictureButton: {
-    width: 0.85 * width,
     height: 40,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 5,
+    borderColor: 'gray',
+    borderWidth: 1,
+    marginBottom: 16,
+    paddingHorizontal: 10,
   },
-  removePictureButtonText: {
-    fontSize: 16,
+  rekomendasiContainer: {
+    maxHeight: 100,
+    borderWidth: 1,
+    borderColor: 'gray',
+    marginBottom: 16,
+    paddingHorizontal: 10,
+  },
+  checkboxContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  checkboxText: {
+    marginLeft: 8,
+  },
+  checkboxIcon: {
     fontWeight: 'bold',
-    color: '#000',
+    fontSize: 18,
   },
   jumlahContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 5,
-    paddingHorizontal: 20,
-    width: '95%',
-  },  
+    marginBottom: 16,
+  },
+  jumlahText: {
+    marginRight: 8,
+  },
   jumlahContainer2: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
+    borderWidth: 1,
+    borderColor: 'gray',
+    borderRadius: 4,
+    paddingHorizontal: 8,
+    flex: 1,
+    marginLeft: 8,
   },
   jumlahButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: '#ccc',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginHorizontal: 10,
+    paddingVertical: 4,
+    paddingHorizontal: 8,
   },
   jumlahButtonText: {
-    fontSize: 20,
+    fontSize: 16,
     fontWeight: 'bold',
-    color: '#000',
   },
   jumlahInput: {
-    height: 40,
-    width: 50,
-    borderRadius: 10,
+    flex: 1,
+    paddingVertical: 4,
+    textAlign: 'center',
+  },
+  deadlineContainer: {
+    marginBottom: 16,
+  },
+  deadlineButton: {
+    backgroundColor: 'lightgray',
+    padding: 10,
+    borderRadius: 4,
+    marginBottom: 8,
+  },
+  deadlineButtonText: {
+    fontSize: 16,
+  },
+  additionalInfoInput: {
+    height: 100,
+    borderColor: 'gray',
     borderWidth: 1,
-    borderColor: '#ccc',
+    marginBottom: 16,
     paddingHorizontal: 10,
-  },
-  jumlahText: {
-    fontSize: 15,
-    color: '#000',
-  },
-  rekomendasiContainer: {
-    marginBottom: 5,
-    paddingHorizontal: 20,
-    width: '95%',
-  },
-  checkboxContainer: {
-    width: '95%',
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent:'space-between',
-    paddingHorizontal: 20,
-    marginVertical: 5,
-  },
-  checkboxText: {
-    fontSize: 16,
-  },
-  checkboxIcon: {
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  attachIcon: {
-    width: 25,
-    height: 25,
-    tintColor: 'grey',
-    marginRight: 20,
+    paddingTop: 10,
   },
   attachedFilesContainer: {
-    marginTop: 10,
-    width: '85%',
+    marginBottom: 16,
   },
   attachedFilesTitle: {
-    fontSize: 16,
     fontWeight: 'bold',
-    marginBottom: 10,
+    marginBottom: 8,
   },
   attachedFileItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 5,
-    justifyContent: 'space-between',
+    marginBottom: 8,
   },
   attachedFileName: {
-    fontSize: 14,
-    marginRight: 10,
+    marginRight: 8,
   },
   attachedFileSize: {
-    fontSize: 14,
-    color: '#888',
-  },  
+    color: 'gray',
+  },
+  deleteButton: {
+    marginLeft: 8,
+    color: 'red',
+    fontWeight: 'bold',
+  },
+  addButton: {
+    backgroundColor: 'black',
+    padding: 16,
+    borderRadius: 4,
+    marginBottom: 16,
+    alignItems: 'center',
+  },
+  addButtonText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  cancelButton: {
+    backgroundColor: 'white',
+    padding: 16,
+    borderRadius: 4,
+    alignItems: 'center',
+  },
+  cancelButtonText: {
+    color: 'black',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  attachIcon: {
+    width: 24,
+    height: 24,
+    resizeMode: 'contain',
+  },
+  scrollViewContentContainer: {
+    paddingBottom: 80,
+  },
+  uploadButton: {
+    flexDirection: 'row', // Mengatur tata letak tombol dan ikon menjadi sejajar
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  uploadButtonIcon: {
+    marginRight: 8,
+    width: 24, // Mengatur lebar ikon tombol
+    height: 24, // Mengatur tinggi ikon tombol
+    resizeMode: 'contain',
+  },
+  uploadButtonText: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginLeft: 8,
+  },
+  anotherButton: {
+    backgroundColor: 'blue', // Ganti warna tombol Another Button menjadi biru
+    padding: 16,
+    borderRadius: 4,
+    marginBottom: 16,
+    alignItems: 'center',
+    flexDirection: 'row', // Mengatur tata letak tombol Another Button dan ikon menjadi sejajar
+  },
+  anotherButtonText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginLeft: 8,
+  },
 });
 
 export default styles;
