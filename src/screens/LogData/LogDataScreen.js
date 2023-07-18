@@ -205,21 +205,27 @@ export default function LogData(props) {
   };
 
   return (
-    <FlatList
-      vertical
-      showsVerticalScrollIndicator={false}
-      data={filteredLogData}
-      renderItem={renderItem}
-      keyExtractor={(item, index) => item.timestamp + '-' + item.action + '-' + index}
-      refreshControl={
-        <RefreshControl
-          refreshing={refreshing}
-          onRefresh={onRefresh}
+    <>
+      {filteredLogData.length === 0 ? (
+        <Text>Loading...</Text>
+      ) : (
+        <FlatList
+          vertical
+          showsVerticalScrollIndicator={false}
+          data={filteredLogData}
+          renderItem={renderItem}
+          keyExtractor={(item, index) => item.timestamp + '-' + item.action + '-' + index}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+            />
+          }
+          onEndReached={loadMoreData}
+          onEndReachedThreshold={0.1}
+          ListFooterComponent={isLoading && <ActivityIndicator size="small" />}
         />
-      }
-      onEndReached={loadMoreData}
-      onEndReachedThreshold={0.1}
-      ListFooterComponent={isLoading && <ActivityIndicator size="small" />}
-    />
+      )}
+    </>
   );
 }

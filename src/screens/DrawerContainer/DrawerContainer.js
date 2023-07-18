@@ -100,15 +100,6 @@ export default function DrawerContainer(props) {
                 navigation.closeDrawer();
               }}
             />
-            
-            <MenuButton
-             title="SUPPLIERS"
-             source={require("../../../assets/icons/suppliers.png")}
-             onPress={() => {
-               navigation.navigate("Suppliers");
-               navigation.closeDrawer();
-             }}
-            />
             <MenuButton
               title="ADD STOCK"
               source={require("../../../assets/icons/addstock.png")}
@@ -118,18 +109,26 @@ export default function DrawerContainer(props) {
               }}
             />
             <MenuButton
-              title="ADD SUPPLIER"
-              source={require("../../../assets/icons/addsupplier.png")}
+              title="TAKE STOCK"
+              source={require("../../../assets/icons/take.png")}
               onPress={() => {
-                navigation.navigate("Add Supplier");
+                navigation.navigate("Take");
                 navigation.closeDrawer();
               }}
             />
             <MenuButton
-              title="TAKE"
-              source={require("../../../assets/icons/take.png")}
+             title="SUPPLIERS"
+             source={require("../../../assets/icons/suppliers.png")}
+             onPress={() => {
+               navigation.navigate("Suppliers");
+               navigation.closeDrawer();
+             }}
+            />
+            <MenuButton
+              title="ADD SUPPLIER"
+              source={require("../../../assets/icons/addsupplier.png")}
               onPress={() => {
-                navigation.navigate("Take");
+                navigation.navigate("Add Supplier");
                 navigation.closeDrawer();
               }}
             />

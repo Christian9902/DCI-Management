@@ -153,18 +153,24 @@ export default function AddStockScreen(props) {
   );
 
   return (
-    <FlatList
-      vertical
-      showsVerticalScrollIndicator={false}
-      data={namaSupplierRekomendasi}
-      renderItem={renderItem}
-      keyExtractor={(item, index) => item.NamaSupplier + '-' + index}
-      refreshControl={
-        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-      }
-      onEndReached={loadMoreData}
-      onEndReachedThreshold={0.1}
-      ListFooterComponent={isLoading && <ActivityIndicator size="small" />}
-    />
+    <>
+      {namaSupplierRekomendasi.length === 0 ? (
+        <Text>Loading...</Text>
+      ) : (
+        <FlatList
+          vertical
+          showsVerticalScrollIndicator={false}
+          data={namaSupplierRekomendasi}
+          renderItem={renderItem}
+          keyExtractor={(item, index) => item.NamaSupplier + '-' + index}
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          }
+          onEndReached={loadMoreData}
+          onEndReachedThreshold={0.1}
+          ListFooterComponent={isLoading && <ActivityIndicator size="small" />}
+        />
+      )}
+    </>
   );
 }

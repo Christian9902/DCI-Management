@@ -187,19 +187,25 @@ export default function StocksScreen(props) {
   };
 
   return (
-    <FlatList
-      ref={flatListRef}
-      vertical
-      showsVerticalScrollIndicator={false}
-      data={namaBarangRekomendasi}
-      renderItem={renderItem}
-      keyExtractor={(item, index) => item.namaBarang + '-' + item.namaSupplier + '-' + index}
-      onEndReached={loadMoreData}
-      onEndReachedThreshold={0.1}
-      refreshControl={
-        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-      }
-      ListFooterComponent={isLoading && <ActivityIndicator size="small" />}
-    />
+    <>
+      {namaBarangRekomendasi.length === 0 ? (
+        <Text>Loading...</Text>
+      ) : (
+        <FlatList
+          ref={flatListRef}
+          vertical
+          showsVerticalScrollIndicator={false}
+          data={namaBarangRekomendasi}
+          renderItem={renderItem}
+          keyExtractor={(item, index) => item.namaBarang + '-' + item.namaSupplier + '-' + index}
+          onEndReached={loadMoreData}
+          onEndReachedThreshold={0.1}
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          }
+          ListFooterComponent={isLoading && <ActivityIndicator size="small" />}
+        />
+      )}
+    </>
   );
 }
