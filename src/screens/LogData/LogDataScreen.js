@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useLayoutEffect } from 'react';
-import { View, Text, TouchableOpacity, TextInput, FlatList, Image, Pressable } from 'react-native';
+import React, { useState, useEffect, useLayoutEffect, useCallback } from 'react';
+import { View, Text, TouchableOpacity, TextInput, FlatList, Image, RefreshControl, Pressable, ToastAndroid } from 'react-native';
 import styles from './styles';
 import MenuImage from "../../components/MenuImage/MenuImage";
 import { db } from '../Login/LoginScreen';
@@ -7,8 +7,11 @@ import { collection, getDocs } from 'firebase/firestore';
 
 export default function LogData(props) {
   const [logData, setLogData] = useState([]);
-  const [filteredLogData, setfilteredLogData] = useState([]);
+  const [filteredLogData, setFilteredLogData] = useState([]);
   const [text, setText] = useState('');
+  const [refreshing, setRefreshing] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [isLoading, setIsLoading] = useState(false);
 
   const { navigation } = props;
 
@@ -39,10 +42,12 @@ export default function LogData(props) {
     });
   }, [text]);
 
-  const fetchLogData = async () => {
+  const fetchLogData = useCallback(async () => {
     try {
-      const logdataSnapshot = await getDocs(collection(db, 'Log Data'));
-      const userSnapshot = await getDocs(collection(db, 'Users'));
+      const [logdataSnapshot, userSnapshot] = await Promise.all([
+        getDocs(collection(db, 'Log Data')),
+        getDocs(collection(db, 'Users')),
+      ]);
       const logData = [];
       logdataSnapshot.forEach((doc) => {
         const data = doc.data();
@@ -60,26 +65,26 @@ export default function LogData(props) {
           });
         }
       });
-  
+
       logData.sort((a, b) => {
         const timeA = timeToArray(a.Time);
         const timeB = timeToArray(b.Time);
-  
+
         for (let i = 0; i < timeA.length; i++) {
           if (timeA[i] !== timeB[i]) {
             return parseInt(timeB[i]) - parseInt(timeA[i]);
           }
         }
-  
+
         return 0;
       });
-  
+
       setLogData(logData);
-      setfilteredLogData(logData);
+      setFilteredLogData(logData.slice(0, 10));
     } catch (error) {
       console.log('Terjadi kesalahan saat mengambil data dari Firebase:', error);
     }
-  };    
+  }, []);
 
   useEffect(() => {
     fetchLogData();
@@ -91,7 +96,7 @@ export default function LogData(props) {
     let hour = '';
     let minute = '';
     let second = '';
-  
+
     if (yearOrTimeString && yearOrTimeString.includes(', ')) {
       const [yearString, timeString] = yearOrTimeString.split(', ');
       year = yearString;
@@ -99,7 +104,7 @@ export default function LogData(props) {
     } else if (yearOrTimeString) {
       year = yearOrTimeString;
     }
-  
+
     const filterTimestamp = [
       day || '',
       month || '',
@@ -108,22 +113,22 @@ export default function LogData(props) {
       minute || '',
       second || '',
     ];
-  
+
     return filterTimestamp;
-  };  
+  };
 
   const handleSearch = (x) => {
     setText(x);
-  
+
     if (x === '') {
-      setfilteredLogData(logData);
+      setFilteredLogData(logData.slice(0, 10));
     } else {
       const filterText = x.toLowerCase().trim();
       const filterItems = filterText.split(';').map((item) => item.trim());
       const filterAction = filterItems[0] ? filterItems[0].toLowerCase() : '';
       const filterTimestamp = filterItems[1] ? timeToArray(filterItems[1]) : [];
       const filterUserID = filterItems[2] ? filterItems[2].toLowerCase() : '';
-  
+
       const filteredData = logData.filter((item) => {
         if (filterAction !== '' && !item.Action.toLowerCase().includes(filterAction)) {
           return false;
@@ -142,10 +147,25 @@ export default function LogData(props) {
         }
         return true;
       });
-  
-      setfilteredLogData(filteredData);
+
+      setFilteredLogData(filteredData.slice(0, 10));
     }
-  };  
+  };
+
+  const loadMoreData = () => {
+    if (isLoading) {
+      return;
+    }
+
+    setIsLoading(true);
+    const nextPage = currentPage + 1;
+    const startIndex = 10 * (nextPage - 1);
+    const endIndex = startIndex + 10;
+
+    setFilteredLogData((prevData) => [...prevData, ...logData.slice(startIndex, endIndex)]);
+    setCurrentPage(nextPage);
+    setIsLoading(false);
+  };
 
   const onPressItem = (item) => {
     navigation.navigate("Home");
@@ -171,13 +191,41 @@ export default function LogData(props) {
     </TouchableOpacity>
   );
 
+  const onRefresh = async () => {
+    setRefreshing(true);
+    ToastAndroid.show('Refreshing...', ToastAndroid.SHORT);
+
+    try {
+      await fetchLogData();
+    } catch (error) {
+      console.log('Terjadi kesalahan saat merefresh data:', error);
+    }
+
+    setRefreshing(false);
+  };
+
   return (
-    <FlatList
-      vertical
-      showsVerticalScrollIndicator={false}
-      data={filteredLogData}
-      renderItem={renderItem}
-      keyExtractor={(item, index) => item.timestamp + '-' + item.action + '-' + index}
-    />
+    <>
+      {filteredLogData.length === 0 ? (
+        <Text>Loading...</Text>
+      ) : (
+        <FlatList
+          vertical
+          showsVerticalScrollIndicator={false}
+          data={filteredLogData}
+          renderItem={renderItem}
+          keyExtractor={(item, index) => item.timestamp + '-' + item.action + '-' + index}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+            />
+          }
+          onEndReached={loadMoreData}
+          onEndReachedThreshold={0.1}
+          ListFooterComponent={isLoading && <ActivityIndicator size="small" />}
+        />
+      )}
+    </>
   );
 }

@@ -1,15 +1,17 @@
 import React, { useState, useLayoutEffect, useEffect } from 'react';
-import { View, Text, TouchableOpacity, TextInput, FlatList, Image, Pressable } from 'react-native';
+import { View, Text, TouchableOpacity, TextInput, FlatList, Image, Pressable, RefreshControl, ActivityIndicator, ToastAndroid } from 'react-native';
 import styles from './styles';
 import MenuImage from "../../components/MenuImage/MenuImage";
 import { db } from '../Login/LoginScreen';
 import { collection, getDocs } from 'firebase/firestore';
 
-
 export default function AddStockScreen(props) {
-  const [nama, setNama] = useState('');  
+  const [nama, setNama] = useState('');
   const [namaClientRekomendasi, setNamaClientRekomendasi] = useState([]);
   const [clientData, setClientData] = useState([]);
+  const [refreshing, setRefreshing] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [isLoading, setIsLoading] = useState(false);
 
   const { navigation } = props;
 
@@ -31,7 +33,7 @@ export default function AddStockScreen(props) {
             value={nama}
             placeholder='Nama Client / PT Client'
           />
-          <Pressable onPress={() => {setNama(""), handleNamaChange("")}}>
+          <Pressable onPress={() => { setNama(""), handleNamaChange("") }}>
             <Image style={styles.searchIcon} source={require("../../../assets/icons/close.png")} />
           </Pressable>
         </View>
@@ -44,7 +46,7 @@ export default function AddStockScreen(props) {
     try {
       const clientSnapshot = await getDocs(collection(db, 'Client'));
       const userSnapshot = await getDocs(collection(db, 'Users'));
-  
+
       const clientArray = [];
       clientSnapshot.forEach((doc) => {
         const data = doc.data();
@@ -59,10 +61,10 @@ export default function AddStockScreen(props) {
         const Note = data?.Note;
         const Quo = data?.QuoSubmitted;
         const Job = data?.JobPosition;
-  
+
         const user = userSnapshot.docs.find((doc) => doc.id === data?.PIC);
         const PIC = user ? user.data().Nama : '';
-  
+
         if (NamaClient) {
           clientArray.push({
             Ref,
@@ -80,30 +82,30 @@ export default function AddStockScreen(props) {
           });
         }
       });
-  
+
       clientArray.sort((a, b) => {
         const clientNameA = a.NamaClient.toLowerCase();
         const clientNameB = b.NamaClient.toLowerCase();
         const clientPTNameA = a.NamaPT.split('- ')[1]?.toLowerCase();
         const clientPTNameB = b.NamaPT.split('- ')[1]?.toLowerCase();
-  
+
         if (clientNameA < clientNameB) return -1;
         if (clientNameA > clientNameB) return 1;
         if (clientPTNameA < clientPTNameB) return -1;
         if (clientPTNameA > clientPTNameB) return 1;
         return 0;
       });
-  
+
       setClientData(clientArray);
-      setNamaClientRekomendasi(clientArray);
+      setNamaClientRekomendasi(clientArray.slice(0, 10));
     } catch (error) {
       console.log('Terjadi kesalahan saat mengambil data dari Firebase:', error);
     }
-  };      
-  
+  };
+
   useEffect(() => {
     fetchClient();
-  }, []);   
+  }, []);
 
   const handleNamaChange = (text) => {
     setNama(text);
@@ -115,16 +117,16 @@ export default function AddStockScreen(props) {
         const namaClient = item.NamaClient.toLowerCase();
         const namaPT = item.NamaPT.toLowerCase();
         const filterText = text.toLowerCase().trim();
-    
+
         return namaClient.includes(filterText) || namaPT.includes(filterText);
       });
     }
-    setNamaClientRekomendasi(filteredClient);
-  };          
+    setNamaClientRekomendasi(filteredClient.slice(0, 10));
+  };
 
   const onPressItem = (item) => {
     navigation.navigate("Client Update", { clientData: item, clientDataRef: item.id });
-  };  
+  };
 
   const renderItem = ({ item }) => (
     <TouchableOpacity onPress={() => onPressItem(item)}>
@@ -140,13 +142,53 @@ export default function AddStockScreen(props) {
     </TouchableOpacity>
   );
 
+  const onRefresh = async () => {
+    setRefreshing(true);
+    ToastAndroid.show('Refreshing...', ToastAndroid.SHORT);
+
+    try {
+      await fetchClient();
+    } catch (error) {
+      console.log('Terjadi kesalahan saat merefresh data:', error);
+    }
+
+    setRefreshing(false);
+  };
+
+  const loadMoreData = () => {
+    if (isLoading) {
+      return;
+    }
+
+    setIsLoading(true);
+    const nextPage = currentPage + 1;
+    const startIndex = 10 * (nextPage - 1);
+    const endIndex = startIndex + 10;
+
+    setNamaClientRekomendasi((prevData) => [...prevData, ...clientData.slice(startIndex, endIndex)]);
+    setCurrentPage(nextPage);
+    setIsLoading(false);
+  };
+
   return (
-    <FlatList
-      vertical
-      showsVerticalScrollIndicator={false}
-      data={namaClientRekomendasi}
-      renderItem={renderItem}
-      keyExtractor={(item, index) => item.NamaClient + '-' + item.NamaPT + '-' + index}
-    />
+    <>
+      {namaClientRekomendasi.length === 0 ? (
+        <Text>Loading...</Text>
+      ) : (
+        <FlatList
+          vertical
+          showsVerticalScrollIndicator={false}
+          data={namaClientRekomendasi}
+          renderItem={renderItem}
+          keyExtractor={(item, index) => item.NamaClient + '-' + item.NamaPT + '-' + index}
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          }
+          onEndReached={loadMoreData}
+          onEndReachedThreshold={0.1}
+          ListFooterComponent={isLoading && <ActivityIndicator size="small" />}
+        />
+      )}
+    </>
   );
 }
