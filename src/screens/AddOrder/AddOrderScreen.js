@@ -10,7 +10,9 @@ import { updateDoc, addDoc, collection, getDocs, query, where } from 'firebase/f
 // Component
 export default function AddOrderScreen(props) {
   // State variables
-  const [nama, setNama] = useState('');
+  const [namaProject, setNamaProject] = useState('');
+  const [namaBarang, setNamaBarang] = useState('');
+  const [biaya, setBiaya] = useState('');
   const [supplier, setSupplier] = useState('');
   const [jumlah, setJumlah] = useState(0);
   const [keterangan, setKeterangan] = useState('');
@@ -69,7 +71,7 @@ export default function AddOrderScreen(props) {
             />
             <Text style={styles.uploadButtonText}></Text>
           </TouchableOpacity>
-          <TouchableOpacity onPress={() => navigation.navigate('ScreenName')} style={styles.iconButton}>
+          <TouchableOpacity onPress={() => navigation.navigate('HomeScreen')} style={styles.iconButton}>
             <Image
               style={styles.iconButtonIcon}
               source={require('../../../assets/icons/another.png')} // Replace 'your_icon.png' with the actual icon image
@@ -80,9 +82,19 @@ export default function AddOrderScreen(props) {
     });
   }, []);
 
-  // Function to handle Nama change
-  const handleNamaChange = (text) => {
-    setNama(text);
+  // Function to handle Nama Project change
+  const handleNamaProjectChange = (text) => {
+    setNamaProject(text);
+  };
+
+  // Function to handle Nama Barang change
+  const handleNamaBarangChange = (text) => {
+    setNamaBarang(text);
+  };
+
+  // Function to handle Biaya change
+  const handleBiayaChange = (text) => {
+    setBiaya(text);
   };
 
   // Function to handle Supplier change
@@ -111,12 +123,18 @@ export default function AddOrderScreen(props) {
 
   // Function to handle adding stock
   const handleAddStock = () => {
-    // Add your implementation for adding stock here
+    // Implementasi untuk menambahkan stok
+    // Anda dapat menambahkan logika atau pemanggilan API yang sesuai di sini
+    console.log("Stok ditambahkan");
+    navigation.navigate('Home'); // Navigasi ke layar beranda setelah menambahkan stok
   };
 
   // Function to handle cancel
   const handleCancel = () => {
-    // Add your implementation for cancel here
+    // Implementasi untuk membatalkan
+    // Anda dapat menambahkan logika atau navigasi yang sesuai di sini
+    console.log("Dibatalkan");
+    navigation.navigate('Home'); // Navigasi ke layar beranda setelah membatalkan
   };
 
   // Function to render Nama Barang rekomendasi
@@ -171,15 +189,15 @@ export default function AddOrderScreen(props) {
     setShowMockupPicker(false);
   };
 
-  // Return the JSX content
+  // JSX content
   return (
     <ScrollView contentContainerStyle={styles.scrollViewContentContainer}>
       <View style={styles.container}>
         <TextInput
           style={styles.input}
           placeholder="Nama Project"
-          value={nama}
-          onChangeText={handleNamaChange}
+          value={namaProject}
+          onChangeText={handleNamaProjectChange}
           autoCompleteType="off"
           autoCorrect={false}
           dataDetectorTypes="none"
@@ -190,8 +208,8 @@ export default function AddOrderScreen(props) {
         <TextInput
           style={styles.input}
           placeholder="Nama Barang"
-          value={nama}
-          onChangeText={handleNamaChange}
+          value={namaBarang}
+          onChangeText={handleNamaBarangChange}
           autoCompleteType="off"
           autoCorrect={false}
           dataDetectorTypes="none"
@@ -239,8 +257,8 @@ export default function AddOrderScreen(props) {
         <TextInput
           style={styles.input}
           placeholder="Biaya"
-          value={nama}
-          onChangeText={handleNamaChange}
+          value={biaya}
+          onChangeText={handleBiayaChange}
           autoCompleteType="off"
           autoCorrect={false}
           dataDetectorTypes="none"
