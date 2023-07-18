@@ -87,9 +87,8 @@ const LoginScreen = () => {
           source={require('../../../assets/icon.png')}
           style={styles.logo}
         />
-        <Text style={styles.logoName}>PT Dapoer Creative Indonesia</Text>
+        <Text style={styles.logoName}>Dapoer Creative Indonesia</Text>
       </View>
-
       <View style={styles.inputContainer}>
         <TextInput
           placeholder="Username"
@@ -105,7 +104,6 @@ const LoginScreen = () => {
           secureTextEntry
         />
       </View>
-
       <View style={styles.buttonContainer}>
         <TouchableOpacity
           onPress={handleLogin}

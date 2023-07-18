@@ -77,7 +77,7 @@ export default function ClientUpdateScreen({ navigation, route }) {
       QuoSubmitted: quoSubmitted,
       Note: note,
       JobPosition: jobPosition,
-      PIC: user.uid,
+      PIC: clientData.PIC,
     };
   
     try {

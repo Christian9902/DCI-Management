@@ -5,13 +5,14 @@ import MenuImage from "../../components/MenuImage/MenuImage";
 import { db } from '../Login/LoginScreen';
 import { collection, getDocs } from 'firebase/firestore';
 
-export default function AddStockScreen(props) {
+export default function ClientsScreen(props) {
   const [nama, setNama] = useState('');
   const [namaClientRekomendasi, setNamaClientRekomendasi] = useState([]);
   const [clientData, setClientData] = useState([]);
   const [refreshing, setRefreshing] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
+  const [expandedItems, setExpandedItems] = useState([]);
 
   const { navigation } = props;
 
@@ -33,7 +34,7 @@ export default function AddStockScreen(props) {
             value={nama}
             placeholder='Nama Client / PT Client'
           />
-          <Pressable onPress={() => { setNama(""), handleNamaChange("") }}>
+          <Pressable onPress={() => { setNama(""); handleNamaChange("") }}>
             <Image style={styles.searchIcon} source={require("../../../assets/icons/close.png")} />
           </Pressable>
         </View>
@@ -79,6 +80,7 @@ export default function AddStockScreen(props) {
             Note,
             Quo,
             Job,
+            isExpanded: isItemExpanded(Ref),
           });
         }
       });
@@ -128,16 +130,35 @@ export default function AddStockScreen(props) {
     navigation.navigate("Client Update", { clientData: item, clientDataRef: item.id });
   };
 
+  const toggleExpanded = (itemId) => {
+    setExpandedItems((prevExpandedItems) => {
+      if (prevExpandedItems.includes(itemId)) {
+        return prevExpandedItems.filter((id) => id !== itemId);
+      } else {
+        return [...prevExpandedItems, itemId];
+      }
+    });
+  };
+
+  const isItemExpanded = (itemId) => expandedItems.includes(itemId);
+
   const renderItem = ({ item }) => (
     <TouchableOpacity onPress={() => onPressItem(item)}>
       <View style={styles.listItem}>
         <View style={styles.itemContainer}>
           <Text style={styles.title}>{item.NamaClient}</Text>
           <Text style={styles.category}>{item.NamaPT}</Text>
-          <Text>-  -  -  -  -  -  -  -  -  -  -  -  -  -  -</Text>
-          <Text style={styles.category}>Status: {item.Progress}</Text>
-          <Text style={styles.category}>PIC: {item.PIC}</Text>
+          {isItemExpanded(item.Ref) && (
+            <>
+              <Text style={styles.separator}></Text>
+              <Text style={styles.category}>Status: {item.Progress}</Text>
+              <Text style={styles.category}>PIC: {item.PIC}</Text>
+            </>
+          )}
         </View>
+        <TouchableOpacity onPress={() => toggleExpanded(item.Ref)}>
+          <Text style={styles.expandButton}>{isItemExpanded(item.Ref) ? '▲' : '▼'}</Text>
+        </TouchableOpacity>
       </View>
     </TouchableOpacity>
   );

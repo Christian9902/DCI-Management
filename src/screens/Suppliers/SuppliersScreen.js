@@ -145,7 +145,7 @@ export default function AddStockScreen(props) {
         <View style={styles.itemContainer}>
           <Text style={styles.title}>{item.NamaSupplier}</Text>
           <Text style={styles.category}>{item.NamaPT}</Text>
-          <Text style={styles.category}>-  -  -  -  -  -  -  -  -  -  -  -  -  -  -</Text>
+          <View style={styles.separator} />
           <Text style={styles.category}>{item.Note}</Text>
         </View>
       </View>

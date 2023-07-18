@@ -12,6 +12,7 @@ export default function LogData(props) {
   const [refreshing, setRefreshing] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
+  const [expandedItems, setExpandedItems] = useState([]);
 
   const { navigation } = props;
 
@@ -48,23 +49,27 @@ export default function LogData(props) {
         getDocs(collection(db, 'Log Data')),
         getDocs(collection(db, 'Users')),
       ]);
-      const logData = [];
-      logdataSnapshot.forEach((doc) => {
+      const logData = logdataSnapshot.docs.map((doc) => {
         const data = doc.data();
+        const logID = doc.id;
         const action = data?.action;
         const refID = data?.refID;
         const timestamp = data?.timestamp;
         const userRef = userSnapshot.docs.find((doc) => doc.id === data?.userID);
         const user = userRef ? userRef.data().Nama : '';
         if (action) {
-          logData.push({
+          return {
+            id: logID,
             Action: action,
             RefID: refID,
             Time: timestamp,
             User: user,
-          });
+            isExpanded: isItemExpanded(logID),
+          };
+        } else {
+          return null;
         }
-      });
+      }).filter((item) => item !== null);
 
       logData.sort((a, b) => {
         const timeA = timeToArray(a.Time);
@@ -84,7 +89,7 @@ export default function LogData(props) {
     } catch (error) {
       console.log('Terjadi kesalahan saat mengambil data dari Firebase:', error);
     }
-  }, []);
+  }, [isItemExpanded]);
 
   useEffect(() => {
     fetchLogData();
@@ -171,6 +176,18 @@ export default function LogData(props) {
     navigation.navigate("Home");
   };
 
+  const toggleExpanded = (itemId) => {
+    setExpandedItems((prevExpandedItems) => {
+      if (prevExpandedItems.includes(itemId)) {
+        return prevExpandedItems.filter((id) => id !== itemId);
+      } else {
+        return [...prevExpandedItems, itemId];
+      }
+    });
+  };
+
+  const isItemExpanded = (itemId) => expandedItems.includes(itemId);
+
   const renderItem = ({ item }) => (
     <TouchableOpacity onPress={() => onPressItem(item)}>
       <View style={styles.listItem}>
@@ -179,14 +196,24 @@ export default function LogData(props) {
           <View style={styles.categoryContainer}>
             <Text style={styles.category}>{item.Time}</Text>
           </View>
-          <Text>-  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -</Text>
-          <View style={styles.categoryContainer}>
-            <Text style={styles.category}>RefID: {item.RefID}</Text>
-          </View>
-          <View style={styles.categoryContainer}>
-            <Text style={styles.category}>User: {item.User}</Text>
-          </View>
+          {isItemExpanded(item.id) && (
+            <>
+              <View style={styles.separator} />
+              <View style={styles.categoryContainer}>
+                <Text style={styles.category}>LogID: {item.id}</Text>
+              </View>
+              <View style={styles.categoryContainer}>
+                <Text style={styles.category}>RefID: {item.RefID}</Text>
+              </View>
+              <View style={styles.categoryContainer}>
+                <Text style={styles.category}>User: {item.User}</Text>
+              </View>
+            </>
+          )}
         </View>
+        <TouchableOpacity onPress={() => toggleExpanded(item.id)}>
+          <Text style={styles.expandButton}>{isItemExpanded(item.id) ? '▲' : '▼'}</Text>
+        </TouchableOpacity>
       </View>
     </TouchableOpacity>
   );

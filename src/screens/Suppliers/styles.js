@@ -61,6 +61,11 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: "gray",
   },
+  separator: {
+    height: 1,
+    backgroundColor: '#000',
+    marginTop: 5,
+  },
 });
 
 export default styles;
