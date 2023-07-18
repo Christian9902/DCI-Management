@@ -61,6 +61,16 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: "gray",
   },
+  separator: {
+    height: 1,
+    backgroundColor: '#000',
+    marginTop: 5,
+  },
+  expandButton: {
+    fontSize: 18,
+    marginHorizontal: 10,
+    paddingVertical: 10,
+  },
 });
 
 export default styles;

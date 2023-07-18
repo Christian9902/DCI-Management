@@ -13,7 +13,7 @@ const styles = StyleSheet.create({
     logo: {
         width: '100%',
         height: undefined,
-        aspectRatio: 1,
+        aspectRatio: 1.15,
         resizeMode: 'contain',
     },
     logoName: {
@@ -22,7 +22,7 @@ const styles = StyleSheet.create({
         marginTop: 10,
     },
     inputContainer: {
-        width: '80%'
+        width: '85%'
     },
     input: {
         backgroundColor: 'white',
@@ -35,7 +35,7 @@ const styles = StyleSheet.create({
         width: '60%',
         justifyContent: 'center',
         alignItems: 'center',
-        marginTop: 40,
+        marginTop: 30,
     },
     button: {
         backgroundColor: '#000',

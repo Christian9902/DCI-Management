@@ -1,10 +1,9 @@
 import React, { useState } from "react";
-import { View, Alert, Text } from "react-native";
+import { View } from "react-native";
 import PropTypes from "prop-types";
 import styles from "./styles";
 import MenuButton from "../../components/MenuButton/MenuButton";
-import { doc, updateDoc } from 'firebase/firestore';
-import { auth, db } from "../Login/LoginScreen";
+import { auth } from "../Login/LoginScreen";
 
 export default function DrawerContainer(props) {
   const [isProductionGroupOpen, setIsProductionGroupOpen] = useState(false);
