@@ -1,5 +1,5 @@
 import React, { useState, useLayoutEffect, useEffect } from 'react';
-import { View, Text, TouchableOpacity, TextInput, FlatList, Image, Pressable } from 'react-native';
+import { View, Text, TouchableOpacity, TextInput, FlatList, Image, Pressable, RefreshControl, ToastAndroid } from 'react-native';
 import styles from './styles';
 import MenuImage from "../../components/MenuImage/MenuImage";
 import { db } from '../Login/LoginScreen';
@@ -10,6 +10,9 @@ export default function AddStockScreen(props) {
   const [nama, setNama] = useState('');  
   const [namaSupplierRekomendasi, setNamaSupplierRekomendasi] = useState([]);
   const [supplierData, setSupplierData] = useState([]);
+  const [refreshing, setRefreshing] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
 
   const { navigation } = props;
 
@@ -77,7 +80,7 @@ export default function AddStockScreen(props) {
       });
   
       setSupplierData(supplierArray);
-      setNamaSupplierRekomendasi(supplierArray);
+      setNamaSupplierRekomendasi(supplierArray.slice(0, 10));
     } catch (error) {
       console.log('Terjadi kesalahan saat mengambil data dari Firebase:', error);
     }
@@ -101,12 +104,40 @@ export default function AddStockScreen(props) {
         return namaSupplier.includes(filterText) || namaPTSupplier.includes(filterText);
       });
     }
-    setNamaSupplierRekomendasi(filteredSupplier);
+    setNamaSupplierRekomendasi(filteredSupplier.slice(0, 10));
   };          
 
   const onPressItem = (item) => {
     navigation.navigate("Supplier Update", { supplierData: item, supplierDataRef: item.id });
-  };  
+  };
+  
+  const onRefresh = async () => {
+    setRefreshing(true);
+    ToastAndroid.show('Refreshing...', ToastAndroid.SHORT);
+
+    try {
+      await fetchSupplier();
+    } catch (error) {
+      console.log('Terjadi kesalahan saat merefresh data:', error);
+    }
+
+    setRefreshing(false);
+  };
+
+  const loadMoreData = () => {
+    if (isLoading) {
+      return;
+    }
+
+    setIsLoading(true);
+    const nextPage = currentPage + 1;
+    const startIndex = 10 * (nextPage - 1);
+    const endIndex = startIndex + 10;
+
+    setNamaSupplierRekomendasi((prevData) => [...prevData, ...supplierData.slice(startIndex, endIndex)]);
+    setCurrentPage(nextPage);
+    setIsLoading(false);
+  };
 
   const renderItem = ({ item }) => (
     <TouchableOpacity onPress={() => onPressItem(item)}>
@@ -128,6 +159,12 @@ export default function AddStockScreen(props) {
       data={namaSupplierRekomendasi}
       renderItem={renderItem}
       keyExtractor={(item, index) => item.NamaSupplier + '-' + index}
+      refreshControl={
+        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+      }
+      onEndReached={loadMoreData}
+      onEndReachedThreshold={0.1}
+      ListFooterComponent={isLoading && <ActivityIndicator size="small" />}
     />
   );
 }
