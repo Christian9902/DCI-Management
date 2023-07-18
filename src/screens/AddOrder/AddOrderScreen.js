@@ -16,7 +16,6 @@ export default function AddOrderScreen(props) {
   const [supplier, setSupplier] = useState('');
   const [jumlah, setJumlah] = useState(0);
   const [keterangan, setKeterangan] = useState('');
-  const [barangBaru, setBarangBaru] = useState(true);
   const [isNamaActive, setIsNamaActive] = useState(false);
   const [isSupplierActive, setIsSupplierActive] = useState(false);
   const [namaBarangRekomendasi, setNamaBarangRekomendasi] = useState([]);
@@ -191,8 +190,8 @@ export default function AddOrderScreen(props) {
 
   // JSX content
   return (
-    <ScrollView contentContainerStyle={styles.scrollViewContentContainer}>
-      <View style={styles.container}>
+    <View style={styles.container}>
+      <ScrollView contentContainerStyle={styles.scrollViewContentContainer}>
         <TextInput
           style={styles.input}
           placeholder="Nama Project"
@@ -275,15 +274,7 @@ export default function AddOrderScreen(props) {
             keyboardShouldPersistTaps="always"
           />
         )}
-        <TouchableOpacity
-          style={styles.checkboxContainer}
-          onPress={() => {
-            setBarangBaru(!barangBaru);
-          }}
-        >
-          <Text style={styles.checkboxText}>Barang Baru?</Text>
-          <Text style={styles.checkboxIcon}>{barangBaru ? '✓' : ''}</Text>
-        </TouchableOpacity>
+        
         <View style={styles.jumlahContainer}>
           <Text style={styles.jumlahText}>Jumlah</Text>
           <View style={styles.jumlahContainer2}>
@@ -363,13 +354,16 @@ export default function AddOrderScreen(props) {
             ))}
           </View>
         )}
-        <TouchableOpacity style={styles.addButton} onPress={handleAddStock}>
-          <Text style={styles.addButtonText}>Add Stock</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.cancelButton} onPress={handleCancel}>
-          <Text style={styles.cancelButtonText}>Cancel</Text>
-        </TouchableOpacity>
-      </View>
-    </ScrollView>
+      </ScrollView>
+
+      {/* Tombol Add Stock */}
+      <TouchableOpacity style={styles.addButton} onPress={handleAddStock}>
+        <Text style={styles.addButtonText}>Add Stock</Text>
+      </TouchableOpacity>
+      {/* Tombol Cancel */}
+      <TouchableOpacity style={styles.cancelButton} onPress={handleCancel}>
+        <Text style={styles.cancelButtonText}>Cancel</Text>
+      </TouchableOpacity>
+    </View>
   );
 }
