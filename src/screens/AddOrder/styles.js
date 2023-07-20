@@ -157,7 +157,7 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
   saveButtonModal: {
-    backgroundColor: '#4CAF50',
+    backgroundColor: '#000',
     paddingVertical: 10,
     paddingHorizontal: 20,
     borderRadius: 5,
@@ -168,17 +168,11 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
   },
-  cancelButtonModal: {
-    backgroundColor: '#D32F2F',
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    borderRadius: 5,
-    marginHorizontal: 10,
-  },
-  cancelButtonTextModal: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: 'bold',
+  supplierTextActive: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'flex-start',
+    backgroundColor: '#ccc',
   },
   supplierText: {
     flexDirection: 'row',

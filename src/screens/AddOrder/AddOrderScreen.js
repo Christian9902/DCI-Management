@@ -143,30 +143,67 @@ export default function AddOrderScreen(props) {
         const ref = doc.id;
         const namaSupplier = data?.NamaSupplier;
         const PTSupplier = data?.NamaPT;
-
+  
         supplierArray.push({
           ref,
           namaSupplier,
           PTSupplier,
-        })
+          selected: false,
+        });
       });
-      supplierArray.sort((a, b) => {
-        const supplierNameA = a.namasupplier;
-        const supplierNameB = b.namasupplier;
-        const supplierPTNameA = a.PTSupplier;
-        const supplierPTNameB = b.PTSupplier;
-
-        if (supplierNameA < supplierNameB) return -1;
-        if (supplierNameA > supplierNameB) return 1;
-        if (supplierPTNameA < supplierPTNameB) return -1;
-        if (supplierPTNameA > supplierPTNameB) return 1;
-        return 0;
-      });
-      setSupplierList(supplierArray);
+  
+      const sortedSupplierArray = sortSupplierArray(supplierArray);
+      setSupplierList(sortedSupplierArray);
     } catch (error) {
       console.log('Terjadi kesalahan saat mengambil data dari Firebase:', error);
     }
+  };  
+
+  const handleSelectVendor = (selectedItem) => {
+    const updatedSupplierList = supplierList.map((item) => ({
+      ...item,
+      selected: item.ref === selectedItem.ref ? !item.selected : item.selected,
+    }));
+  
+    const selectedVendors = updatedSupplierList.filter((item) => item.selected);
+    const unselectedVendors = updatedSupplierList.filter((item) => !item.selected);
+  
+    const sortedUnselectedVendors = sortSupplierArray(unselectedVendors);
+  
+    const sortedSupplierList = [...selectedVendors, ...sortedUnselectedVendors];
+  
+    setSupplierList(sortedSupplierList);
+    setSuppliers(selectedVendors);
+  };  
+
+  const sortSupplierArray = (supplierArray) => {
+    supplierArray.sort((a, b) => {
+      const supplierPTNameA = a.PTSupplier.toLowerCase();
+      const supplierPTNameB = b.PTSupplier.toLowerCase();
+      const supplierNameA = a.namaSupplier.toLowerCase();
+      const supplierNameB = b.namaSupplier.toLowerCase();
+  
+      if (supplierPTNameA < supplierPTNameB) return -1;
+      if (supplierPTNameA > supplierPTNameB) return 1;
+      if (supplierNameA < supplierNameB) return -1;
+      if (supplierNameA > supplierNameB) return 1;
+      return 0;
+    });
+    return supplierArray;
   };
+  
+  const handleRemoveSupplier = (index) => {
+    const updatedSuppliers = [...suppliers];
+    updatedSuppliers.splice(index, 1);
+    setSuppliers(updatedSuppliers);
+    
+    const updatedSupplierList = supplierList.map((item) => ({
+      ...item,
+      selected: updatedSuppliers.some((selectedItem) => selectedItem.ref === item.ref),
+    }));
+    setSupplierList(updatedSupplierList);
+  };
+  
 
   const handleDeadline = (event, selectedDate) => {
     if (selectedDate !== undefined) {
@@ -274,10 +311,30 @@ export default function AddOrderScreen(props) {
           value={emailClient}
           onChangeText={setEmailClient}
         />
+
+        {suppliers.length > 0 && (
+          <View style={styles.attachedFilesContainer}>
+            <Text style={styles.attachedFilesTitle}>Vendor Selected:</Text>
+            {suppliers.map((supplier, index) => (
+              <View key={index} style={styles.attachedFileItem}>
+                <View>
+                  <Text style={styles.attachedFileName}>{supplier.namaSupplier}</Text>
+                  <Text style={styles.attachedFileSize}>{supplier.PTSupplier}</Text>
+                </View>
+                <TouchableOpacity onPress={() => handleRemoveSupplier(index)}>
+                  <Text style={styles.deleteButton}>X</Text>
+                </TouchableOpacity>
+              </View>
+            ))}
+          </View>
+        )}
+
         <TouchableOpacity
           style={styles.listButton}
-          onPress={() => setModalVisible(true)}
-        >
+          onPress={() => {
+            setModalVisible(true)
+            console.log(suppliers)
+        }}>
           <Text style={styles.listTitle}>Select Vendor</Text>
         </TouchableOpacity>
 
@@ -292,11 +349,13 @@ export default function AddOrderScreen(props) {
               <FlatList
                 data={supplierList}
                 renderItem={({ item }) => (
-                  <TouchableOpacity onPress={() => {
-                    console.log('Selected supplier:', item);
-                    setModalVisible(false);
-                  }}>
-                    <View style={styles.supplierText}>
+                  <TouchableOpacity onPress={() => handleSelectVendor(item)}>
+                    <View
+                      style={[
+                        styles.supplierText,
+                        item.selected && styles.supplierTextActive,
+                      ]}
+                    >
                       <Text style={styles.supplierName}>{item.namaSupplier}</Text>
                       <Text style={styles.separator}>-</Text>
                       <Text style={styles.supplierPT}>{item.PTSupplier}</Text>
@@ -308,11 +367,11 @@ export default function AddOrderScreen(props) {
                 keyboardShouldPersistTaps="always"
               />
               <View style={styles.buttonContainerModal}>
-                <TouchableOpacity style={styles.saveButtonModal} onPress={() => setModalVisible(false)}>
-                  <Text style={styles.saveButtonTextModal}>Save</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.cancelButtonModal} onPress={() => setModalVisible(false)}>
-                  <Text style={styles.cancelButtonTextModal}>Cancel</Text>
+                <TouchableOpacity
+                  style={styles.saveButtonModal}
+                  onPress={() => setModalVisible(false)}
+                >
+                  <Text style={styles.saveButtonTextModal}>SAVE</Text>
                 </TouchableOpacity>
               </View>
             </View>
