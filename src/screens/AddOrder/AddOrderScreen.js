@@ -1,5 +1,5 @@
 import React, { useState, useLayoutEffect, useEffect } from 'react';
-import { View, Text, TouchableOpacity, TextInput, FlatList, Image, ScrollView } from 'react-native';
+import { View, Text, TouchableOpacity, TextInput, FlatList, Image, ScrollView, Modal } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import * as DocumentPicker from 'expo-document-picker';
 import styles from './styles';
@@ -23,8 +23,10 @@ export default function AddOrderScreen(props) {
   
   const [clientRekomendasi, setClientRekomendasi] = useState([]);
   const [clientList, setClientList] = useState([]);
+  const [supplierList, setSupplierList] = useState([]);
   
   const [isClientActive, setIsClientActive] = useState(false);
+  const [modalVisible, setModalVisible] = useState(false);
   const [showDeadlinePicker, setShowDeadlinePicker] = useState(false);
   const [showPengirimanPicker, setShowPengirimanPicker] = useState(false);
   const [showMockupPicker, setShowMockupPicker] = useState(false);
@@ -56,6 +58,7 @@ export default function AddOrderScreen(props) {
 
   useEffect(() => {
     fetchClient();
+    fetchSupplier();
   }, []);
 
   const fetchClient = async () => {
@@ -129,6 +132,40 @@ export default function AddOrderScreen(props) {
         <Text>{item}</Text>
       </TouchableOpacity>
     );
+  };
+
+  const fetchSupplier = async () => {
+    try {
+      const supplierSnapshot = await getDocs(collection(db, 'Supplier'));
+      const supplierArray = [];
+      supplierSnapshot.forEach((doc) => {
+        const data = doc.data();
+        const ref = doc.id;
+        const namaSupplier = data?.NamaSupplier;
+        const PTSupplier = data?.NamaPT;
+
+        supplierArray.push({
+          ref,
+          namaSupplier,
+          PTSupplier,
+        })
+      });
+      supplierArray.sort((a, b) => {
+        const supplierNameA = a.namasupplier;
+        const supplierNameB = b.namasupplier;
+        const supplierPTNameA = a.PTSupplier;
+        const supplierPTNameB = b.PTSupplier;
+
+        if (supplierNameA < supplierNameB) return -1;
+        if (supplierNameA > supplierNameB) return 1;
+        if (supplierPTNameA < supplierPTNameB) return -1;
+        if (supplierPTNameA > supplierPTNameB) return 1;
+        return 0;
+      });
+      setSupplierList(supplierArray);
+    } catch (error) {
+      console.log('Terjadi kesalahan saat mengambil data dari Firebase:', error);
+    }
   };
 
   const handleDeadline = (event, selectedDate) => {
@@ -239,10 +276,49 @@ export default function AddOrderScreen(props) {
         />
         <TouchableOpacity
           style={styles.listButton}
-          onPress={() => navigation.navigate('Home')}
+          onPress={() => setModalVisible(true)}
         >
           <Text style={styles.listTitle}>Select Vendor</Text>
         </TouchableOpacity>
+
+        <Modal
+          visible={modalVisible}
+          transparent={true}
+          animationType="slide"
+          onRequestClose={() => setModalVisible(false)}
+        >
+          <View style={styles.modalBackdrop}>
+            <View style={styles.modalContent}>
+              <FlatList
+                data={supplierList}
+                renderItem={({ item }) => (
+                  <TouchableOpacity onPress={() => {
+                    console.log('Selected supplier:', item);
+                    setModalVisible(false);
+                  }}>
+                    <View style={styles.supplierText}>
+                      <Text style={styles.supplierName}>{item.namaSupplier}</Text>
+                      <Text style={styles.separator}>-</Text>
+                      <Text style={styles.supplierPT}>{item.PTSupplier}</Text>
+                    </View>
+                  </TouchableOpacity>
+                )}
+                keyExtractor={(item) => item.ref}
+                style={styles.rekomendasiContainer}
+                keyboardShouldPersistTaps="always"
+              />
+              <View style={styles.buttonContainerModal}>
+                <TouchableOpacity style={styles.saveButtonModal} onPress={() => setModalVisible(false)}>
+                  <Text style={styles.saveButtonTextModal}>Save</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.cancelButtonModal} onPress={() => setModalVisible(false)}>
+                  <Text style={styles.cancelButtonTextModal}>Cancel</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
+        </Modal>
+
         <TextInput
           style={styles.input}
           placeholder="Harga"

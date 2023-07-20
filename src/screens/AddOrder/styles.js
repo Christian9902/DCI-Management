@@ -1,6 +1,8 @@
 import { StyleSheet, Dimensions } from 'react-native';
 
-const { width } = Dimensions.get('window');
+const { width, height } = Dimensions.get('window');
+const modalHeight = height * 0.8;
+const modalWidth = width * 0.8;
 
 const styles = StyleSheet.create({
   container: {
@@ -128,6 +130,75 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
     marginVertical: 10,
+  },
+  container: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#ffffff',
+  },
+  modalBackdrop: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
+  modalContent: {
+    backgroundColor: '#fff',
+    borderRadius: 10,
+    padding: 20,
+    height: modalHeight,
+    width: modalWidth,
+    elevation: 5,
+  },
+  buttonContainerModal: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    marginTop: 20,
+  },
+  saveButtonModal: {
+    backgroundColor: '#4CAF50',
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 5,
+    marginHorizontal: 10,
+  },
+  saveButtonTextModal: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  cancelButtonModal: {
+    backgroundColor: '#D32F2F',
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 5,
+    marginHorizontal: 10,
+  },
+  cancelButtonTextModal: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  supplierText: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'flex-start',
+  },
+  supplierName: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginRight: 5,
+  },
+  separator: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#555',
+  },
+  supplierPT: {
+    fontSize: 16,
+    fontWeight: 'normal',
+    marginLeft: 5,
   },
 });
 
