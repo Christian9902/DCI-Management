@@ -1,170 +1,133 @@
-import { StyleSheet } from 'react-native';
+import { StyleSheet, Dimensions } from 'react-native';
+
+const { width } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#fff',
+  },
+  buttonContainer: {
+    padding: 5,
   },
   input: {
-    height: 40,
-    borderColor: 'gray',
+    width: 0.85 * width,
+    height: 50,
+    borderRadius: 10,
     borderWidth: 1,
-    marginBottom: 16,
+    borderColor: '#ccc',
     paddingHorizontal: 10,
-  },
-  rekomendasiContainer: {
-    maxHeight: 100,
-    borderWidth: 1,
-    borderColor: 'gray',
-    marginBottom: 16,
-    paddingHorizontal: 10,
-  },
-  checkboxContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 16,
-  },
-  checkboxText: {
-    marginLeft: 8,
-  },
-  checkboxIcon: {
-    fontWeight: 'bold',
-    fontSize: 18,
-  },
-  jumlahContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 16,
-  },
-  jumlahText: {
-    marginRight: 8,
-  },
-  jumlahContainer2: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: 'gray',
-    borderRadius: 4,
-    paddingHorizontal: 8,
-    flex: 1,
-    marginLeft: 8,
-  },
-  jumlahButton: {
-    paddingVertical: 4,
-    paddingHorizontal: 8,
-  },
-  jumlahButtonText: {
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  jumlahInput: {
-    flex: 1,
-    paddingVertical: 4,
-    textAlign: 'center',
-  },
-  deadlineContainer: {
-    marginBottom: 16,
-  },
-  deadlineButton: {
-    backgroundColor: 'lightgray',
-    padding: 10,
-    borderRadius: 4,
-    marginBottom: 8,
-  },
-  deadlineButtonText: {
-    fontSize: 16,
+    marginBottom: 5,
   },
   additionalInfoInput: {
+    width: 0.85 * width,
     height: 100,
-    borderColor: 'gray',
+    borderRadius: 10,
     borderWidth: 1,
-    marginBottom: 16,
+    borderColor: '#ccc',
     paddingHorizontal: 10,
-    paddingTop: 10,
+    paddingVertical: 7.5,
+    textAlignVertical: 'top',
+  },
+  createButton: {
+    width: 0.85 * width,
+    height: 50,
+    borderRadius: 10,
+    backgroundColor: '#000',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 'auto',
+  },
+  createButtonText: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#fff',
+  },
+  cancelButton: {
+    width: 0.85 * width,
+    height: 50,
+    borderRadius: 10,
+    backgroundColor: '#fff',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 10,
+  },
+  cancelButtonText: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#000',
+  },
+  deleteButton: {
+    fontSize: 18,
+    color: 'red',
+    marginLeft: 10,
+  },
+  rekomendasiContainer: {
+    marginBottom: 5,
+    paddingHorizontal: 20,
+    width: '95%',
+  },
+  attachIcon: {
+    width: 25,
+    height: 25,
+    tintColor: 'grey',
+    marginRight: 20,
   },
   attachedFilesContainer: {
-    marginBottom: 16,
+    marginTop: 10,
+    width: '95%',
   },
   attachedFilesTitle: {
+    fontSize: 16,
     fontWeight: 'bold',
-    marginBottom: 8,
+    marginBottom: 10,
   },
   attachedFileItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 8,
+    marginBottom: 5,
+    justifyContent: 'space-between',
   },
   attachedFileName: {
-    marginRight: 8,
+    fontSize: 14,
+    marginRight: 10,
   },
   attachedFileSize: {
-    color: 'gray',
+    fontSize: 14,
+    color: '#888',
   },
-  deleteButton: {
-    marginLeft: 8,
-    color: 'red',
-    fontWeight: 'bold',
+  deadlineContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 20,
   },
-  addButton: {
-    backgroundColor: 'black',
-    padding: 16,
-    borderRadius: 4,
-    marginBottom: 16,
+  deadlineButton: {
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 10,
+    paddingVertical: 10,
+    flex: 1,
+    marginHorizontal: 5,
+    justifyContent: 'center',
     alignItems: 'center',
   },
-  addButtonText: {
-    color: 'white',
-    fontSize: 16,
-    fontWeight: 'bold',
+  deadlineButtonText: {
+    fontSize: 14,
+    textAlign: 'center',
   },
-  cancelButton: {
-    backgroundColor: 'white',
-    padding: 16,
-    borderRadius: 4,
+  listButton: {
+    backgroundColor: "#ccc",
+    borderRadius: 20,
+    paddingHorizontal: 10,
+    marginBottom: 5,
     alignItems: 'center',
   },
-  cancelButtonText: {
-    color: 'black',
+  listTitle: {
     fontSize: 16,
     fontWeight: 'bold',
-  },
-  attachIcon: {
-    width: 24,
-    height: 24,
-    resizeMode: 'contain',
-  },
-  scrollViewContentContainer: {
-    paddingBottom: 80,
-  },
-  uploadButton: {
-    flexDirection: 'row', // Mengatur tata letak tombol dan ikon menjadi sejajar
-    alignItems: 'center',
-    marginBottom: 16,
-  },
-  uploadButtonIcon: {
-    marginRight: 8,
-    width: 24, // Mengatur lebar ikon tombol
-    height: 24, // Mengatur tinggi ikon tombol
-    resizeMode: 'contain',
-  },
-  uploadButtonText: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    marginLeft: 8,
-  },
-  anotherButton: {
-    backgroundColor: 'blue', // Ganti warna tombol Another Button menjadi biru
-    padding: 16,
-    borderRadius: 4,
-    marginBottom: 16,
-    alignItems: 'center',
-    flexDirection: 'row', // Mengatur tata letak tombol Another Button dan ikon menjadi sejajar
-  },
-  anotherButtonText: {
-    color: 'white',
-    fontSize: 16,
-    fontWeight: 'bold',
-    marginLeft: 8,
+    marginVertical: 10,
   },
 });
 

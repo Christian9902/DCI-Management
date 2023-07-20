@@ -1,54 +1,36 @@
-import React, { useState, useLayoutEffect } from 'react';
+import React, { useState, useLayoutEffect, useEffect } from 'react';
 import { View, Text, TouchableOpacity, TextInput, FlatList, Image, ScrollView } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import * as DocumentPicker from 'expo-document-picker';
-import styles from './styles'; // Import styles
+import styles from './styles';
 import MenuImage from "../../components/MenuImage/MenuImage";
-import { auth, db } from '../Login/LoginScreen';
-import { updateDoc, addDoc, collection, getDocs, query, where } from 'firebase/firestore';
+import { db, auth } from '../Login/LoginScreen';
+import { addDoc, collection, getDocs } from 'firebase/firestore';
 
-// Component
 export default function AddOrderScreen(props) {
-  // State variables
   const [namaProject, setNamaProject] = useState('');
-  const [namaBarang, setNamaBarang] = useState('');
-  const [biaya, setBiaya] = useState('');
-  const [supplier, setSupplier] = useState('');
-  const [jumlah, setJumlah] = useState(0);
-  const [keterangan, setKeterangan] = useState('');
-  const [isNamaActive, setIsNamaActive] = useState(false);
-  const [isSupplierActive, setIsSupplierActive] = useState(false);
-  const [namaBarangRekomendasi, setNamaBarangRekomendasi] = useState([]);
-  const [supplierRekomendasi, setSupplierRekomendasi] = useState([]);
-  const [namaBarangList, setNamaBarangList] = useState([]);
-  const [supplierList, setSupplierList] = useState([]);
-  const [attachedFiles, setAttachedFiles] = useState([]);
-  const [deadlineProduksi, setDeadlineProduksi] = useState(new Date());
-  const [deadlinePengiriman, setDeadlinePengiriman] = useState(new Date());
-  const [deadlineMockup, setDeadlineMockup] = useState(new Date());
+  const [namaClient, setNamaClient] = useState('');
+  const [PTClient, setPTClient] = useState('');
+  const [noTelpClient, setNoTelpClient] = useState('');
+  const [emailClient, setEmailClient] = useState('');
+  const [suppliers, setSuppliers] = useState([]);
+  const [details, setDetails] = useState('');
+  const [harga, setHarga] = useState('');
+  const [timeline, setTimeline] = useState([new Date, new Date, new Date]);
+  const [progress, setProgress] = useState([false, false, false]);
+  const [PIC, setPIC] = useState('');
+  const [attachment, setAttachment] = useState([]);
+  
+  const [clientRekomendasi, setClientRekomendasi] = useState([]);
+  const [clientList, setClientList] = useState([]);
+  
+  const [isClientActive, setIsClientActive] = useState(false);
   const [showDeadlinePicker, setShowDeadlinePicker] = useState(false);
   const [showPengirimanPicker, setShowPengirimanPicker] = useState(false);
   const [showMockupPicker, setShowMockupPicker] = useState(false);
-  const [nomorTelepon, setNomorTelepon] = useState('');
-  const [email, setEmail] = useState('');
 
   const { navigation } = props;
 
-  // Function to handle attachment
-  const handleAttachment = async () => {
-    try {
-      const response = await DocumentPicker.getDocumentAsync();
-      if (response.type === 'success') {
-        const { name, size } = response;
-        const file = { name, size };
-        setAttachedFiles([...attachedFiles, file]);
-      }
-    } catch (error) {
-      console.log('Error picking document:', error);
-    }
-  };
-
-  // Use layout effect for setting header options
   useLayoutEffect(() => {
     navigation.setOptions({
       headerTitleStyle: {
@@ -62,164 +44,174 @@ export default function AddOrderScreen(props) {
         />
       ),
       headerRight: () => (
-        <View style={{ flexDirection: 'row' }}>
-          <TouchableOpacity onPress={handleAttachment} style={styles.uploadButton}>
-            <Image
-              style={styles.uploadButtonIcon}
-              source={require('../../../assets/icons/attachment.png')}
-            />
-            <Text style={styles.uploadButtonText}></Text>
-          </TouchableOpacity>
-          <TouchableOpacity onPress={() => navigation.navigate('HomeScreen')} style={styles.iconButton}>
-            <Image
-              style={styles.iconButtonIcon}
-              source={require('../../../assets/icons/another.png')} // Replace 'your_icon.png' with the actual icon image
-            />
-          </TouchableOpacity>
-        </View>
+        <TouchableOpacity onPress={handleAttachment}>
+          <Image
+            style={styles.attachIcon}
+            source={require('../../../assets/icons/attachment.png')}
+          />
+        </TouchableOpacity>
       ),
     });
   }, []);
 
-  // Function to handle Nama Project change
-  const handleNamaProjectChange = (text) => {
-    setNamaProject(text);
-  };
+  useEffect(() => {
+    fetchClient();
+  }, []);
 
-  // Function to handle Nama Barang change
-  const handleNamaBarangChange = (text) => {
-    setNamaBarang(text);
-  };
+  const fetchClient = async () => {
+    try {
+      const clientSnapshot = await getDocs(collection(db, 'Client'));
 
-  // Function to handle Biaya change
-  const handleBiayaChange = (text) => {
-    setBiaya(text);
-  };
+      const clientArray = [];
+      clientSnapshot.forEach((doc) => {
+        const data = doc.data();
+        const Ref = doc.id;
+        const NamaClient = data?.NamaClient;
+        const NamaPT = data?.NamaPT;
+        const Alamat = data?.Alamat;
+        const Email = data?.Email;
+        const NoTelp = data?.NoTelp;
+        const Job = data?.JobPosition;
 
-  // Function to handle Supplier change
-  const handleSupplierChange = (text) => {
-    setSupplier(text);
-  };
+        if (NamaClient) {
+          clientArray.push({
+            Ref,
+            NamaClient,
+            NamaPT,
+            Alamat,
+            Email,
+            NoTelp,
+            Job,
+          });
+        }
+      });
 
-  // Function to handle increasing Jumlah
-  const handleIncreaseJumlah = () => {
-    setJumlah(jumlah + 1);
-  };
+      clientArray.sort((a, b) => {
+        const clientNameA = a.NamaClient.toLowerCase();
+        const clientNameB = b.NamaClient.toLowerCase();
+        const clientPTNameA = a.NamaPT.split('- ')[1]?.toLowerCase();
+        const clientPTNameB = b.NamaPT.split('- ')[1]?.toLowerCase();
 
-  // Function to handle decreasing Jumlah
-  const handleDecreaseJumlah = () => {
-    if (jumlah > 0) {
-      setJumlah(jumlah - 1);
+        if (clientNameA < clientNameB) return -1;
+        if (clientNameA > clientNameB) return 1;
+        if (clientPTNameA < clientPTNameB) return -1;
+        if (clientPTNameA > clientPTNameB) return 1;
+        return 0;
+      });
+
+      setClientList(clientArray);
+      setClientRekomendasi(clientArray);
+    } catch (error) {
+      console.log('Terjadi kesalahan saat mengambil data dari Firebase:', error);
     }
   };
 
-  // Function to handle removing attached file
-  const handleRemoveFile = (index) => {
-    const updatedFiles = [...attachedFiles];
-    updatedFiles.splice(index, 1);
-    setAttachedFiles(updatedFiles);
+  const handleClientChange = (text) => {
+    setNamaClient(text);
+    let filteredClient = [];
+    if (text === '') {
+      filteredClient = clientList;
+    } else {
+      filteredClient = clientList.filter((item) => {
+        const namaClient = item.NamaClient.toLowerCase();
+        const namaPT = item.NamaPT.toLowerCase();
+        const filterText = text.toLowerCase().trim();
+
+        return namaClient.includes(filterText) || namaPT.includes(filterText);
+      });
+    }
+    setClientRekomendasi(filteredClient);
   };
 
-  // Function to handle adding stock
-  const handleAddStock = () => {
-    // Implementasi untuk menambahkan stok
-    // Anda dapat menambahkan logika atau pemanggilan API yang sesuai di sini
-    console.log("Stok ditambahkan");
-    navigation.navigate('Home'); // Navigasi ke layar beranda setelah menambahkan stok
-  };
-
-  // Function to handle cancel
-  const handleCancel = () => {
-    // Implementasi untuk membatalkan
-    // Anda dapat menambahkan logika atau navigasi yang sesuai di sini
-    console.log("Dibatalkan");
-    navigation.navigate('Home'); // Navigasi ke layar beranda setelah membatalkan
-  };
-
-  // Function to render Nama Barang rekomendasi
-  const renderNamaBarangRekomendasi = ({ item }) => {
+  const renderClientRekomendasi = ({ item }) => {
     return (
-      <TouchableOpacity onPress={() => handleSelectNamaBarang(item)}>
+      <TouchableOpacity onPress={() => setNamaClient(item)}>
         <Text>{item}</Text>
       </TouchableOpacity>
     );
   };
 
-  // Function to render Supplier rekomendasi
-  const renderSupplierRekomendasi = ({ item }) => {
-    return (
-      <TouchableOpacity onPress={() => handleSelectSupplier(item)}>
-        <Text>{item}</Text>
-      </TouchableOpacity>
-    );
-  };
-
-  // Function to handle selecting Nama Barang from recommendations
-  const handleSelectNamaBarang = (item) => {
-    // Add your implementation for selecting Nama Barang here
-  };
-
-  // Function to handle selecting Supplier from recommendations
-  const handleSelectSupplier = (item) => {
-    // Add your implementation for selecting Supplier here
-  };
-
-  // Function to handle setting deadlineProduksi
-  const handleSetDeadlineProduksi = (event, date) => {
-    if (date) {
-      setDeadlineProduksi(date);
+  const handleDeadline = (event, selectedDate) => {
+    if (selectedDate !== undefined) {
+      if (showMockupPicker) {
+        setTimeline([selectedDate, timeline[1], timeline[2]]);
+      } else if (showDeadlinePicker) {
+        setTimeline([timeline[0], selectedDate, timeline[2]]);
+      } else if (showPengirimanPicker) {
+        setTimeline([timeline[0], timeline[1], selectedDate]);
+      }
     }
+  
+    setShowMockupPicker(false);
     setShowDeadlinePicker(false);
-  };
-
-  // Function to handle setting deadlinePengiriman
-  const handleSetDeadlinePengiriman = (event, date) => {
-    if (date) {
-      setDeadlinePengiriman(date);
-    }
     setShowPengirimanPicker(false);
   };
-
-  // Function to handle setting deadlineMockup
-  const handleSetDeadlineMockup = (event, date) => {
-    if (date) {
-      setDeadlineMockup(date);
+  
+  const handleAttachment = async () => {
+    try {
+      const response = await DocumentPicker.getDocumentAsync();
+      if (response.type === 'success') {
+        const { name, size, uri } = response;
+        const file = { name, size, uri };
+        setAttachment([...attachment, file]);
+      }
+    } catch (error) {
+      console.log('Error picking document:', error);
     }
-    setShowMockupPicker(false);
   };
 
-  // JSX content
+  const handleRemoveFile = (index) => {
+    const updatedFiles = [...attachment];
+    updatedFiles.splice(index, 1);
+    setAttachment(updatedFiles);
+  };
+
+  const handleCreate = () => {
+  };
+
+  const handleCancel = () => {
+    setNamaProject('');
+    setNamaClient('');
+    setPTClient('');
+    setNoTelpClient('');
+    setEmailClient('');
+    setSuppliers([]);
+    setDetails('');
+    setHarga('');
+    setTimeline([new Date(), new Date(), new Date()]);
+    setProgress([false, false, false]);
+    setPIC('');
+    setAttachment([]);
+
+    navigation.navigate('Home');
+  };
+
   return (
     <View style={styles.container}>
-      <ScrollView contentContainerStyle={styles.scrollViewContentContainer}>
+      <ScrollView>
         <TextInput
           style={styles.input}
           placeholder="Nama Project"
           value={namaProject}
-          onChangeText={handleNamaProjectChange}
-          autoCompleteType="off"
-          autoCorrect={false}
-          dataDetectorTypes="none"
-          spellCheck={false}
-          onFocus={() => setIsNamaActive(true)}
-          onBlur={() => setIsNamaActive(false)}
+          onChangeText={setNamaProject}
         />
+        <Text style={styles.attachedFilesTitle}>Contact Person:</Text>
         <TextInput
           style={styles.input}
-          placeholder="Nama Barang"
-          value={namaBarang}
-          onChangeText={handleNamaBarangChange}
+          placeholder="Nama Client"
+          value={namaClient}
+          onChangeText={handleClientChange}
           autoCompleteType="off"
           autoCorrect={false}
           dataDetectorTypes="none"
           spellCheck={false}
-          onFocus={() => setIsNamaActive(true)}
-          onBlur={() => setIsNamaActive(false)}
+          onFocus={() => setIsClientActive(true)}
+          onBlur={() => setIsClientActive(false)}
         />
-        {isNamaActive && namaBarangRekomendasi.length > 0 && (
+        {isClientActive && clientRekomendasi.length > 0 && (
           <FlatList
-            data={namaBarangRekomendasi}
-            renderItem={renderNamaBarangRekomendasi}
+            data={clientRekomendasi}
+            renderItem={renderClientRekomendasi}
             keyExtractor={(item) => item}
             style={styles.rekomendasiContainer}
             keyboardShouldPersistTaps="always"
@@ -227,121 +219,83 @@ export default function AddOrderScreen(props) {
         )}
         <TextInput
           style={styles.input}
-          placeholder="Nama Supplier - PT Supplier"
-          value={supplier}
-          onChangeText={handleSupplierChange}
-          autoCompleteType="off"
-          autoCorrect={false}
-          dataDetectorTypes="none"
-          spellCheck={false}
-          onFocus={() => setIsSupplierActive(true)}
-          onBlur={() => setIsSupplierActive(false)}
+          placeholder="PT Client"
+          value={PTClient}
+          onChangeText={setPTClient}
         />
         <TextInput
           style={styles.input}
-          placeholder="Nomor Telepon"
-          value={nomorTelepon}
-          onChangeText={setNomorTelepon}
+          placeholder="No. Telp Client"
+          value={noTelpClient}
+          onChangeText={setNoTelpClient}
           autoCompleteType="tel"
           keyboardType="phone-pad"
         />
         <TextInput
           style={styles.input}
-          placeholder="Email"
-          value={email}
-          onChangeText={setEmail}
-          autoCompleteType="email"
-          keyboardType="email-address"
+          placeholder="Email Client"
+          value={emailClient}
+          onChangeText={setEmailClient}
         />
+        <TouchableOpacity
+          style={styles.listButton}
+          onPress={() => navigation.navigate('Home')}
+        >
+          <Text style={styles.listTitle}>Select Vendor</Text>
+        </TouchableOpacity>
         <TextInput
           style={styles.input}
-          placeholder="Biaya"
-          value={biaya}
-          onChangeText={handleBiayaChange}
-          autoCompleteType="off"
-          autoCorrect={false}
-          dataDetectorTypes="none"
-          spellCheck={false}
-          onFocus={() => setIsNamaActive(true)}
-          onBlur={() => setIsNamaActive(false)}
+          placeholder="Harga"
+          value={harga}
+          onChangeText={setHarga}
         />
-        {isSupplierActive && supplierRekomendasi.length > 0 && (
-          <FlatList
-            data={supplierRekomendasi}
-            renderItem={renderSupplierRekomendasi}
-            keyExtractor={(item) => item}
-            style={styles.rekomendasiContainer}
-            keyboardShouldPersistTaps="always"
-          />
-        )}
-        
-        <View style={styles.jumlahContainer}>
-          <Text style={styles.jumlahText}>Jumlah</Text>
-          <View style={styles.jumlahContainer2}>
-            <TouchableOpacity style={styles.jumlahButton} onPress={handleIncreaseJumlah}>
-              <Text style={styles.jumlahButtonText}>+</Text>
-            </TouchableOpacity>
-            <TextInput
-              style={styles.jumlahInput}
-              value={jumlah.toString()}
-              onChangeText={(text) => setJumlah(parseInt(text) || '')}
-              keyboardType="numeric"
-            />
-            <TouchableOpacity style={styles.jumlahButton} onPress={handleDecreaseJumlah}>
-              <Text style={styles.jumlahButtonText}>-</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-        <View style={styles.deadlineContainer}>
-          <TouchableOpacity style={styles.deadlineButton} onPress={() => setShowDeadlinePicker(true)}>
-            <Text style={styles.deadlineButtonText}>Deadline Produksi: {deadlineProduksi.toLocaleDateString()}</Text>
-          </TouchableOpacity>
-          {showDeadlinePicker && (
-            <DateTimePicker
-              value={deadlineProduksi}
-              mode="date"
-              display="default"
-              onChange={handleSetDeadlineProduksi}
-            />
-          )}
-        </View>
-        <View style={styles.deadlineContainer}>
-          <TouchableOpacity style={styles.deadlineButton} onPress={() => setShowPengirimanPicker(true)}>
-            <Text style={styles.deadlineButtonText}>Deadline Pengiriman: {deadlinePengiriman.toLocaleDateString()}</Text>
-          </TouchableOpacity>
-          {showPengirimanPicker && (
-            <DateTimePicker
-              value={deadlinePengiriman}
-              mode="date"
-              display="default"
-              onChange={handleSetDeadlinePengiriman}
-            />
-          )}
-        </View>
+        <Text style={styles.attachedFilesTitle}>Deadline:</Text>
         <View style={styles.deadlineContainer}>
           <TouchableOpacity style={styles.deadlineButton} onPress={() => setShowMockupPicker(true)}>
-            <Text style={styles.deadlineButtonText}>Deadline Mockup: {deadlineMockup.toLocaleDateString()}</Text>
+            <Text style={styles.deadlineButtonText}>Mockup: {timeline[0].toLocaleDateString('en-GB')}</Text>
           </TouchableOpacity>
           {showMockupPicker && (
             <DateTimePicker
-              value={deadlineMockup}
+              value={timeline[0]}
               mode="date"
               display="default"
-              onChange={handleSetDeadlineMockup}
+              onChange={handleDeadline}
+            />
+          )}
+          <TouchableOpacity style={styles.deadlineButton} onPress={() => setShowDeadlinePicker(true)}>
+            <Text style={styles.deadlineButtonText}>Produksi: {timeline[1].toLocaleDateString('en-GB')}</Text>
+          </TouchableOpacity>
+          {showDeadlinePicker && (
+            <DateTimePicker
+              value={timeline[1]}
+              mode="date"
+              display="default"
+              onChange={handleDeadline}
+            />
+          )}
+          <TouchableOpacity style={styles.deadlineButton} onPress={() => setShowPengirimanPicker(true)}>
+            <Text style={styles.deadlineButtonText}>Pengiriman: {timeline[2].toLocaleDateString('en-GB')}</Text>
+          </TouchableOpacity>
+          {showPengirimanPicker && (
+            <DateTimePicker
+              value={timeline[2]}
+              mode="date"
+              display="default"
+              onChange={handleDeadline}
             />
           )}
         </View>
         <TextInput
           style={styles.additionalInfoInput}
-          placeholder="Keterangan Tambahan"
-          value={keterangan}
-          onChangeText={setKeterangan}
+          placeholder="Spesifikasi"
+          value={details}
+          onChangeText={setDetails}
           multiline={true}
         />
-        {attachedFiles.length > 0 && (
+        {attachment.length > 0 && (
           <View style={styles.attachedFilesContainer}>
             <Text style={styles.attachedFilesTitle}>Attached Files:</Text>
-            {attachedFiles.map((file, index) => (
+            {attachment.map((file, index) => (
               <View key={index} style={styles.attachedFileItem}>
                 <View>
                   <Text style={styles.attachedFileName}>{file.name}</Text>
@@ -355,15 +309,14 @@ export default function AddOrderScreen(props) {
           </View>
         )}
       </ScrollView>
-
-      {/* Tombol Add Stock */}
-      <TouchableOpacity style={styles.addButton} onPress={handleAddStock}>
-        <Text style={styles.addButtonText}>Add Stock</Text>
-      </TouchableOpacity>
-      {/* Tombol Cancel */}
-      <TouchableOpacity style={styles.cancelButton} onPress={handleCancel}>
-        <Text style={styles.cancelButtonText}>Cancel</Text>
-      </TouchableOpacity>
+      <View style={styles.buttonContainer}>
+        <TouchableOpacity style={styles.createButton} onPress={handleCreate}>
+          <Text style={styles.createButtonText}>Create Order</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.cancelButton} onPress={handleCancel}>
+          <Text style={styles.cancelButtonText}>Cancel</Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 }
