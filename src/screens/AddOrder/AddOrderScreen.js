@@ -103,7 +103,6 @@ export default function AddOrderScreen(props) {
       });
 
       setClientList(clientArray);
-      setClientRekomendasi(clientArray);
     } catch (error) {
       console.log('Terjadi kesalahan saat mengambil data dari Firebase:', error);
     }
@@ -112,26 +111,25 @@ export default function AddOrderScreen(props) {
   const handleClientChange = (text) => {
     setNamaClient(text);
     let filteredClient = [];
-    if (text === '') {
-      filteredClient = clientList;
+    if (text.length === 0) {
+      filteredClient = [];
     } else {
       filteredClient = clientList.filter((item) => {
         const namaClient = item.NamaClient.toLowerCase();
         const namaPT = item.NamaPT.toLowerCase();
         const filterText = text.toLowerCase().trim();
-
+  
         return namaClient.includes(filterText) || namaPT.includes(filterText);
       });
     }
     setClientRekomendasi(filteredClient);
   };
 
-  const renderClientRekomendasi = ({ item }) => {
-    return (
-      <TouchableOpacity onPress={() => setNamaClient(item)}>
-        <Text>{item}</Text>
-      </TouchableOpacity>
-    );
+  const handleSelectClient = (selectedClient) => {
+    setNamaClient(selectedClient.NamaClient);
+    setPTClient(selectedClient.NamaPT);
+    setNoTelpClient(selectedClient.NoTelp);
+    setEmailClient(selectedClient.Email);
   };
 
   const fetchSupplier = async () => {
@@ -160,6 +158,8 @@ export default function AddOrderScreen(props) {
   };  
 
   const handleSelectVendor = (selectedItem) => {
+    console.log(selectedItem);
+    console.log(supplierList);
     const updatedSupplierList = supplierList.map((item) => ({
       ...item,
       selected: item.ref === selectedItem.ref ? !item.selected : item.selected,
@@ -168,12 +168,13 @@ export default function AddOrderScreen(props) {
     const selectedVendors = updatedSupplierList.filter((item) => item.selected);
     const unselectedVendors = updatedSupplierList.filter((item) => !item.selected);
   
+    const sortedSelectedVendors = sortSupplierArray(selectedVendors);
     const sortedUnselectedVendors = sortSupplierArray(unselectedVendors);
   
-    const sortedSupplierList = [...selectedVendors, ...sortedUnselectedVendors];
+    const sortedSupplierList = [...sortedSelectedVendors, ...sortedUnselectedVendors];
   
     setSupplierList(sortedSupplierList);
-    setSuppliers(selectedVendors);
+    setSuppliers(sortedSelectedVendors);
   };  
 
   const sortSupplierArray = (supplierArray) => {
@@ -191,19 +192,6 @@ export default function AddOrderScreen(props) {
     });
     return supplierArray;
   };
-  
-  const handleRemoveSupplier = (index) => {
-    const updatedSuppliers = [...suppliers];
-    updatedSuppliers.splice(index, 1);
-    setSuppliers(updatedSuppliers);
-    
-    const updatedSupplierList = supplierList.map((item) => ({
-      ...item,
-      selected: updatedSuppliers.some((selectedItem) => selectedItem.ref === item.ref),
-    }));
-    setSupplierList(updatedSupplierList);
-  };
-  
 
   const handleDeadline = (event, selectedDate) => {
     if (selectedDate !== undefined) {
@@ -262,7 +250,7 @@ export default function AddOrderScreen(props) {
 
   return (
     <View style={styles.container}>
-      <ScrollView>
+      <ScrollView keyboardShouldPersistTaps="handled">
         <TextInput
           style={styles.input}
           placeholder="Nama Project"
@@ -283,13 +271,16 @@ export default function AddOrderScreen(props) {
           onBlur={() => setIsClientActive(false)}
         />
         {isClientActive && clientRekomendasi.length > 0 && (
-          <FlatList
-            data={clientRekomendasi}
-            renderItem={renderClientRekomendasi}
-            keyExtractor={(item) => item}
-            style={styles.rekomendasiContainer}
-            keyboardShouldPersistTaps="always"
-          />
+          <View style={styles.attachedFilesContainer}>
+            {clientRekomendasi.map((client, index) => (
+              <View key={index} style={styles.attachedFileItem}>
+                <TouchableOpacity onPress={() => handleSelectClient(client)}>
+                  <Text style={styles.attachedFileName}>{client.NamaClient}</Text>
+                  <Text style={styles.attachedFileSize}>{client.NamaPT}</Text>
+                </TouchableOpacity>
+              </View>
+            ))}
+          </View>
         )}
         <TextInput
           style={styles.input}
@@ -321,7 +312,7 @@ export default function AddOrderScreen(props) {
                   <Text style={styles.attachedFileName}>{supplier.namaSupplier}</Text>
                   <Text style={styles.attachedFileSize}>{supplier.PTSupplier}</Text>
                 </View>
-                <TouchableOpacity onPress={() => handleRemoveSupplier(index)}>
+                <TouchableOpacity onPress={() => handleSelectVendor(supplier)}>
                   <Text style={styles.deleteButton}>X</Text>
                 </TouchableOpacity>
               </View>
@@ -331,10 +322,8 @@ export default function AddOrderScreen(props) {
 
         <TouchableOpacity
           style={styles.listButton}
-          onPress={() => {
-            setModalVisible(true)
-            console.log(suppliers)
-        }}>
+          onPress={() => setModalVisible(true)}
+        >
           <Text style={styles.listTitle}>Select Vendor</Text>
         </TouchableOpacity>
 
@@ -383,6 +372,7 @@ export default function AddOrderScreen(props) {
           placeholder="Harga"
           value={harga}
           onChangeText={setHarga}
+          keyboardType="numeric"
         />
         <Text style={styles.attachedFilesTitle}>Deadline:</Text>
         <View style={styles.deadlineContainer}>
