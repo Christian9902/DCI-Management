@@ -2,7 +2,6 @@ import React, { useState, useLayoutEffect, useEffect } from 'react';
 import { View, Text, TouchableOpacity, TextInput, FlatList, Image, ScrollView, Modal, ToastAndroid } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import * as DocumentPicker from 'expo-document-picker';
-import * as FileSystem from 'expo-file-system';
 import styles from './styles';
 import MenuImage from "../../components/MenuImage/MenuImage";
 import { db, auth, storage } from '../Login/LoginScreen';
@@ -33,6 +32,7 @@ export default function AddOrderScreen(props) {
   const [showMockupPicker, setShowMockupPicker] = useState(false);
 
   const [uploadProgress, setUploadProgress] = useState([]);
+  const [showProgressModal, setShowProgressModal] = useState(false);
 
   const { navigation } = props;
 
@@ -234,6 +234,49 @@ export default function AddOrderScreen(props) {
     setAttachment(updatedFiles);
   };
 
+  const uploadFile = async (file, storageRef) => {
+    try {
+      const fileRef = ref(storageRef, file.name);
+      const uploadTask = uploadBytesResumable(fileRef, file.fileBlob);
+  
+      uploadTask.on(
+        'state_changed',
+        (snapshot) => {
+          const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+          setUploadProgress((prevProgress) => [
+            ...prevProgress.filter((item) => item.name !== file.name),
+            { name: file.name, progress },
+          ]);
+        },
+        (error) => {
+          console.log('Error uploading file:', error);
+        },
+        async () => {
+          try {
+            const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+            console.log('File available at', downloadURL);
+          } catch (error) {
+            console.log('Error getting download URL:', error);
+          }
+        }
+      );
+  
+      await uploadTask;
+  
+      console.log(`File ${file.name} successfully uploaded.`);
+    } catch (error) {
+      console.log(`Error uploading file:`, error);
+    }
+  };  
+
+  const uploadFiles = async (storageRef) => {
+    try {
+      await Promise.all(attachment.map((file) => uploadFile(file, storageRef)));
+    } catch (error) {
+      console.log('Error uploading files:', error);
+    }
+  };
+
   const handleCreate = async () => {
     const user = auth.currentUser;
     const logDataRef = collection(db, 'Log Data');
@@ -264,42 +307,9 @@ export default function AddOrderScreen(props) {
   
       const orderRef = await addDoc(collection(db, 'Order'), data);
       const storageRef = ref(storage, `Order/${orderRef.id}`);
-      const fileRefs = [];
-      for (const file of attachment) {
-        try {
-          const fileRef = ref(storageRef, file.name);
-          fileRefs.push(fileRef);
-      
-          await new Promise((resolve, reject) => {
-            const uploadTask = uploadBytesResumable(fileRef, file.fileBlob);
-      
-            uploadTask.on(
-              'state_changed',
-              (snapshot) => {
-                const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-                setUploadProgress((prevProgress) => [
-                  ...prevProgress,
-                  { name: file.name, progress },
-                ]);
-              },
-              (error) => {
-                console.log('Error uploading file:', error);
-                reject(error); // Reject the Promise if there's an error
-              },
-              () => {
-                getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
-                  console.log('File available at', downloadURL);
-                  resolve(downloadURL); // Resolve the Promise when the upload is completed
-                });
-              }
-            );
-          });
-      
-          console.log(`File ${file.name} successfully uploaded.`);
-        } catch (error) {
-          console.log(`Error uploading file:`, error);
-        }
-      }
+      setShowProgressModal(true);
+      await uploadFiles(storageRef);
+      setShowProgressModal(false);
   
       const logEntry = {
         timestamp: time,
@@ -527,19 +537,6 @@ export default function AddOrderScreen(props) {
                 </TouchableOpacity>
               </View>
             ))}
-            {uploadProgress.map((fileProgress, index) => (
-              <View key={index} style={styles.uploadProgressContainer}>
-                <Text style={styles.uploadProgressText}>{fileProgress.name}</Text>
-                <View style={styles.progressBarContainer}>
-                  <View
-                    style={[styles.progressBar, { width: `${fileProgress.progress}%` }]}
-                  />
-                </View>
-                <Text style={styles.uploadProgressPercentage}>{`${fileProgress.progress.toFixed(
-                  2
-                )}%`}</Text>
-              </View>
-            ))}
           </View>
         )}
       </ScrollView>
@@ -551,6 +548,22 @@ export default function AddOrderScreen(props) {
           <Text style={styles.cancelButtonText}>Cancel</Text>
         </TouchableOpacity>
       </View>
+
+      {showProgressModal && (
+        <Modal visible={showProgressModal} transparent={true}>
+          <View style={styles.progressModalContainer}>
+            <View style={styles.progressModalContent}>
+              <Text style={styles.progressModalText}>Uploading...</Text>
+              {uploadProgress.map((fileProgress, index) => (
+                <View key={index}>
+                  <Text>{`${fileProgress.name}: ${fileProgress.progress.toFixed(2)}%`}</Text>
+                  {console.log(fileProgress.name, fileProgress.progress.toFixed(2))}
+                </View>
+              ))}
+            </View>
+          </View>
+        </Modal>
+      )}
     </View>
   );
 }
