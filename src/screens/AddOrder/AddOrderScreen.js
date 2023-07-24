@@ -1,11 +1,13 @@
 import React, { useState, useLayoutEffect, useEffect } from 'react';
-import { View, Text, TouchableOpacity, TextInput, FlatList, Image, ScrollView, Modal } from 'react-native';
+import { View, Text, TouchableOpacity, TextInput, FlatList, Image, ScrollView, Modal, ToastAndroid } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import * as DocumentPicker from 'expo-document-picker';
+import * as FileSystem from 'expo-file-system';
 import styles from './styles';
 import MenuImage from "../../components/MenuImage/MenuImage";
-import { db, auth } from '../Login/LoginScreen';
+import { db, auth, storage } from '../Login/LoginScreen';
 import { addDoc, collection, getDocs } from 'firebase/firestore';
+import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 
 export default function AddOrderScreen(props) {
   const [namaProject, setNamaProject] = useState('');
@@ -18,7 +20,6 @@ export default function AddOrderScreen(props) {
   const [harga, setHarga] = useState('');
   const [timeline, setTimeline] = useState([new Date, new Date, new Date]);
   const [progress, setProgress] = useState([false, false, false]);
-  const [PIC, setPIC] = useState('');
   const [attachment, setAttachment] = useState([]);
   
   const [clientRekomendasi, setClientRekomendasi] = useState([]);
@@ -30,6 +31,8 @@ export default function AddOrderScreen(props) {
   const [showDeadlinePicker, setShowDeadlinePicker] = useState(false);
   const [showPengirimanPicker, setShowPengirimanPicker] = useState(false);
   const [showMockupPicker, setShowMockupPicker] = useState(false);
+
+  const [uploadProgress, setUploadProgress] = useState([]);
 
   const { navigation } = props;
 
@@ -158,8 +161,6 @@ export default function AddOrderScreen(props) {
   };  
 
   const handleSelectVendor = (selectedItem) => {
-    console.log(selectedItem);
-    console.log(supplierList);
     const updatedSupplierList = supplierList.map((item) => ({
       ...item,
       selected: item.ref === selectedItem.ref ? !item.selected : item.selected,
@@ -213,14 +214,19 @@ export default function AddOrderScreen(props) {
     try {
       const response = await DocumentPicker.getDocumentAsync();
       if (response.type === 'success') {
-        const { name, size, uri } = response;
-        const file = { name, size, uri };
-        setAttachment([...attachment, file]);
+        const { name, size, uri, mimeType } = response;
+  
+        const fileResponse = await fetch(uri);
+        const fileBlob = await fileResponse.blob();
+  
+        const file = { name, size, uri, mimeType, fileBlob };
+        setAttachment((prevAttachments) => [...prevAttachments, file]);
       }
     } catch (error) {
       console.log('Error picking document:', error);
+      ToastAndroid.show('Error picking document.', ToastAndroid.SHORT);
     }
-  };
+  };  
 
   const handleRemoveFile = (index) => {
     const updatedFiles = [...attachment];
@@ -228,7 +234,98 @@ export default function AddOrderScreen(props) {
     setAttachment(updatedFiles);
   };
 
-  const handleCreate = () => {
+  const handleCreate = async () => {
+    const user = auth.currentUser;
+    const logDataRef = collection(db, 'Log Data');
+    const time = new Date().toLocaleString('en-GB', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+    });
+  
+    try {
+      const data = {
+        NamaProject: namaProject,
+        NamaClient: namaClient,
+        PTClient: PTClient,
+        NoTelpClient: noTelpClient,
+        EmailClient: emailClient, 
+        Supplier: suppliers,
+        Spesifikasi: details,
+        Harga: harga,
+        Progress: progress,
+        Attachment: attachment.map(file => file.name),
+        PIC: user.uid,
+        Timestamp: time,
+      };
+  
+      const orderRef = await addDoc(collection(db, 'Order'), data);
+      const storageRef = ref(storage, `Order/${orderRef.id}`);
+      const fileRefs = [];
+      for (const file of attachment) {
+        try {
+          const fileRef = ref(storageRef, file.name);
+          fileRefs.push(fileRef);
+      
+          await new Promise((resolve, reject) => {
+            const uploadTask = uploadBytesResumable(fileRef, file.fileBlob);
+      
+            uploadTask.on(
+              'state_changed',
+              (snapshot) => {
+                const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                setUploadProgress((prevProgress) => [
+                  ...prevProgress,
+                  { name: file.name, progress },
+                ]);
+              },
+              (error) => {
+                console.log('Error uploading file:', error);
+                reject(error); // Reject the Promise if there's an error
+              },
+              () => {
+                getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
+                  console.log('File available at', downloadURL);
+                  resolve(downloadURL); // Resolve the Promise when the upload is completed
+                });
+              }
+            );
+          });
+      
+          console.log(`File ${file.name} successfully uploaded.`);
+        } catch (error) {
+          console.log(`Error uploading file:`, error);
+        }
+      }
+  
+      const logEntry = {
+        timestamp: time,
+        action: 'Order Created',
+        userID: user.uid,
+        refID: orderRef.id,
+      };
+      await addDoc(logDataRef, logEntry);
+
+      setNamaProject('');
+      setNamaClient('');
+      setPTClient('');
+      setNoTelpClient('');
+      setEmailClient('');
+      setSuppliers([]);
+      setDetails('');
+      setHarga('');
+      setTimeline([new Date(), new Date(), new Date()]);
+      setProgress([false, false, false]);
+      setAttachment([]);
+  
+      navigation.navigate('Home');
+      ToastAndroid.show('Order created successfully!', ToastAndroid.SHORT);
+    } catch (error) {
+      console.error('Error creating order:', error);
+    }
   };
 
   const handleCancel = () => {
@@ -242,7 +339,6 @@ export default function AddOrderScreen(props) {
     setHarga('');
     setTimeline([new Date(), new Date(), new Date()]);
     setProgress([false, false, false]);
-    setPIC('');
     setAttachment([]);
 
     navigation.navigate('Home');
@@ -429,6 +525,19 @@ export default function AddOrderScreen(props) {
                 <TouchableOpacity onPress={() => handleRemoveFile(index)}>
                   <Text style={styles.deleteButton}>X</Text>
                 </TouchableOpacity>
+              </View>
+            ))}
+            {uploadProgress.map((fileProgress, index) => (
+              <View key={index} style={styles.uploadProgressContainer}>
+                <Text style={styles.uploadProgressText}>{fileProgress.name}</Text>
+                <View style={styles.progressBarContainer}>
+                  <View
+                    style={[styles.progressBar, { width: `${fileProgress.progress}%` }]}
+                  />
+                </View>
+                <Text style={styles.uploadProgressPercentage}>{`${fileProgress.progress.toFixed(
+                  2
+                )}%`}</Text>
               </View>
             ))}
           </View>
