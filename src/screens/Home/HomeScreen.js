@@ -52,14 +52,14 @@ export default function HomeScreen(props) {
       const orderData = orderSnapshot.docs.map((doc) => {
         const data = doc.data();
         const orderID = doc.id;
-        const project = data.NamaProject;
-        const namaClient = data.NamaClient;
-        const ptClient = data.PTClient;
-        const emailClient = data.EmailClient;
-        const notelpClient = data.NoTelpClient;
-        const attachment = data.Attachment;
-        const supplier = data.Supplier;
-        const time = data.Timestamp;
+        const project = data?.NamaProject;
+        const namaClient = data?.NamaClient;
+        const ptClient = data?.PTClient;
+        const emailClient = data?.EmailClient;
+        const notelpClient = data?.NoTelpClient;
+        const attachment = data?.Attachment;
+        const supplier = data?.Supplier;
+        const time = data?.Timestamp;
         const userRef = userSnapshot.docs.find((doc) => doc.id === data?.PIC);
         const user = userRef ? userRef.data().Nama : '';
   
@@ -78,8 +78,8 @@ export default function HomeScreen(props) {
       });
 
       orderData.sort((a, b) => {
-        const timeA = timeToArray(a.Time);
-        const timeB = timeToArray(b.Time);
+        const timeA = timeToArray(a.time);
+        const timeB = timeToArray(b.time);
 
         for (let i = 0; i < timeA.length; i++) {
           if (timeA[i] !== timeB[i]) {
