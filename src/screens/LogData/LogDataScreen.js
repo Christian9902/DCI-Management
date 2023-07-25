@@ -224,6 +224,7 @@ export default function LogData(props) {
 
     try {
       await fetchLogData();
+      setCurrentPage(1);
     } catch (error) {
       console.log('Terjadi kesalahan saat merefresh data:', error);
     }
