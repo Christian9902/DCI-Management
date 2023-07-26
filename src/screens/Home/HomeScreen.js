@@ -188,8 +188,6 @@ export default function HomeScreen(props) {
   const onPressItem = (item) => {
     //navigation.navigate("OrderDetails", { order: item });
     console.log(item);
-    console.log(orderData.length);
-    console.log(filteredOrderData.length);
   };
 
   const toggleExpanded = (itemId) => {
