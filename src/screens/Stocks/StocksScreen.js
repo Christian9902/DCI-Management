@@ -160,6 +160,7 @@ export default function StocksScreen(props) {
 
     try {
       await fetchInventory();
+      setCurrentPage(1);
     } catch (error) {
       console.log('Terjadi kesalahan saat merefresh data:', error);
     }

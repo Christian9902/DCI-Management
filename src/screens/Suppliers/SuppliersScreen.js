@@ -117,6 +117,7 @@ export default function AddStockScreen(props) {
 
     try {
       await fetchSupplier();
+      setCurrentPage(1);
     } catch (error) {
       console.log('Terjadi kesalahan saat merefresh data:', error);
     }

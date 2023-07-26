@@ -10,7 +10,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     backgroundColor: "#EDEDED",
     borderRadius: 10,
-    width: 290,
+    width: '100%',
     justifyContent: "space-around",
     paddingHorizontal: 10,
     paddingVertical: 5,

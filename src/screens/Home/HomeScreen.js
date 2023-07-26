@@ -60,6 +60,9 @@ export default function HomeScreen(props) {
         const attachment = data?.Attachment;
         const supplier = data?.Supplier;
         const time = data?.Timestamp;
+        const harga = data?.Harga;
+        const progress = data?.Progress;
+        const spesifikasi = data?.Spesifikasi;
         const userRef = userSnapshot.docs.find((doc) => doc.id === data?.PIC);
         const user = userRef ? userRef.data().Nama : '';
   
@@ -73,7 +76,11 @@ export default function HomeScreen(props) {
           attachment,
           supplier,
           time,
+          harga,
+          progress,
+          spesifikasi,
           user,
+          isExpanded: isItemExpanded(orderID),
         };
       });
 
@@ -134,34 +141,32 @@ export default function HomeScreen(props) {
     if (x === '') {
       setFilteredOrderData(orderData.slice(0, 10));
     } else {
-      /*
       const filterText = x.toLowerCase().trim();
       const filterItems = filterText.split(';').map((item) => item.trim());
-      const filterAction = filterItems[0] ? filterItems[0].toLowerCase() : '';
+      const filterProject = filterItems[0] ? filterItems[0].toLowerCase() : '';
       const filterTimestamp = filterItems[1] ? timeToArray(filterItems[1]) : [];
       const filterUserID = filterItems[2] ? filterItems[2].toLowerCase() : '';
 
-      const filteredData = logData.filter((item) => {
-        if (filterAction !== '' && !item.Action.toLowerCase().includes(filterAction)) {
+      const filteredData = orderData.filter((item) => {
+        if (filterProject !== '' && !item.project.toLowerCase().includes(filterProject)) {
           return false;
         }
         if (
           filterTimestamp.length !== 0 &&
           !filterTimestamp.every((filterValue, index) => {
-            const itemValue = item.Time.split(/[\/,: ]/)[index];
+            const itemValue = item.time.split(/[\/,: ]/)[index];
             return itemValue.includes(filterValue);
           })
         ) {
           return false;
         }
-        if (filterUserID !== '' && !item.User.toLowerCase().includes(filterUserID)) {
+        if (filterUserID !== '' && !item.user.toLowerCase().includes(filterUserID)) {
           return false;
         }
         return true;
       });
 
-      setFilteredLogData(filteredData.slice(0, 10));
-      */
+      setFilteredOrderData(filteredData.slice(0, 10));
     }
   };
 
@@ -182,6 +187,7 @@ export default function HomeScreen(props) {
 
   const onPressItem = (item) => {
     //navigation.navigate("OrderDetails", { order: item });
+    console.log(item);
   };
 
   const toggleExpanded = (itemId) => {
@@ -202,22 +208,21 @@ export default function HomeScreen(props) {
         <View style={styles.itemContainer}>
           <Text style={styles.title}>{item.project}</Text>
           <View style={styles.categoryContainer}>
+            <Text style={styles.category}>{item.namaClient} - {item.ptClient}</Text>
             <Text style={styles.category}>{item.time}</Text>
           </View>
-          {isItemExpanded(item.id) && (
+          {isItemExpanded(item.orderID) && (
             <>
               <View style={styles.separator} />
               <View style={styles.categoryContainer}>
-                <Text style={styles.category}>ID: {item.orderID}</Text>
-              </View>
-              <View style={styles.categoryContainer}>
-                <Text style={styles.category}>User: {item.user}</Text>
+                <Text style={styles.category}>{item.orderID}</Text>
+                <Text style={styles.category}>PIC: {item.user}</Text>
               </View>
             </>
           )}
         </View>
-        <TouchableOpacity onPress={() => toggleExpanded(item.id)}>
-          <Text style={styles.expandButton}>{isItemExpanded(item.id) ? '▲' : '▼'}</Text>
+        <TouchableOpacity onPress={() => toggleExpanded(item.orderID)}>
+          <Text style={styles.expandButton}>{isItemExpanded(item.orderID) ? '▲' : '▼'}</Text>
         </TouchableOpacity>
       </View>
     </TouchableOpacity>
@@ -229,6 +234,7 @@ export default function HomeScreen(props) {
 
     try {
       await fetchOrderData();
+      setCurrentPage(1);
     } catch (error) {
       console.log('Terjadi kesalahan saat merefresh data:', error);
     }

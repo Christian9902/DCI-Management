@@ -1,15 +1,19 @@
 import React, { useState, useLayoutEffect, useEffect } from 'react';
-import { ToastAndroid, View, Text, TextInput, FlatList, Image, Pressable, TouchableOpacity } from 'react-native';
+import { ToastAndroid, View, Text, TextInput, FlatList, Image, Pressable, TouchableOpacity, RefreshControl, ActivityIndicator } from 'react-native';
 import styles from './styles';
 import MenuImage from "../../components/MenuImage/MenuImage";
 import { auth, db } from '../Login/LoginScreen';
-import { collection, getDocs, addDoc, writeBatch, doc, updateDoc, increment } from 'firebase/firestore';
+import { collection, getDocs, addDoc, writeBatch, doc, increment } from 'firebase/firestore';
 
 
 export default function TakeStockScreen(props) {
   const [nama, setNama] = useState('');  
   const [namaBarangRekomendasi, setNamaBarangRekomendasi] = useState([]);
   const [barangData, setBarangData] = useState([]);
+
+  const [refreshing, setRefreshing] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [isLoading, setIsLoading] = useState(false);
 
   const { navigation } = props;
 
@@ -78,7 +82,7 @@ export default function TakeStockScreen(props) {
       });
   
       setBarangData(barangArray);
-      setNamaBarangRekomendasi(barangArray);
+      setNamaBarangRekomendasi(barangArray.slice(0, 10));
     } catch (error) {
       console.log('Terjadi kesalahan saat mengambil data dari Firebase:', error);
     }
@@ -240,7 +244,6 @@ export default function TakeStockScreen(props) {
                 });
                 setBarangData(updatedData);
                 setNamaBarangRekomendasi(updatedData);
-                console.log(barangData[0]);
               }}
               keyboardType="numeric"
             />
@@ -253,15 +256,54 @@ export default function TakeStockScreen(props) {
     );
   };
 
+  const onRefresh = async () => {
+    setRefreshing(true);
+    ToastAndroid.show('Refreshing...', ToastAndroid.SHORT);
+
+    try {
+      await fetchInventory();
+      setCurrentPage(1);
+    } catch (error) {
+      console.log('Terjadi kesalahan saat merefresh data:', error);
+    }
+
+    setRefreshing(false);
+  };
+
+  const loadMoreData = () => {
+    if (isLoading) {
+      return;
+    }
+
+    setIsLoading(true);
+    const nextPage = currentPage + 1;
+    const startIndex = 10 * (nextPage - 1);
+    const endIndex = startIndex + 10;
+
+    setNamaBarangRekomendasi((prevData) => [...prevData, ...barangData.slice(startIndex, endIndex)]);
+    setCurrentPage(nextPage);
+    setIsLoading(false);
+  };
+
   return (
     <View style={styles.container}>
-      <FlatList
-        vertical
-        showsVerticalScrollIndicator={false}
-        data={namaBarangRekomendasi}
-        renderItem={renderItem}
-        keyExtractor={(item, index) => item.NamaBarang + '-' + item.NamaSupplier + '-' + index}
-      />
+      {namaBarangRekomendasi.length === 0 ? (
+        <Text>Loading...</Text>
+      ) : (
+        <FlatList
+          vertical
+          showsVerticalScrollIndicator={false}
+          data={namaBarangRekomendasi}
+          renderItem={renderItem}
+          keyExtractor={(item, index) => item.NamaBarang + '-' + item.NamaSupplier + '-' + index}
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          }
+          onEndReached={loadMoreData}
+          onEndReachedThreshold={0.1}
+          ListFooterComponent={isLoading && <ActivityIndicator size="small" />}
+        />
+      )}
   
       <View style={styles.buttonContainer}>
         <TouchableOpacity style={styles.addButton} onPress={handleTake}>

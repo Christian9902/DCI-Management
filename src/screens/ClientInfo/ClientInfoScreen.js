@@ -331,7 +331,6 @@ export default function ClientInfoScreen(props) {
     }
   };
   
-
   if (!isAdmin) {
     return (
       <View style={styles.container}>
