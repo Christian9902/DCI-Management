@@ -1,9 +1,10 @@
 import React, { useState, useLayoutEffect, useEffect } from 'react';
-import { View, Text, TouchableOpacity, TextInput, FlatList, Image, Pressable, RefreshControl, ActivityIndicator, ToastAndroid } from 'react-native';
+import { View, Text, TouchableOpacity, TextInput, FlatList, Image, Pressable, RefreshControl, ActivityIndicator, ToastAndroid, Modal } from 'react-native';
 import styles from './styles';
 import MenuImage from "../../components/MenuImage/MenuImage";
 import { db } from '../Login/LoginScreen';
 import { collection, getDocs } from 'firebase/firestore';
+import DateTimePicker from '@react-native-community/datetimepicker';
 
 export default function ClientsScreen(props) {
   const [nama, setNama] = useState('');
@@ -13,6 +14,14 @@ export default function ClientsScreen(props) {
   const [currentPage, setCurrentPage] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
   const [expandedItems, setExpandedItems] = useState([]);
+
+  const [showFilterModal, setShowFilterModal] = useState(false);
+  const [startDate, setStartDate] = useState(null);
+  const [endDate, setEndDate] = useState(null);
+  const [showStartDatePicker, setShowStartDatePicker] = useState(false);
+  const [showEndDatePicker, setShowEndDatePicker] = useState(false);
+  const [status, setStatus] = useState(null);
+  const [quoSubmitted, setQuoSubmitted] = useState(null);
 
   const { navigation } = props;
 
@@ -39,7 +48,13 @@ export default function ClientsScreen(props) {
           </Pressable>
         </View>
       ),
-      headerRight: () => <View />,
+      headerRight: () => (
+        <View>
+          <TouchableOpacity onPress={() => setShowFilterModal(true)}>
+            <Image style={styles.filterIcon} source={require('../../../assets/icons/filter.png')} />
+          </TouchableOpacity>
+        </View>
+      ),
     });
   }, [nama]);
 
@@ -62,6 +77,7 @@ export default function ClientsScreen(props) {
         const Note = data?.Note;
         const Quo = data?.QuoSubmitted;
         const Job = data?.JobPosition;
+        const Since = data?.Added;
 
         const user = userSnapshot.docs.find((doc) => doc.id === data?.PIC);
         const PIC = user ? user.data().Nama : '';
@@ -80,12 +96,44 @@ export default function ClientsScreen(props) {
             Note,
             Quo,
             Job,
+            Since,
             isExpanded: isItemExpanded(Ref),
           });
         }
       });
 
-      clientArray.sort((a, b) => {
+      const filteredClientArray = clientArray.filter((client) => {
+        const formattedAddedDate = formatDate(client.Since);
+        let isInRange = true;
+  
+        if (startDate) {
+          const formattedStartDate = formatDate(startDate.toLocaleString('en-GB'));
+          isInRange =
+            formattedAddedDate[2] >= formattedStartDate[2] &&
+            formattedAddedDate[1] >= formattedStartDate[1] &&
+            formattedAddedDate[0] >= formattedStartDate[0];
+        }
+  
+        if (endDate) {
+          const formattedEndDate = formatDate(endDate.toLocaleString('en-GB'));
+          isInRange = isInRange &&
+            formattedAddedDate[2] <= formattedEndDate[2] &&
+            formattedAddedDate[1] <= formattedEndDate[1] &&
+            formattedAddedDate[0] <= formattedEndDate[0];
+        }
+  
+        if (status) {
+          isInRange = isInRange && client.Progress === status;
+        }
+  
+        if (quoSubmitted !== null) {
+          isInRange = isInRange && client.Quo === quoSubmitted;
+        }
+  
+        return isInRange;
+      });
+
+      filteredClientArray.sort((a, b) => {
         const clientNameA = a.NamaClient.toLowerCase();
         const clientNameB = b.NamaClient.toLowerCase();
         const clientPTNameA = a.NamaPT.split('- ')[1]?.toLowerCase();
@@ -98,8 +146,8 @@ export default function ClientsScreen(props) {
         return 0;
       });
 
-      setClientData(clientArray);
-      setNamaClientRekomendasi(clientArray.slice(0, 10));
+      setClientData(filteredClientArray);
+      setNamaClientRekomendasi(filteredClientArray.slice(0, 10));
     } catch (error) {
       console.log('Terjadi kesalahan saat mengambil data dari Firebase:', error);
     }
@@ -108,6 +156,13 @@ export default function ClientsScreen(props) {
   useEffect(() => {
     fetchClient();
   }, []);
+
+  const formatDate = (date) => {
+    const [dateString, _] = date.split(', ');
+    const [day, month, year] = dateString.split('/');
+
+    return [day, month, year];
+  };
 
   const handleNamaChange = (text) => {
     setNama(text);
@@ -192,10 +247,130 @@ export default function ClientsScreen(props) {
     setIsLoading(false);
   };
 
+  const handleStartDateChange = (event, selectedDate) => {
+    const currentDate = selectedDate || startDate;
+    const adjustedEndDate = endDate && endDate < currentDate ? currentDate : endDate;
+    setStartDate(currentDate);
+    setEndDate(adjustedEndDate);
+    setShowStartDatePicker(false);
+  };
+  
+  const handleEndDateChange = (event, selectedDate) => {
+    const currentDate = selectedDate || endDate;
+    const adjustedStartDate = startDate && startDate > currentDate ? currentDate : startDate;
+    setEndDate(currentDate);
+    setStartDate(adjustedStartDate);
+    setShowEndDatePicker(false);
+  };
+
+  const FilterModal = () => {
+    const handleResetFilter = () => {
+      setStartDate(null);
+      setEndDate(null);
+      setStatus(null);
+      setQuoSubmitted(null);
+    };
+
+    const handleFilterApply = () => {
+      setShowFilterModal(false);
+      onRefresh();
+    };
+
+    return(
+      <Modal
+        visible={showFilterModal}
+        animationType="fade"
+        transparent
+        onRequestClose={() => setShowFilterModal(false)}
+      >
+        <View style={styles.modalContainer}>
+          <View style={styles.modalContent}>
+            <View style={styles.datePickerContainer}>
+              <View style={styles.datePickerColumn}>
+                <Text style={styles.modalFilterTitle}>Start Date:</Text>
+                <TouchableOpacity onPress={() => {setShowStartDatePicker(true)}}>
+                  <Text style={styles.modalFilterOption}>{startDate ? startDate.toDateString() : 'Select Start Date'}</Text>
+                </TouchableOpacity>
+                {showStartDatePicker && (
+                  <DateTimePicker
+                    value={startDate || new Date()}
+                    mode="date"
+                    display="default"
+                    onChange={handleStartDateChange}
+                  />
+                )}
+              </View>
+
+              <View style={styles.datePickerColumn}>
+                <Text style={styles.modalFilterTitle}>End Date:</Text>
+                <TouchableOpacity onPress={() => {setShowEndDatePicker(true)}}>
+                  <Text style={styles.modalFilterOption}>{endDate ? endDate.toDateString() : 'Select End Date'}</Text>
+                </TouchableOpacity>
+                {showEndDatePicker && (
+                  <DateTimePicker
+                    value={endDate || new Date()}
+                    mode="date"
+                    display="default"
+                    onChange={handleEndDateChange}
+                  />
+                )}
+              </View>
+            </View>
+
+            <View style={styles.modalFilterGroup}>
+              <Text style={styles.modalFilterTitle}>Status</Text>
+              <TouchableOpacity onPress={() => setStatus('Contacting')}>
+                <Text style={[styles.modalFilterOption, status === 'Contacting' && styles.selectedOption]}>
+                  {status === 'Contacting' ? '●' : '○'} Contacting
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={() => setStatus('Compro Sent')}>
+                <Text style={[styles.modalFilterOption, status === 'Compro Sent' && styles.selectedOption]}>
+                  {status === 'Compro Sent' ? '●' : '○'} Compro Sent
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={() => setStatus('Appointment')}>
+                <Text style={[styles.modalFilterOption, status === 'Appointment' && styles.selectedOption]}>
+                  {status === 'Appointment' ? '●' : '○'} Appointment
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={() => setStatus('Schedule')}>
+                <Text style={[styles.modalFilterOption, status === 'Schedule' && styles.selectedOption]}>
+                  {status === 'Schedule' ? '●' : '○'} Schedule
+                </Text>
+              </TouchableOpacity>
+            </View>
+
+            <View style={styles.modalFilterGroup}>
+              <TouchableOpacity
+                style={styles.checkboxContainer}
+                onPress={() => {
+                  setQuoSubmitted(!quoSubmitted);
+                }}
+              >
+                <Text style={styles.modalFilterTitle}>
+                  Quo Submitted: {quoSubmitted ? <Text style={styles.modalFilterOption}>✓</Text> : ''}
+                </Text>
+              </TouchableOpacity>
+            </View>
+
+            <View style={styles.modalButtonContainer}>
+              <TouchableOpacity onPress={handleFilterApply}>
+                <Text style={styles.modalApplyButton}>Apply</Text>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={handleResetFilter}>
+                <Text style={styles.modalResetButton}>Reset</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+  )};
+
   return (
     <>
       {namaClientRekomendasi.length === 0 ? (
-        <Text>Loading...</Text>
+        <Text>Loading... if it takes to long to load maybe there is no data found</Text>
       ) : (
         <FlatList
           vertical
@@ -210,6 +385,9 @@ export default function ClientsScreen(props) {
           onEndReachedThreshold={0.1}
           ListFooterComponent={isLoading && <ActivityIndicator size="small" />}
         />
+      )}
+      {showFilterModal && (
+        <FilterModal />
       )}
     </>
   );
