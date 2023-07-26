@@ -1,4 +1,4 @@
-import React, { useState, useLayoutEffect, useEffect } from 'react';
+import React, { useState, useLayoutEffect, useEffect, useRef } from 'react';
 import { View, Text, TouchableOpacity, TextInput, FlatList, Image, Pressable, RefreshControl, ActivityIndicator, ToastAndroid, Modal } from 'react-native';
 import styles from './styles';
 import MenuImage from "../../components/MenuImage/MenuImage";
@@ -18,10 +18,9 @@ export default function ClientsScreen(props) {
   const [showFilterModal, setShowFilterModal] = useState(false);
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
-  const [showStartDatePicker, setShowStartDatePicker] = useState(false);
-  const [showEndDatePicker, setShowEndDatePicker] = useState(false);
   const [status, setStatus] = useState(null);
   const [quoSubmitted, setQuoSubmitted] = useState(null);
+  const isInitialRender = useRef(true);
 
   const { navigation } = props;
 
@@ -109,17 +108,17 @@ export default function ClientsScreen(props) {
         if (startDate) {
           const formattedStartDate = formatDate(startDate.toLocaleString('en-GB'));
           isInRange =
-            formattedAddedDate[2] >= formattedStartDate[2] &&
-            formattedAddedDate[1] >= formattedStartDate[1] &&
-            formattedAddedDate[0] >= formattedStartDate[0];
+            formattedAddedDate[2] > formattedStartDate[2] ||
+            (formattedAddedDate[2] === formattedStartDate[2] &&
+              (formattedAddedDate[1] > formattedStartDate[1] || (formattedAddedDate[1] === formattedStartDate[1] && formattedAddedDate[0] >= formattedStartDate[0])));
         }
   
         if (endDate) {
           const formattedEndDate = formatDate(endDate.toLocaleString('en-GB'));
-          isInRange = isInRange &&
-            formattedAddedDate[2] <= formattedEndDate[2] &&
-            formattedAddedDate[1] <= formattedEndDate[1] &&
-            formattedAddedDate[0] <= formattedEndDate[0];
+          isInRange = isInRange && (
+            formattedAddedDate[2] < formattedEndDate[2] ||
+            (formattedAddedDate[2] === formattedEndDate[2] &&
+              (formattedAddedDate[1] < formattedEndDate[1] || (formattedAddedDate[1] === formattedEndDate[1] && formattedAddedDate[0] <= formattedEndDate[0]))));
         }
   
         if (status) {
@@ -247,33 +246,51 @@ export default function ClientsScreen(props) {
     setIsLoading(false);
   };
 
-  const handleStartDateChange = (event, selectedDate) => {
-    const currentDate = selectedDate || startDate;
-    const adjustedEndDate = endDate && endDate < currentDate ? currentDate : endDate;
-    setStartDate(currentDate);
-    setEndDate(adjustedEndDate);
-    setShowStartDatePicker(false);
-  };
-  
-  const handleEndDateChange = (event, selectedDate) => {
-    const currentDate = selectedDate || endDate;
-    const adjustedStartDate = startDate && startDate > currentDate ? currentDate : startDate;
-    setEndDate(currentDate);
-    setStartDate(adjustedStartDate);
-    setShowEndDatePicker(false);
-  };
+  useEffect(() => {
+    if (isInitialRender.current) {
+      isInitialRender.current = false;
+      return;
+    }
+    onRefresh();
+  }, [startDate, endDate, status, quoSubmitted]);
 
   const FilterModal = () => {
+    const [startDateTemp, setStartDateTemp] = useState(startDate);
+    const [endDateTemp, setEndDateTemp] = useState(endDate);
+    const [statusTemp, setStatusTemp] = useState(status);
+    const [quoSubmittedTemp, setQuoSubmittedTemp] = useState(quoSubmitted);
+    const [showStartDatePicker, setShowStartDatePicker] = useState(false);
+    const [showEndDatePicker, setShowEndDatePicker] = useState(false);
+
     const handleResetFilter = () => {
-      setStartDate(null);
-      setEndDate(null);
-      setStatus(null);
-      setQuoSubmitted(null);
+      setStartDateTemp(null);
+      setEndDateTemp(null);
+      setStatusTemp(null);
+      setQuoSubmittedTemp(null);
     };
 
     const handleFilterApply = () => {
+      setStartDate(startDateTemp);
+      setEndDate(endDateTemp);
+      setStatus(statusTemp);
+      setQuoSubmitted(quoSubmittedTemp);
       setShowFilterModal(false);
-      onRefresh();
+    };
+
+    const handleStartDateChange = (event, selectedDate) => {
+      const currentDate = selectedDate || startDateTemp;
+      const adjustedEndDate = endDateTemp && endDateTemp < currentDate ? currentDate : endDateTemp;
+      setStartDateTemp(currentDate);
+      setEndDateTemp(adjustedEndDate);
+      setShowStartDatePicker(false);
+    };
+    
+    const handleEndDateChange = (event, selectedDate) => {
+      const currentDate = selectedDate || endDateTemp;
+      const adjustedStartDate = startDateTemp && startDateTemp > currentDate ? currentDate : startDateTemp;
+      setEndDateTemp(currentDate);
+      setStartDateTemp(adjustedStartDate);
+      setShowEndDatePicker(false);
     };
 
     return(
@@ -289,11 +306,11 @@ export default function ClientsScreen(props) {
               <View style={styles.datePickerColumn}>
                 <Text style={styles.modalFilterTitle}>Start Date:</Text>
                 <TouchableOpacity onPress={() => {setShowStartDatePicker(true)}}>
-                  <Text style={styles.modalFilterOption}>{startDate ? startDate.toDateString() : 'Select Start Date'}</Text>
+                  <Text style={styles.modalFilterOption}>{startDateTemp ? startDateTemp.toDateString() : 'Select Start Date'}</Text>
                 </TouchableOpacity>
                 {showStartDatePicker && (
                   <DateTimePicker
-                    value={startDate || new Date()}
+                    value={startDateTemp || new Date()}
                     mode="date"
                     display="default"
                     onChange={handleStartDateChange}
@@ -304,11 +321,11 @@ export default function ClientsScreen(props) {
               <View style={styles.datePickerColumn}>
                 <Text style={styles.modalFilterTitle}>End Date:</Text>
                 <TouchableOpacity onPress={() => {setShowEndDatePicker(true)}}>
-                  <Text style={styles.modalFilterOption}>{endDate ? endDate.toDateString() : 'Select End Date'}</Text>
+                  <Text style={styles.modalFilterOption}>{endDateTemp ? endDateTemp.toDateString() : 'Select End Date'}</Text>
                 </TouchableOpacity>
                 {showEndDatePicker && (
                   <DateTimePicker
-                    value={endDate || new Date()}
+                    value={endDateTemp || new Date()}
                     mode="date"
                     display="default"
                     onChange={handleEndDateChange}
@@ -319,24 +336,24 @@ export default function ClientsScreen(props) {
 
             <View style={styles.modalFilterGroup}>
               <Text style={styles.modalFilterTitle}>Status</Text>
-              <TouchableOpacity onPress={() => setStatus('Contacting')}>
-                <Text style={[styles.modalFilterOption, status === 'Contacting' && styles.selectedOption]}>
-                  {status === 'Contacting' ? '●' : '○'} Contacting
+              <TouchableOpacity onPress={() => setStatusTemp('Contacting')}>
+                <Text style={[styles.modalFilterOption, statusTemp === 'Contacting' && styles.selectedOption]}>
+                  {statusTemp === 'Contacting' ? '●' : '○'} Contacting
                 </Text>
               </TouchableOpacity>
-              <TouchableOpacity onPress={() => setStatus('Compro Sent')}>
-                <Text style={[styles.modalFilterOption, status === 'Compro Sent' && styles.selectedOption]}>
-                  {status === 'Compro Sent' ? '●' : '○'} Compro Sent
+              <TouchableOpacity onPress={() => setStatusTemp('Compro Sent')}>
+                <Text style={[styles.modalFilterOption, statusTemp === 'Compro Sent' && styles.selectedOption]}>
+                  {statusTemp === 'Compro Sent' ? '●' : '○'} Compro Sent
                 </Text>
               </TouchableOpacity>
-              <TouchableOpacity onPress={() => setStatus('Appointment')}>
-                <Text style={[styles.modalFilterOption, status === 'Appointment' && styles.selectedOption]}>
-                  {status === 'Appointment' ? '●' : '○'} Appointment
+              <TouchableOpacity onPress={() => setStatusTemp('Appointment')}>
+                <Text style={[styles.modalFilterOption, statusTemp === 'Appointment' && styles.selectedOption]}>
+                  {statusTemp === 'Appointment' ? '●' : '○'} Appointment
                 </Text>
               </TouchableOpacity>
-              <TouchableOpacity onPress={() => setStatus('Schedule')}>
-                <Text style={[styles.modalFilterOption, status === 'Schedule' && styles.selectedOption]}>
-                  {status === 'Schedule' ? '●' : '○'} Schedule
+              <TouchableOpacity onPress={() => setStatusTemp('Schedule')}>
+                <Text style={[styles.modalFilterOption, statusTemp === 'Schedule' && styles.selectedOption]}>
+                  {statusTemp === 'Schedule' ? '●' : '○'} Schedule
                 </Text>
               </TouchableOpacity>
             </View>
@@ -345,11 +362,11 @@ export default function ClientsScreen(props) {
               <TouchableOpacity
                 style={styles.checkboxContainer}
                 onPress={() => {
-                  setQuoSubmitted(!quoSubmitted);
+                  setQuoSubmittedTemp(!quoSubmittedTemp);
                 }}
               >
                 <Text style={styles.modalFilterTitle}>
-                  Quo Submitted: {quoSubmitted ? <Text style={styles.modalFilterOption}>✓</Text> : ''}
+                  Quo Submitted: {quoSubmittedTemp ? <Text style={styles.modalFilterOption}>✓</Text> : ''}
                 </Text>
               </TouchableOpacity>
             </View>

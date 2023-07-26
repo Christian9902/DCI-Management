@@ -1,5 +1,5 @@
 import React, { useState, useLayoutEffect, useEffect, useRef } from 'react';
-import { View, Text, TouchableOpacity, TextInput, FlatList, Image, Pressable, ActivityIndicator, ToastAndroid, RefreshControl } from 'react-native';
+import { View, Text, TouchableOpacity, TextInput, FlatList, Image, Pressable, ActivityIndicator, ToastAndroid, RefreshControl, Modal } from 'react-native';
 import styles from './styles';
 import MenuImage from "../../components/MenuImage/MenuImage";
 import { db } from '../Login/LoginScreen';
@@ -14,8 +14,12 @@ export default function StocksScreen(props) {
   const [currentPage, setCurrentPage] = useState(1);
   const [isEndReached, setIsEndReached] = useState(false);
 
+  const [showFilterModal, setShowFilterModal] = useState(false);
+  const [status, setStatus] = useState(null);
+  const [barValue, setBarValue] = useState(null);
+  const isInitialRender = useRef(true);
+
   const { navigation } = props;
-  const flatListRef = useRef(null);
 
   useLayoutEffect(() => {
     navigation.setOptions({
@@ -40,7 +44,13 @@ export default function StocksScreen(props) {
           </Pressable>
         </View>
       ),
-      headerRight: () => <View />,
+      headerRight: () => (
+        <View>
+          <TouchableOpacity onPress={() => setShowFilterModal(true)}>
+            <Image style={styles.filterIcon} source={require('../../../assets/icons/filter.png')} />
+          </TouchableOpacity>
+        </View>
+      ),
     });
   }, [nama]);
 
@@ -64,7 +74,21 @@ export default function StocksScreen(props) {
         }
       });
 
-      barangArray.sort((a, b) => {
+      const filteredBarangArray = barangArray.filter((barang) => {
+        let isInRange = true;
+  
+        if (status !== null) {
+          isInRange = isInRange && (status === (barang.status ? 'baru' : 'sisa'));
+        }
+  
+        if (barValue !== null) {
+          isInRange = isInRange && (barang.jumlah <= barValue);
+        }
+  
+        return isInRange;
+      });
+
+      filteredBarangArray.sort((a, b) => {
         const productNameA = a.namaBarang.toLowerCase();
         const productNameB = b.namaBarang.toLowerCase();
         const supplierNameA = a.namaSupplier.split('- ')[1]?.toLowerCase();
@@ -77,8 +101,8 @@ export default function StocksScreen(props) {
         return 0;
       });
 
-      setBarangData(barangArray);
-      setNamaBarangRekomendasi(barangArray.slice(0, 10));
+      setBarangData(filteredBarangArray);
+      setNamaBarangRekomendasi(filteredBarangArray.slice(0, 10));
     } catch (error) {
       console.log('Terjadi kesalahan saat mengambil data dari Firebase:', error);
     }
@@ -187,13 +211,117 @@ export default function StocksScreen(props) {
     setIsLoading(false);
   };
 
+  useEffect(() => {
+    if (isInitialRender.current) {
+      isInitialRender.current = false;
+      return;
+    }
+    onRefresh();
+  }, [status, barValue]);
+
+  const FilterModal = () => {
+    const [statusTemp, setStatusTemp] = useState(status);
+    const [barValueTemp, setBarValueTemp] = useState(barValue);
+
+    const handleResetFilter = () => {
+      setStatusTemp(null);
+      setBarValueTemp(null);
+    };
+
+    const handleFilterApply = () => {
+      setStatus(statusTemp);
+      setBarValue(barValueTemp);
+      setShowFilterModal(false);
+    };
+
+    return(
+      <Modal
+        visible={showFilterModal}
+        animationType="fade"
+        transparent
+        onRequestClose={() => setShowFilterModal(false)}
+      >
+        <View style={styles.modalContainer}>
+          <View style={styles.modalContent}>
+            <View style={styles.modalFilterGroup}>
+              <TouchableOpacity
+                style={styles.checkboxContainer}
+                onPress={() => {
+                  if (statusTemp === null || statusTemp === 'sisa') {
+                    setStatusTemp('baru');
+                  } else {
+                    setStatusTemp('sisa');
+                  };
+                }}
+              >
+                <Text style={styles.modalFilterTitle}>
+                Status: {statusTemp !== null ? (statusTemp === 'baru' ? <Text style={styles.modalFilterOption}>Baru</Text> : <Text style={styles.modalFilterOption}>Sisa</Text>) : ''}
+                </Text>
+              </TouchableOpacity>
+            </View>
+
+            <View style={styles.modalFilterGroup}>
+              <Text style={styles.modalFilterTitle}>Jumlah kurang dari: </Text>
+              <View style={styles.inputContainer}>
+                <TouchableOpacity
+                  style={styles.button}
+                  onPress={() => {
+                    if (barValueTemp === null) {
+                      setBarValueTemp(1);
+                    } else {
+                      setBarValueTemp(barValueTemp + 1);
+                    }
+                  }}
+                >
+                  <Text style={styles.buttonText}>+</Text>
+                </TouchableOpacity>
+                <TextInput
+                  style={styles.input}
+                  onChangeText={(text) => {
+                    const numericValue = parseInt(text);
+                    if (!isNaN(numericValue)) {
+                      setBarValueTemp(numericValue);
+                    } else {
+                      setBarValueTemp(0);
+                    }
+                  }}
+                  value={barValueTemp !== null ? barValueTemp.toString() : ''}
+                  keyboardType="numeric"
+                />
+                <TouchableOpacity
+                  style={styles.button}
+                  onPress={() => {
+                    if (barValueTemp === null || barValueTemp === 0) {
+                      setBarValueTemp(0);
+                    } else {
+                      setBarValueTemp(barValueTemp - 1);
+                    }
+                  }}
+                >
+                  <Text style={styles.buttonText}>-</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+
+            <View style={styles.modalButtonContainer}>
+              <TouchableOpacity onPress={handleFilterApply}>
+                <Text style={styles.modalApplyButton}>Apply</Text>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={handleResetFilter}>
+                <Text style={styles.modalResetButton}>Reset</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+  )};
+
   return (
     <>
       {namaBarangRekomendasi.length === 0 ? (
-        <Text>Loading...</Text>
+        <Text>Loading... if it takes to long to load maybe there is no data found</Text>
       ) : (
         <FlatList
-          ref={flatListRef}
           vertical
           showsVerticalScrollIndicator={false}
           data={namaBarangRekomendasi}
@@ -206,6 +334,9 @@ export default function StocksScreen(props) {
           }
           ListFooterComponent={isLoading && <ActivityIndicator size="small" />}
         />
+      )}
+      {showFilterModal && (
+        <FilterModal />
       )}
     </>
   );

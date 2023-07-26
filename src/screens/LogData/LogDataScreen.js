@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useLayoutEffect, useCallback } from 'react';
-import { View, Text, TouchableOpacity, TextInput, FlatList, Image, RefreshControl, Pressable, ToastAndroid } from 'react-native';
+import { View, Text, TouchableOpacity, TextInput, FlatList, Image, RefreshControl, Pressable, ToastAndroid, Modal } from 'react-native';
 import styles from './styles';
 import MenuImage from "../../components/MenuImage/MenuImage";
 import { db } from '../Login/LoginScreen';
 import { collection, getDocs } from 'firebase/firestore';
+import DateTimePicker from '@react-native-community/datetimepicker';
 
 export default function LogData(props) {
   const [logData, setLogData] = useState([]);
@@ -13,6 +14,12 @@ export default function LogData(props) {
   const [currentPage, setCurrentPage] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
   const [expandedItems, setExpandedItems] = useState([]);
+
+  const [showFilterModal, setShowFilterModal] = useState(false);
+  const [startDate, setStartDate] = useState(new Date);
+  const [endDate, setEndDate] = useState(new Date);
+  const [showStartDatePicker, setShowStartDatePicker] = useState(false);
+  const [showEndDatePicker, setShowEndDatePicker] = useState(false);
 
   const { navigation } = props;
 
@@ -32,18 +39,24 @@ export default function LogData(props) {
             style={styles.searchInput}
             onChangeText={handleSearch}
             value={text}
-            placeholder='Action; Time; User'
+            placeholder='Action; User'
           />
           <Pressable onPress={() => { setText(""); }}>
             <Image style={styles.searchIcon} source={require("../../../assets/icons/close.png")} />
           </Pressable>
         </View>
       ),
-      headerRight: () => <View />,
+      headerRight: () => (
+        <View>
+          <TouchableOpacity onPress={() => setShowFilterModal(true)}>
+            <Image style={styles.filterIcon} source={require('../../../assets/icons/filter.png')} />
+          </TouchableOpacity>
+        </View>
+      ),
     });
   }, [text]);
 
-  const fetchLogData = useCallback(async () => {
+  const fetchLogData = async () => {
     try {
       const [logdataSnapshot, userSnapshot] = await Promise.all([
         getDocs(collection(db, 'Log Data')),
@@ -71,25 +84,54 @@ export default function LogData(props) {
         }
       }).filter((item) => item !== null);
 
-      logData.sort((a, b) => {
+      const filteredLogDataArray = logData.filter((log) => {
+        const formattedAddedDate = timeToArray(log.Time);
+        let isInRange = true;
+  
+        if (startDate) {
+          const formattedStartDate = timeToArray(startDate.toLocaleString('en-GB'));
+          isInRange =
+            formattedAddedDate[2] > formattedStartDate[2] ||
+            (formattedAddedDate[2] === formattedStartDate[2] &&
+              (formattedAddedDate[1] > formattedStartDate[1] || (formattedAddedDate[1] === formattedStartDate[1] && formattedAddedDate[0] >= formattedStartDate[0])));
+        }
+  
+        if (endDate) {
+          const formattedEndDate = timeToArray(endDate.toLocaleString('en-GB'));
+          isInRange = isInRange && (
+            formattedAddedDate[2] < formattedEndDate[2] ||
+            (formattedAddedDate[2] === formattedEndDate[2] &&
+              (formattedAddedDate[1] < formattedEndDate[1] || (formattedAddedDate[1] === formattedEndDate[1] && formattedAddedDate[0] <= formattedEndDate[0]))));
+        }
+  
+        return isInRange;
+      });
+
+      filteredLogDataArray.sort((a, b) => {
         const timeA = timeToArray(a.Time);
         const timeB = timeToArray(b.Time);
-
-        for (let i = 0; i < timeA.length; i++) {
+      
+        for (let i = 2; i >= 0; i--) {
           if (timeA[i] !== timeB[i]) {
             return parseInt(timeB[i]) - parseInt(timeA[i]);
           }
         }
-
+      
+        for (let i = 3; i <= 5; i++) {
+          if (timeA[i] !== timeB[i]) {
+            return parseInt(timeB[i]) - parseInt(timeA[i]);
+          }
+        }
+      
         return 0;
       });
 
-      setLogData(logData);
-      setFilteredLogData(logData.slice(0, 10));
+      setLogData(filteredLogDataArray);
+      setFilteredLogData(filteredLogDataArray.slice(0, 10));
     } catch (error) {
       console.log('Terjadi kesalahan saat mengambil data dari Firebase:', error);
     }
-  }, [isItemExpanded]);
+  };
 
   useEffect(() => {
     fetchLogData();
@@ -131,20 +173,10 @@ export default function LogData(props) {
       const filterText = x.toLowerCase().trim();
       const filterItems = filterText.split(';').map((item) => item.trim());
       const filterAction = filterItems[0] ? filterItems[0].toLowerCase() : '';
-      const filterTimestamp = filterItems[1] ? timeToArray(filterItems[1]) : [];
       const filterUserID = filterItems[2] ? filterItems[2].toLowerCase() : '';
 
       const filteredData = logData.filter((item) => {
         if (filterAction !== '' && !item.Action.toLowerCase().includes(filterAction)) {
-          return false;
-        }
-        if (
-          filterTimestamp.length !== 0 &&
-          !filterTimestamp.every((filterValue, index) => {
-            const itemValue = item.Time.split(/[\/,: ]/)[index];
-            return itemValue.includes(filterValue);
-          })
-        ) {
           return false;
         }
         if (filterUserID !== '' && !item.User.toLowerCase().includes(filterUserID)) {
@@ -232,10 +264,91 @@ export default function LogData(props) {
     setRefreshing(false);
   };
 
+  const handleStartDateChange = (event, selectedDate) => {
+    const currentDate = selectedDate || startDate;
+    const adjustedEndDate = endDate && endDate < currentDate ? currentDate : endDate;
+    setStartDate(currentDate);
+    setEndDate(adjustedEndDate);
+    setShowStartDatePicker(false);
+  };
+  
+  const handleEndDateChange = (event, selectedDate) => {
+    const currentDate = selectedDate || endDate;
+    const adjustedStartDate = startDate && startDate > currentDate ? currentDate : startDate;
+    setEndDate(currentDate);
+    setStartDate(adjustedStartDate);
+    setShowEndDatePicker(false);
+  };
+
+  const FilterModal = () => {
+    const handleResetFilter = () => {
+      setStartDate(null);
+      setEndDate(null);
+    };
+
+    const handleFilterApply = () => {
+      setShowFilterModal(false);
+      onRefresh();
+    };
+
+    return(
+      <Modal
+        visible={showFilterModal}
+        animationType="fade"
+        transparent
+        onRequestClose={() => setShowFilterModal(false)}
+      >
+        <View style={styles.modalContainer}>
+          <View style={styles.modalContent}>
+            <View style={styles.datePickerContainer}>
+              <View style={styles.datePickerColumn}>
+                <Text style={styles.modalFilterTitle}>Start Date:</Text>
+                <TouchableOpacity onPress={() => {setShowStartDatePicker(true)}}>
+                  <Text style={styles.modalFilterOption}>{startDate ? startDate.toDateString() : 'Select Start Date'}</Text>
+                </TouchableOpacity>
+                {showStartDatePicker && (
+                  <DateTimePicker
+                    value={startDate || new Date()}
+                    mode="date"
+                    display="default"
+                    onChange={handleStartDateChange}
+                  />
+                )}
+              </View>
+
+              <View style={styles.datePickerColumn}>
+                <Text style={styles.modalFilterTitle}>End Date:</Text>
+                <TouchableOpacity onPress={() => {setShowEndDatePicker(true)}}>
+                  <Text style={styles.modalFilterOption}>{endDate ? endDate.toDateString() : 'Select End Date'}</Text>
+                </TouchableOpacity>
+                {showEndDatePicker && (
+                  <DateTimePicker
+                    value={endDate || new Date()}
+                    mode="date"
+                    display="default"
+                    onChange={handleEndDateChange}
+                  />
+                )}
+              </View>
+            </View>
+
+            <View style={styles.modalButtonContainer}>
+              <TouchableOpacity onPress={handleFilterApply}>
+                <Text style={styles.modalApplyButton}>Apply</Text>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={handleResetFilter}>
+                <Text style={styles.modalResetButton}>Reset</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+  )};
+
   return (
     <>
       {filteredLogData.length === 0 ? (
-        <Text>Loading...</Text>
+        <Text>Loading... if it takes to long to load maybe there is no data found</Text>
       ) : (
         <FlatList
           vertical
@@ -253,6 +366,9 @@ export default function LogData(props) {
           onEndReachedThreshold={0.1}
           ListFooterComponent={isLoading && <ActivityIndicator size="small" />}
         />
+      )}
+      {showFilterModal && (
+        <FilterModal />
       )}
     </>
   );

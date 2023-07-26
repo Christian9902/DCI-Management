@@ -299,6 +299,7 @@ export default function AddOrderScreen(props) {
         Supplier: suppliers,
         Spesifikasi: details,
         Harga: harga,
+        Deadline: timeline,
         Progress: progress,
         Attachment: attachment.map(file => file.name),
         PIC: user.uid,
