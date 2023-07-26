@@ -22,6 +22,7 @@ import ClientUpdateScreen from './src/screens/ClientUpdate/ClientUpdateScreen';
 import IncomeScreen from './src/screens/Income/IncomeScreen';
 import ProfileScreen from './src/screens/Profile/ProfileScreen';
 import DrawerContainer from './src/screens/DrawerContainer/DrawerContainer';
+import OrderUpdateScreen from './src/screens/OrderUpdate/OrderUpdateScreen';
 
 const Stack = createStackNavigator();
 
@@ -46,6 +47,7 @@ function MainNavigator() {
       <Stack.Screen name='Add Supplier' component={AddSupplierScreen} />
       <Stack.Screen name='Suppliers' component={SuppliersScreen} />
       <Stack.Screen name='Supplier Update' component={SupplierUpdateScreen} />
+      <Stack.Screen name='Order Update' component={OrderUpdateScreen} />
       <Stack.Screen name='Take' component={TakeScreen} />
       <Stack.Screen name='Client Info' component={ClientInfoScreen} />
       <Stack.Screen name='Income' component={IncomeScreen} />

@@ -7,6 +7,11 @@ import MenuImage from "../../components/MenuImage/MenuImage";
 import { db, auth, storage } from '../Login/LoginScreen';
 import { addDoc, collection, getDocs } from 'firebase/firestore';
 import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
+import { NavigationContainer } from '@react-navigation/native';
+import { createStackNavigator } from '@react-navigation/stack';
+import { useNavigation } from '@react-navigation/native';
+import OrderUpdateScreen from './OrderUpdateScreen';
+
 
 export default function OrderScreen(props) {
   const [namaProject, setNamaProject] = useState('');
@@ -33,6 +38,7 @@ export default function OrderScreen(props) {
 
   const [uploadProgress, setUploadProgress] = useState([]);
   const [showProgressModal, setShowProgressModal] = useState(false);
+  const [orderData, setOrderData] = useState([]);
 
   const { navigation } = props;
 
@@ -62,6 +68,7 @@ export default function OrderScreen(props) {
   useEffect(() => {
     fetchClient();
     fetchSupplier();
+    fetchOrders();
   }, []);
 
   const fetchClient = async () => {
@@ -111,6 +118,18 @@ export default function OrderScreen(props) {
     }
   };
 
+  const Stack = createStackNavigator();
+
+function MainNavigator() {
+  return (
+    <Stack.Navigator>
+      <Stack.Screen name="OrderScreen" component={OrderScreen} />
+      <Stack.Screen name="OrderUpdate" component={OrderUpdateScreen} />
+      {/* Add other screens here if needed */}
+    </Stack.Navigator>
+  );
+}
+
   const handleClientChange = (text) => {
     setNamaClient(text);
     let filteredClient = [];
@@ -128,6 +147,14 @@ export default function OrderScreen(props) {
     setClientRekomendasi(filteredClient);
   };
 
+  const renderItem = ({ item }) => (
+    <TouchableOpacity onPress={() => onPressItem(item)}>
+      <View style={styles.listItem}>
+        <Text style={styles.title}>{item.NamaProject}</Text>
+        <Text style={styles.category}>{item.Spesifikasi}</Text>
+      </View>
+    </TouchableOpacity>
+  );
   const handleSelectClient = (selectedClient) => {
     setNamaClient(selectedClient.NamaClient);
     setPTClient(selectedClient.NamaPT);
@@ -159,6 +186,47 @@ export default function OrderScreen(props) {
       console.log('Terjadi kesalahan saat mengambil data dari Firebase:', error);
     }
   };  
+
+  const fetchOrders = async () => {
+    try {
+      const orderSnapshot = await getDocs(collection(db, 'Order'));
+      const orderArray = [];
+      orderSnapshot.forEach((doc) => {
+        const data = doc.data();
+        const id = doc.id;
+        const NamaProject = data?.NamaProject;
+        const Spesifikasi = data?.Spesifikasi;
+        // Tambahkan field lain yang ingin ditampilkan pada OrderScreen
+        // Misalnya: NamaClient, PTClient, dll.
+  
+        if (NamaProject) {
+          orderArray.push({
+            id,
+            NamaProject,
+            Spesifikasi,
+            // Tambahkan data lain sesuai dengan field yang ingin ditampilkan.
+          });
+        }
+      });
+  
+      orderArray.sort((a, b) => {
+        const orderNameA = a.NamaProject.toLowerCase();
+        const orderNameB = b.NamaProject.toLowerCase();
+  
+        if (orderNameA < orderNameB) return -1;
+        if (orderNameA > orderNameB) return 1;
+        return 0;
+      });
+  
+      setOrderData(orderArray);
+    } catch (error) {
+      console.log('Terjadi kesalahan saat mengambil data dari Firebase:', error);
+    }
+  };
+
+  const OrderScreen = () => {
+    const navigation = useNavigation();
+  
 
   const handleSelectVendor = (selectedItem) => {
     const updatedSupplierList = supplierList.map((item) => ({
@@ -338,6 +406,11 @@ export default function OrderScreen(props) {
     }
   };
 
+  const onPressItem = (item) => {
+    navigation.navigate("Order Update", { orderData: item, orderId: item.id });
+  };
+  
+
   const handleCancel = () => {
     setNamaProject('');
     setNamaClient('');
@@ -442,8 +515,9 @@ export default function OrderScreen(props) {
           <View style={styles.modalBackdrop}>
             <View style={styles.modalContent}>
               <FlatList
-                data={supplierList}
+                data={orderData}
                 renderItem={({ item }) => (
+                  
                   <TouchableOpacity onPress={() => handleSelectVendor(item)}>
                     <View
                       style={[
@@ -566,4 +640,5 @@ export default function OrderScreen(props) {
       )}
     </View>
   );
+}
 }
