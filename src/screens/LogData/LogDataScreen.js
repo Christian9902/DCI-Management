@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useLayoutEffect, useCallback } from 'react';
+import React, { useState, useEffect, useLayoutEffect, useCallback, useRef } from 'react';
 import { View, Text, TouchableOpacity, TextInput, FlatList, Image, RefreshControl, Pressable, ToastAndroid, Modal } from 'react-native';
 import styles from './styles';
 import MenuImage from "../../components/MenuImage/MenuImage";
@@ -18,8 +18,7 @@ export default function LogData(props) {
   const [showFilterModal, setShowFilterModal] = useState(false);
   const [startDate, setStartDate] = useState(new Date);
   const [endDate, setEndDate] = useState(new Date);
-  const [showStartDatePicker, setShowStartDatePicker] = useState(false);
-  const [showEndDatePicker, setShowEndDatePicker] = useState(false);
+  const isInitialRender = useRef(true);
 
   const { navigation } = props;
 
@@ -205,7 +204,8 @@ export default function LogData(props) {
   };
 
   const onPressItem = (item) => {
-    navigation.navigate("Home");
+    //navigation.navigate("Home");
+    console.log(item);
   };
 
   const toggleExpanded = (itemId) => {
@@ -264,31 +264,45 @@ export default function LogData(props) {
     setRefreshing(false);
   };
 
-  const handleStartDateChange = (event, selectedDate) => {
-    const currentDate = selectedDate || startDate;
-    const adjustedEndDate = endDate && endDate < currentDate ? currentDate : endDate;
-    setStartDate(currentDate);
-    setEndDate(adjustedEndDate);
-    setShowStartDatePicker(false);
-  };
-  
-  const handleEndDateChange = (event, selectedDate) => {
-    const currentDate = selectedDate || endDate;
-    const adjustedStartDate = startDate && startDate > currentDate ? currentDate : startDate;
-    setEndDate(currentDate);
-    setStartDate(adjustedStartDate);
-    setShowEndDatePicker(false);
-  };
+  useEffect(() => {
+    if (isInitialRender.current) {
+      isInitialRender.current = false;
+      return;
+    }
+    onRefresh();
+  }, [startDate, endDate]);
 
   const FilterModal = () => {
+    const [startDateTemp, setStartDateTemp] = useState(startDate);
+    const [endDateTemp, setEndDateTemp] = useState(endDate);
+    const [showStartDatePicker, setShowStartDatePicker] = useState(false);
+    const [showEndDatePicker, setShowEndDatePicker] = useState(false);
+
     const handleResetFilter = () => {
-      setStartDate(null);
-      setEndDate(null);
+      setStartDateTemp(null);
+      setEndDateTemp(null);
     };
 
     const handleFilterApply = () => {
+      setStartDate(startDateTemp);
+      setEndDate(endDateTemp);
       setShowFilterModal(false);
-      onRefresh();
+    };
+
+    const handleStartDateChange = (event, selectedDate) => {
+      const currentDate = selectedDate || startDateTemp;
+      const adjustedEndDate = endDateTemp && endDateTemp < currentDate ? currentDate : endDateTemp;
+      setShowStartDatePicker(false);
+      setStartDateTemp(currentDate);
+      setEndDateTemp(adjustedEndDate);
+    };
+    
+    const handleEndDateChange = (event, selectedDate) => {
+      const currentDate = selectedDate || endDateTemp;
+      const adjustedStartDate = startDateTemp && startDateTemp > currentDate ? currentDate : startDateTemp;
+      setShowEndDatePicker(false);
+      setEndDateTemp(currentDate);
+      setStartDateTemp(adjustedStartDate);
     };
 
     return(
@@ -300,15 +314,15 @@ export default function LogData(props) {
       >
         <View style={styles.modalContainer}>
           <View style={styles.modalContent}>
-            <View style={styles.datePickerContainer}>
+          <View style={styles.datePickerContainer}>
               <View style={styles.datePickerColumn}>
                 <Text style={styles.modalFilterTitle}>Start Date:</Text>
                 <TouchableOpacity onPress={() => {setShowStartDatePicker(true)}}>
-                  <Text style={styles.modalFilterOption}>{startDate ? startDate.toDateString() : 'Select Start Date'}</Text>
+                  <Text style={styles.modalFilterOption}>{startDateTemp ? startDateTemp.toDateString() : 'Select Start Date'}</Text>
                 </TouchableOpacity>
                 {showStartDatePicker && (
                   <DateTimePicker
-                    value={startDate || new Date()}
+                    value={startDateTemp || new Date()}
                     mode="date"
                     display="default"
                     onChange={handleStartDateChange}
@@ -319,11 +333,11 @@ export default function LogData(props) {
               <View style={styles.datePickerColumn}>
                 <Text style={styles.modalFilterTitle}>End Date:</Text>
                 <TouchableOpacity onPress={() => {setShowEndDatePicker(true)}}>
-                  <Text style={styles.modalFilterOption}>{endDate ? endDate.toDateString() : 'Select End Date'}</Text>
+                  <Text style={styles.modalFilterOption}>{endDateTemp ? endDateTemp.toDateString() : 'Select End Date'}</Text>
                 </TouchableOpacity>
                 {showEndDatePicker && (
                   <DateTimePicker
-                    value={endDate || new Date()}
+                    value={endDateTemp || new Date()}
                     mode="date"
                     display="default"
                     onChange={handleEndDateChange}

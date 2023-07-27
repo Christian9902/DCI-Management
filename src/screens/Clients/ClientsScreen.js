@@ -1,10 +1,11 @@
 import React, { useState, useLayoutEffect, useEffect, useRef } from 'react';
-import { View, Text, TouchableOpacity, TextInput, FlatList, Image, Pressable, RefreshControl, ActivityIndicator, ToastAndroid, Modal } from 'react-native';
+import { View, Text, TouchableOpacity, TextInput, FlatList, Image, Pressable, RefreshControl, ActivityIndicator, ToastAndroid, Modal, Platform } from 'react-native';
 import styles from './styles';
 import MenuImage from "../../components/MenuImage/MenuImage";
 import { db } from '../Login/LoginScreen';
 import { collection, getDocs } from 'firebase/firestore';
 import DateTimePicker from '@react-native-community/datetimepicker';
+import RNDateTimePicker from '@react-native-community/datetimepicker';
 
 export default function ClientsScreen(props) {
   const [nama, setNama] = useState('');
@@ -280,17 +281,17 @@ export default function ClientsScreen(props) {
     const handleStartDateChange = (event, selectedDate) => {
       const currentDate = selectedDate || startDateTemp;
       const adjustedEndDate = endDateTemp && endDateTemp < currentDate ? currentDate : endDateTemp;
+      setShowStartDatePicker(false);
       setStartDateTemp(currentDate);
       setEndDateTemp(adjustedEndDate);
-      setShowStartDatePicker(false);
     };
     
     const handleEndDateChange = (event, selectedDate) => {
       const currentDate = selectedDate || endDateTemp;
       const adjustedStartDate = startDateTemp && startDateTemp > currentDate ? currentDate : startDateTemp;
+      setShowEndDatePicker(false);
       setEndDateTemp(currentDate);
       setStartDateTemp(adjustedStartDate);
-      setShowEndDatePicker(false);
     };
 
     return(

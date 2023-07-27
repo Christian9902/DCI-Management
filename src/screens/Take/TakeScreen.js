@@ -1,5 +1,5 @@
-import React, { useState, useLayoutEffect, useEffect } from 'react';
-import { ToastAndroid, View, Text, TextInput, FlatList, Image, Pressable, TouchableOpacity, RefreshControl, ActivityIndicator } from 'react-native';
+import React, { useState, useLayoutEffect, useEffect, useRef } from 'react';
+import { ToastAndroid, View, Text, TextInput, FlatList, Image, Pressable, TouchableOpacity, RefreshControl, ActivityIndicator, Modal } from 'react-native';
 import styles from './styles';
 import MenuImage from "../../components/MenuImage/MenuImage";
 import { auth, db } from '../Login/LoginScreen';
@@ -14,6 +14,11 @@ export default function TakeStockScreen(props) {
   const [refreshing, setRefreshing] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
+
+  const [showFilterModal, setShowFilterModal] = useState(false);
+  const [status, setStatus] = useState(null);
+  const [barValue, setBarValue] = useState(null);
+  const isInitialRender = useRef(true);
 
   const { navigation } = props;
 
@@ -33,14 +38,20 @@ export default function TakeStockScreen(props) {
             style={styles.searchInput}
             onChangeText={handleNamaChange}
             value={nama}
-            placeholder='Baru/Sisa; Barang1, Barang2, ...; Supplier1, ...'
+            placeholder='Barang1, Barang2, ...; Supplier1, Supplier2...'
           />
           <Pressable onPress={() => {setNama(""); handleNamaChange("")}}>
             <Image style={styles.searchIcon} source={require("../../../assets/icons/close.png")} />
           </Pressable>
         </View>
       ),
-      headerRight: () => <View />,
+      headerRight: () => (
+        <View>
+          <TouchableOpacity onPress={() => setShowFilterModal(true)}>
+            <Image style={styles.filterIcon} source={require('../../../assets/icons/filter.png')} />
+          </TouchableOpacity>
+        </View>
+      ),
     });
   }, [nama]);
 
@@ -68,21 +79,35 @@ export default function TakeStockScreen(props) {
         }
       });
   
-      barangArray.sort((a, b) => {
+      const filteredBarangArray = barangArray.filter((barang) => {
+        let isInRange = true;
+  
+        if (status !== null) {
+          isInRange = isInRange && (status === (barang.status ? 'baru' : 'sisa'));
+        }
+  
+        if (barValue !== null) {
+          isInRange = isInRange && (barang.jumlah <= barValue);
+        }
+  
+        return isInRange;
+      });
+
+      filteredBarangArray.sort((a, b) => {
         const productNameA = a.NamaBarang.toLowerCase();
         const productNameB = b.NamaBarang.toLowerCase();
         const supplierNameA = a.NamaSupplier.split('- ')[1]?.toLowerCase();
         const supplierNameB = b.NamaSupplier.split('- ')[1]?.toLowerCase();
-  
+
         if (productNameA < productNameB) return -1;
         if (productNameA > productNameB) return 1;
         if (supplierNameA < supplierNameB) return -1;
         if (supplierNameA > supplierNameB) return 1;
         return 0;
       });
-  
-      setBarangData(barangArray);
-      setNamaBarangRekomendasi(barangArray.slice(0, 10));
+
+      setBarangData(filteredBarangArray);
+      setNamaBarangRekomendasi(filteredBarangArray.slice(0, 10));
     } catch (error) {
       console.log('Terjadi kesalahan saat mengambil data dari Firebase:', error);
     }
@@ -95,44 +120,27 @@ export default function TakeStockScreen(props) {
   const handleNamaChange = (text) => {
     setNama(text);
     let filteredBarang = [];
-  
+
     if (text === '') {
       filteredBarang = barangData;
     } else {
       const filterText = text.toLowerCase().trim();
       const filterItems = filterText.split(';').map((item) => item.trim());
-      const filterBaru = filterItems[0].toLowerCase();
-      const filterNamaBarang = filterItems[1] ? filterItems[1].split(',').map((item) => item.trim().toLowerCase()) : [];
-      const filterNamaSupplier = filterItems[2] ? filterItems[2].split(',').map((item) => item.trim().toLowerCase()) : [];
-  
+      const filterNamaBarang = filterItems[1] ? filterItems[0].split(',').map((item) => item.trim().toLowerCase()) : [];
+      const filterNamaSupplier = filterItems[2] ? filterItems[1].split(',').map((item) => item.trim().toLowerCase()) : [];
+
       filteredBarang = barangData.filter((item) => {
-        if (filterBaru !== 'baru' && filterBaru !== 'sisa') {
-          if (filterNamaBarang.length > 0 && !filterNamaBarang.some((nama) => item.NamaBarang.toLowerCase().includes(nama))) {
-            return false;
-          }
-          if (filterNamaSupplier.length > 0 && !filterNamaSupplier.some((nama) => item.NamaSupplier.toLowerCase().includes(nama))) {
-            return false;
-          }
-          return true;
-        } else {
-          if (filterBaru === 'baru' && !item.Status) {
-            return false;
-          }
-          if (filterBaru === 'sisa' && item.Status) {
-            return false;
-          }
-          if (filterNamaBarang.length > 0 && !filterNamaBarang.some((nama) => item.NamaBarang.toLowerCase().includes(nama))) {
-            return false;
-          }
-          if (filterNamaSupplier.length > 0 && !filterNamaSupplier.some((nama) => item.NamaSupplier.toLowerCase().includes(nama))) {
-            return false;
-          }
-          return true;
+        if (filterNamaBarang.length > 0 && !filterNamaBarang.some((nama) => item.namaBarang.toLowerCase().includes(nama))) {
+          return false;
         }
+        if (filterNamaSupplier.length > 0 && !filterNamaSupplier.some((nama) => item.namaSupplier.toLowerCase().includes(nama))) {
+          return false;
+        }
+        return true;
       });
     }
-  
-    setNamaBarangRekomendasi(filteredBarang);
+
+    setNamaBarangRekomendasi(filteredBarang.slice(0, 10));
   };
 
   const handleIncreaseQuantity = (item) => {
@@ -285,6 +293,111 @@ export default function TakeStockScreen(props) {
     setIsLoading(false);
   };
 
+  useEffect(() => {
+    if (isInitialRender.current) {
+      isInitialRender.current = false;
+      return;
+    }
+    onRefresh();
+  }, [status, barValue]);
+
+  const FilterModal = () => {
+    const [statusTemp, setStatusTemp] = useState(status);
+    const [barValueTemp, setBarValueTemp] = useState(barValue);
+
+    const handleResetFilter = () => {
+      setStatusTemp(null);
+      setBarValueTemp(null);
+    };
+
+    const handleFilterApply = () => {
+      setStatus(statusTemp);
+      setBarValue(barValueTemp);
+      setShowFilterModal(false);
+    };
+
+    return(
+      <Modal
+        visible={showFilterModal}
+        animationType="fade"
+        transparent
+        onRequestClose={() => setShowFilterModal(false)}
+      >
+        <View style={styles.modalContainer}>
+          <View style={styles.modalContent}>
+            <View style={styles.modalFilterGroup}>
+              <TouchableOpacity
+                style={styles.checkboxContainer}
+                onPress={() => {
+                  if (statusTemp === null || statusTemp === 'sisa') {
+                    setStatusTemp('baru');
+                  } else {
+                    setStatusTemp('sisa');
+                  };
+                }}
+              >
+                <Text style={styles.modalFilterTitle}>
+                Status: {statusTemp !== null ? (statusTemp === 'baru' ? <Text style={styles.modalFilterOption}>Baru</Text> : <Text style={styles.modalFilterOption}>Sisa</Text>) : ''}
+                </Text>
+              </TouchableOpacity>
+            </View>
+
+            <View style={styles.modalFilterGroup}>
+              <Text style={styles.modalFilterTitle}>Jumlah kurang dari: </Text>
+              <View style={styles.inputContainer}>
+                <TouchableOpacity
+                  style={styles.button}
+                  onPress={() => {
+                    if (barValueTemp === null) {
+                      setBarValueTemp(1);
+                    } else {
+                      setBarValueTemp(barValueTemp + 1);
+                    }
+                  }}
+                >
+                  <Text style={styles.buttonText}>+</Text>
+                </TouchableOpacity>
+                <TextInput
+                  style={styles.input}
+                  onChangeText={(text) => {
+                    const numericValue = parseInt(text);
+                    if (!isNaN(numericValue)) {
+                      setBarValueTemp(numericValue);
+                    } else {
+                      setBarValueTemp(0);
+                    }
+                  }}
+                  value={barValueTemp !== null ? barValueTemp.toString() : ''}
+                  keyboardType="numeric"
+                />
+                <TouchableOpacity
+                  style={styles.button}
+                  onPress={() => {
+                    if (barValueTemp === null || barValueTemp === 0) {
+                      setBarValueTemp(0);
+                    } else {
+                      setBarValueTemp(barValueTemp - 1);
+                    }
+                  }}
+                >
+                  <Text style={styles.buttonText}>-</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+
+            <View style={styles.modalButtonContainer}>
+              <TouchableOpacity onPress={handleFilterApply}>
+                <Text style={styles.modalApplyButton}>Apply</Text>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={handleResetFilter}>
+                <Text style={styles.modalResetButton}>Reset</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+  )};
+
   return (
     <View style={styles.container}>
       {namaBarangRekomendasi.length === 0 ? (
@@ -303,6 +416,9 @@ export default function TakeStockScreen(props) {
           onEndReachedThreshold={0.1}
           ListFooterComponent={isLoading && <ActivityIndicator size="small" />}
         />
+      )}
+      {showFilterModal && (
+        <FilterModal />
       )}
   
       <View style={styles.buttonContainer}>

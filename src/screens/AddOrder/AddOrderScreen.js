@@ -195,6 +195,10 @@ export default function AddOrderScreen(props) {
   };
 
   const handleDeadline = (event, selectedDate) => {
+    setShowMockupPicker(false);
+    setShowDeadlinePicker(false);
+    setShowPengirimanPicker(false);
+
     if (selectedDate !== undefined) {
       if (showMockupPicker) {
         setTimeline([selectedDate, timeline[1], timeline[2]]);
@@ -204,10 +208,6 @@ export default function AddOrderScreen(props) {
         setTimeline([timeline[0], timeline[1], selectedDate]);
       }
     }
-  
-    setShowMockupPicker(false);
-    setShowDeadlinePicker(false);
-    setShowPengirimanPicker(false);
   };
   
   const handleAttachment = async () => {

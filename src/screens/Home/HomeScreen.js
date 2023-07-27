@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useLayoutEffect, useCallback } from 'react';
-import { View, Text, TouchableOpacity, TextInput, FlatList, Image, RefreshControl, ActivityIndicator, Pressable, ToastAndroid } from 'react-native';
+import React, { useState, useEffect, useLayoutEffect, useCallback, useRef } from 'react';
+import { View, Text, TouchableOpacity, TextInput, FlatList, Image, RefreshControl, ActivityIndicator, Pressable, ToastAndroid, Modal } from 'react-native';
 import styles from './styles';
 import MenuImage from "../../components/MenuImage/MenuImage";
 import { db } from '../Login/LoginScreen';
@@ -9,10 +9,18 @@ export default function HomeScreen(props) {
   const [orderData, setOrderData] = useState([]);
   const [filteredOrderData, setFilteredOrderData] = useState([]);
   const [text, setText] = useState('');
+
   const [refreshing, setRefreshing] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
   const [expandedItems, setExpandedItems] = useState([]);
+
+  const [showFilterModal, setShowFilterModal] = useState(false);
+  const [startDate, setStartDate] = useState(null);
+  const [endDate, setEndDate] = useState(null);
+  const [status, setStatus] = useState(null);
+  const [quoSubmitted, setQuoSubmitted] = useState(null);
+  const isInitialRender = useRef(true);
 
   const { navigation } = props;
 
@@ -32,14 +40,20 @@ export default function HomeScreen(props) {
             style={styles.searchInput}
             onChangeText={handleSearch}
             value={text}
-            placeholder='Action; Time; User'
+            placeholder='Nama Project'
           />
           <Pressable onPress={() => { setText(""); }}>
             <Image style={styles.searchIcon} source={require("../../../assets/icons/close.png")} />
           </Pressable>
         </View>
       ),
-      headerRight: () => <View />,
+      headerRight: () => (
+        <View>
+          <TouchableOpacity onPress={() => setShowFilterModal(true)}>
+            <Image style={styles.filterIcon} source={require('../../../assets/icons/filter.png')} />
+          </TouchableOpacity>
+        </View>
+      ),
     });
   }, [text]);
 
@@ -141,28 +155,13 @@ export default function HomeScreen(props) {
     if (x === '') {
       setFilteredOrderData(orderData.slice(0, 10));
     } else {
-      const filterText = x.toLowerCase().trim();
-      const filterItems = filterText.split(';').map((item) => item.trim());
-      const filterProject = filterItems[0] ? filterItems[0].toLowerCase() : '';
-      const filterTimestamp = filterItems[1] ? timeToArray(filterItems[1]) : [];
-      const filterUserID = filterItems[2] ? filterItems[2].toLowerCase() : '';
+      const Text = x.toLowerCase();
 
       const filteredData = orderData.filter((item) => {
-        if (filterProject !== '' && !item.project.toLowerCase().includes(filterProject)) {
+        if (Text !== '' && !item.project.toLowerCase().includes(Text)) {
           return false;
         }
-        if (
-          filterTimestamp.length !== 0 &&
-          !filterTimestamp.every((filterValue, index) => {
-            const itemValue = item.time.split(/[\/,: ]/)[index];
-            return itemValue.includes(filterValue);
-          })
-        ) {
-          return false;
-        }
-        if (filterUserID !== '' && !item.user.toLowerCase().includes(filterUserID)) {
-          return false;
-        }
+
         return true;
       });
 
@@ -242,6 +241,144 @@ export default function HomeScreen(props) {
     setRefreshing(false);
   };
 
+  useEffect(() => {
+    if (isInitialRender.current) {
+      isInitialRender.current = false;
+      return;
+    }
+    onRefresh();
+  }, [startDate, endDate, status, quoSubmitted]);
+
+  const FilterModal = () => {
+    const [startDateTemp, setStartDateTemp] = useState(startDate);
+    const [endDateTemp, setEndDateTemp] = useState(endDate);
+    const [statusTemp, setStatusTemp] = useState(status);
+    const [quoSubmittedTemp, setQuoSubmittedTemp] = useState(quoSubmitted);
+    const [showStartDatePicker, setShowStartDatePicker] = useState(false);
+    const [showEndDatePicker, setShowEndDatePicker] = useState(false);
+
+    const handleResetFilter = () => {
+      setStartDateTemp(null);
+      setEndDateTemp(null);
+      setStatusTemp(null);
+      setQuoSubmittedTemp(null);
+    };
+
+    const handleFilterApply = () => {
+      setStartDate(startDateTemp);
+      setEndDate(endDateTemp);
+      setStatus(statusTemp);
+      setQuoSubmitted(quoSubmittedTemp);
+      setShowFilterModal(false);
+    };
+
+    const handleStartDateChange = (event, selectedDate) => {
+      const currentDate = selectedDate || startDateTemp;
+      const adjustedEndDate = endDateTemp && endDateTemp < currentDate ? currentDate : endDateTemp;
+      setStartDateTemp(currentDate);
+      setEndDateTemp(adjustedEndDate);
+      setShowStartDatePicker(false);
+    };
+    
+    const handleEndDateChange = (event, selectedDate) => {
+      const currentDate = selectedDate || endDateTemp;
+      const adjustedStartDate = startDateTemp && startDateTemp > currentDate ? currentDate : startDateTemp;
+      setEndDateTemp(currentDate);
+      setStartDateTemp(adjustedStartDate);
+      setShowEndDatePicker(false);
+    };
+
+    return(
+      <Modal
+        visible={showFilterModal}
+        animationType="fade"
+        transparent
+        onRequestClose={() => setShowFilterModal(false)}
+      >
+        <View style={styles.modalContainer}>
+          <View style={styles.modalContent}>
+            <View style={styles.datePickerContainer}>
+              <View style={styles.datePickerColumn}>
+                <Text style={styles.modalFilterTitle}>Start Date:</Text>
+                <TouchableOpacity onPress={() => {setShowStartDatePicker(true)}}>
+                  <Text style={styles.modalFilterOption}>{startDateTemp ? startDateTemp.toDateString() : 'Select Start Date'}</Text>
+                </TouchableOpacity>
+                {showStartDatePicker && (
+                  <DateTimePicker
+                    value={startDateTemp || new Date()}
+                    mode="date"
+                    display="default"
+                    onChange={handleStartDateChange}
+                  />
+                )}
+              </View>
+
+              <View style={styles.datePickerColumn}>
+                <Text style={styles.modalFilterTitle}>End Date:</Text>
+                <TouchableOpacity onPress={() => {setShowEndDatePicker(true)}}>
+                  <Text style={styles.modalFilterOption}>{endDateTemp ? endDateTemp.toDateString() : 'Select End Date'}</Text>
+                </TouchableOpacity>
+                {showEndDatePicker && (
+                  <DateTimePicker
+                    value={endDateTemp || new Date()}
+                    mode="date"
+                    display="default"
+                    onChange={handleEndDateChange}
+                  />
+                )}
+              </View>
+            </View>
+
+            <View style={styles.modalFilterGroup}>
+              <Text style={styles.modalFilterTitle}>Status</Text>
+              <TouchableOpacity onPress={() => setStatusTemp('Contacting')}>
+                <Text style={[styles.modalFilterOption, statusTemp === 'Contacting' && styles.selectedOption]}>
+                  {statusTemp === 'Contacting' ? '●' : '○'} Contacting
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={() => setStatusTemp('Compro Sent')}>
+                <Text style={[styles.modalFilterOption, statusTemp === 'Compro Sent' && styles.selectedOption]}>
+                  {statusTemp === 'Compro Sent' ? '●' : '○'} Compro Sent
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={() => setStatusTemp('Appointment')}>
+                <Text style={[styles.modalFilterOption, statusTemp === 'Appointment' && styles.selectedOption]}>
+                  {statusTemp === 'Appointment' ? '●' : '○'} Appointment
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={() => setStatusTemp('Schedule')}>
+                <Text style={[styles.modalFilterOption, statusTemp === 'Schedule' && styles.selectedOption]}>
+                  {statusTemp === 'Schedule' ? '●' : '○'} Schedule
+                </Text>
+              </TouchableOpacity>
+            </View>
+
+            <View style={styles.modalFilterGroup}>
+              <TouchableOpacity
+                style={styles.checkboxContainer}
+                onPress={() => {
+                  setQuoSubmittedTemp(!quoSubmittedTemp);
+                }}
+              >
+                <Text style={styles.modalFilterTitle}>
+                  Quo Submitted: {quoSubmittedTemp ? <Text style={styles.modalFilterOption}>✓</Text> : ''}
+                </Text>
+              </TouchableOpacity>
+            </View>
+
+            <View style={styles.modalButtonContainer}>
+              <TouchableOpacity onPress={handleFilterApply}>
+                <Text style={styles.modalApplyButton}>Apply</Text>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={handleResetFilter}>
+                <Text style={styles.modalResetButton}>Reset</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+  )};
+
   return (
     <>
       {filteredOrderData.length === 0 ? (
@@ -263,6 +400,10 @@ export default function HomeScreen(props) {
           ListFooterComponent={isLoading && <ActivityIndicator size="small" />}
         />
       )}
+      {showFilterModal && (
+        <FilterModal />
+      )}
+      
       <TouchableOpacity
         style={styles.addButton}
         onPress={() => {

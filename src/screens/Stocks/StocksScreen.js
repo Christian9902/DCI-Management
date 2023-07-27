@@ -37,7 +37,7 @@ export default function StocksScreen(props) {
             style={styles.searchInput}
             onChangeText={handleNamaChange}
             value={nama}
-            placeholder='Baru/Sisa; Barang1, Barang2, ...; Supplier1, ...'
+            placeholder='Barang1, Barang2, ...; Supplier1, Supplier2...'
           />
           <Pressable onPress={() => { setNama(""); handleNamaChange("") }}>
             <Image style={styles.searchIcon} source={require("../../../assets/icons/close.png")} />
@@ -121,34 +121,17 @@ export default function StocksScreen(props) {
     } else {
       const filterText = text.toLowerCase().trim();
       const filterItems = filterText.split(';').map((item) => item.trim());
-      const filterBaru = filterItems[0].toLowerCase();
-      const filterNamaBarang = filterItems[1] ? filterItems[1].split(',').map((item) => item.trim().toLowerCase()) : [];
-      const filterNamaSupplier = filterItems[2] ? filterItems[2].split(',').map((item) => item.trim().toLowerCase()) : [];
+      const filterNamaBarang = filterItems[1] ? filterItems[0].split(',').map((item) => item.trim().toLowerCase()) : [];
+      const filterNamaSupplier = filterItems[2] ? filterItems[1].split(',').map((item) => item.trim().toLowerCase()) : [];
 
       filteredBarang = barangData.filter((item) => {
-        if (filterBaru !== 'baru' && filterBaru !== 'sisa') {
-          if (filterNamaBarang.length > 0 && !filterNamaBarang.some((nama) => item.namaBarang.toLowerCase().includes(nama))) {
-            return false;
-          }
-          if (filterNamaSupplier.length > 0 && !filterNamaSupplier.some((nama) => item.namaSupplier.toLowerCase().includes(nama))) {
-            return false;
-          }
-          return true;
-        } else {
-          if (filterBaru === 'baru' && !item.status) {
-            return false;
-          }
-          if (filterBaru === 'sisa' && item.status) {
-            return false;
-          }
-          if (filterNamaBarang.length > 0 && !filterNamaBarang.some((nama) => item.namaBarang.toLowerCase().includes(nama))) {
-            return false;
-          }
-          if (filterNamaSupplier.length > 0 && !filterNamaSupplier.some((nama) => item.namaSupplier.toLowerCase().includes(nama))) {
-            return false;
-          }
-          return true;
+        if (filterNamaBarang.length > 0 && !filterNamaBarang.some((nama) => item.namaBarang.toLowerCase().includes(nama))) {
+          return false;
         }
+        if (filterNamaSupplier.length > 0 && !filterNamaSupplier.some((nama) => item.namaSupplier.toLowerCase().includes(nama))) {
+          return false;
+        }
+        return true;
       });
     }
 
