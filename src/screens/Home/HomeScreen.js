@@ -2,8 +2,9 @@ import React, { useState, useEffect, useLayoutEffect, useCallback, useRef } from
 import { View, Text, TouchableOpacity, TextInput, FlatList, Image, RefreshControl, ActivityIndicator, Pressable, ToastAndroid, Modal } from 'react-native';
 import styles from './styles';
 import MenuImage from "../../components/MenuImage/MenuImage";
-import { db } from '../Login/LoginScreen';
+import { db, storage } from '../Login/LoginScreen';
 import { collection, getDocs } from 'firebase/firestore';
+import { ref, getDownloadURL } from "firebase/storage";
 
 export default function HomeScreen(props) {
   const [orderData, setOrderData] = useState([]);
@@ -73,6 +74,7 @@ export default function HomeScreen(props) {
         const notelpClient = data?.NoTelpClient;
         const attachment = data?.Attachment;
         const supplier = data?.Supplier;
+        const deadline = data?.Deadline;
         const time = data?.Timestamp;
         const harga = data?.Harga;
         const progress = data?.Progress;
@@ -89,6 +91,7 @@ export default function HomeScreen(props) {
           notelpClient,
           attachment,
           supplier,
+          deadline,
           time,
           harga,
           progress,
@@ -185,7 +188,7 @@ export default function HomeScreen(props) {
   };
 
   const onPressItem = (item) => {
-    navigation.navigate("Order Update", { orderData: item, orderId: item.id });
+    navigation.navigate("Order Update", { orderData: item });
   };
 
   const toggleExpanded = (itemId) => {
@@ -381,7 +384,7 @@ export default function HomeScreen(props) {
   return (
     <>
       {filteredOrderData.length === 0 ? (
-        <Text>Loading...</Text>
+        <Text>Loading... if it takes to long to load maybe there is no data found</Text>
       ) : (
         <FlatList
           vertical

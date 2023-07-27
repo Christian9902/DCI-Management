@@ -5,7 +5,7 @@ import * as DocumentPicker from 'expo-document-picker';
 import styles from './styles';
 import MenuImage from "../../components/MenuImage/MenuImage";
 import { db, auth, storage } from '../Login/LoginScreen';
-import { addDoc, collection, getDocs } from 'firebase/firestore';
+import { addDoc, collection, getDocs, updateDoc } from 'firebase/firestore';
 import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 
 export default function AddOrderScreen(props) {
@@ -239,41 +239,34 @@ export default function AddOrderScreen(props) {
       const fileRef = ref(storageRef, file.name);
       const uploadTask = uploadBytesResumable(fileRef, file.fileBlob);
   
-      uploadTask.on(
-        'state_changed',
-        (snapshot) => {
-          const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-          setUploadProgress((prevProgress) => [
-            ...prevProgress.filter((item) => item.name !== file.name),
-            { name: file.name, progress },
-          ]);
-        },
-        (error) => {
-          console.log('Error uploading file:', error);
-        },
-        async () => {
-          try {
-            const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
-            console.log('File available at', downloadURL);
-          } catch (error) {
-            console.log('Error getting download URL:', error);
+      return new Promise((resolve, reject) => {
+        uploadTask.on(
+          'state_changed',
+          (snapshot) => {
+            const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+            setUploadProgress((prevProgress) => [
+              ...prevProgress.filter((item) => item.name !== file.name),
+              { name: file.name, progress },
+            ]);
+          },
+          (error) => {
+            console.log('Error uploading file:', error);
+            reject(error);
+          },
+          async () => {
+            try {
+              const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+              resolve(downloadURL);
+            } catch (error) {
+              console.log('Error getting download URL:', error);
+              reject(error);
+            }
           }
-        }
-      );
-  
-      await uploadTask;
-  
-      console.log(`File ${file.name} successfully uploaded.`);
+        );
+      });
     } catch (error) {
       console.log(`Error uploading file:`, error);
-    }
-  };  
-
-  const uploadFiles = async (storageRef) => {
-    try {
-      await Promise.all(attachment.map((file) => uploadFile(file, storageRef)));
-    } catch (error) {
-      console.log('Error uploading files:', error);
+      throw error;
     }
   };
 
@@ -295,22 +288,26 @@ export default function AddOrderScreen(props) {
         NamaClient: namaClient,
         PTClient: PTClient,
         NoTelpClient: noTelpClient,
-        EmailClient: emailClient, 
+        EmailClient: emailClient,
         Supplier: suppliers,
         Spesifikasi: details,
         Harga: harga,
-        Deadline: timeline,
+        Deadline : timeline,
         Progress: progress,
-        Attachment: attachment.map(file => file.name),
+        Attachment: attachment.map((file, index) => ({ name: file.name, size: file.size, downloadURL: null })),
         PIC: user.uid,
         Timestamp: time,
       };
-  
+
       const orderRef = await addDoc(collection(db, 'Order'), data);
       const storageRef = ref(storage, `Order/${orderRef.id}`);
       setShowProgressModal(true);
-      await uploadFiles(storageRef);
+      const downloadURLs = await Promise.all(
+        attachment.map((file) => uploadFile(file, storageRef))
+      );
       setShowProgressModal(false);
+
+      await updateDoc(orderRef, { Attachment: attachment.map((file, index) => ({ name: file.name, size: file.size, downloadURL: downloadURLs[index] })) });
   
       const logEntry = {
         timestamp: time,
@@ -558,7 +555,6 @@ export default function AddOrderScreen(props) {
               {uploadProgress.map((fileProgress, index) => (
                 <View key={index}>
                   <Text>{`${fileProgress.name}: ${fileProgress.progress.toFixed(2)}%`}</Text>
-                  {console.log(fileProgress.name, fileProgress.progress.toFixed(2))}
                 </View>
               ))}
             </View>

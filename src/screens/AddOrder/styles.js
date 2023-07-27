@@ -144,12 +144,10 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
   },
   modalContent: {
-    backgroundColor: '#fff',
-    borderRadius: 10,
-    padding: 20,
-    height: modalHeight,
-    width: modalWidth,
-    elevation: 5,
+    backgroundColor: '#FFF',
+    padding: 16,
+    borderRadius: 8,
+    width: '80%',
   },
   buttonContainerModal: {
     flexDirection: 'row',
@@ -201,37 +199,15 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
   },
   progressModalContent: {
-    backgroundColor: '#fff',
-    borderRadius: 10,
-    padding: 20,
-    height: modalHeight * 0.5,
-    width: modalWidth,
-    elevation: 5,
-    justifyContent: 'center',
-    alignItems: 'center',
+    backgroundColor: '#FFF',
+    padding: 16,
+    borderRadius: 8,
+    width: '80%',
   },
   progressModalText: {
     fontSize: 18,
     fontWeight: 'bold',
     marginBottom: 20,
-  },
-  progressBarContainer: {
-    width: '100%',
-    height: 20,
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: '#ccc',
-    marginBottom: 10,
-    overflow: 'hidden',
-  },
-  progressBar: {
-    height: '100%',
-    backgroundColor: 'green',
-  },
-  uploadProgressPercentage: {
-    fontSize: 14,
-    fontWeight: 'bold',
-    alignSelf: 'flex-end',
   },
 });
 

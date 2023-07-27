@@ -1,5 +1,5 @@
 import { useNavigation, useBackHandler } from '@react-navigation/native';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { KeyboardAvoidingView, Text, TextInput, TouchableOpacity, View, Image, BackHandler, Alert, ToastAndroid } from 'react-native';
 import { onAuthStateChanged, signInWithEmailAndPassword } from 'firebase/auth';
 
@@ -24,6 +24,7 @@ export const auth = getAuth();
 export const storage = getStorage();
 
 const LoginScreen = () => {
+  const emailRef = useRef(null);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
@@ -74,6 +75,7 @@ const LoginScreen = () => {
         alert('Check your email or password again!');
         setEmail('');
         setPassword('');
+        emailRef.current.focus();
       });
   };
 
@@ -91,6 +93,7 @@ const LoginScreen = () => {
       </View>
       <View style={styles.inputContainer}>
         <TextInput
+          ref={emailRef}
           placeholder="Username"
           value={email}
           onChangeText={text => setEmail(text)}
