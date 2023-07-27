@@ -23,6 +23,7 @@ import IncomeScreen from './src/screens/Income/IncomeScreen';
 import ProfileScreen from './src/screens/Profile/ProfileScreen';
 import DrawerContainer from './src/screens/DrawerContainer/DrawerContainer';
 import OrderUpdateScreen from './src/screens/OrderUpdate/OrderUpdateScreen';
+import FilePreviewScreen from './src/screens/File/FilePreviewScreen';
 
 const Stack = createStackNavigator();
 
@@ -55,6 +56,7 @@ function MainNavigator() {
       <Stack.Screen name='Add Client' component={AddClientScreen} />
       <Stack.Screen name='Clients' component={ClientsScreen} />
       <Stack.Screen name='Client Update' component={ClientUpdateScreen} />
+      <Stack.Screen name="File Preview" component={FilePreviewScreen} />
     </Stack.Navigator>
   )
 } 

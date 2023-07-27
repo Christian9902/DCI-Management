@@ -294,7 +294,7 @@ export default function AddOrderScreen(props) {
         Harga: harga,
         Deadline : timeline,
         Progress: progress,
-        Attachment: attachment.map((file, index) => ({ name: file.name, size: file.size, downloadURL: null })),
+        Attachment: attachment.map((file, index) => ({ name: file.name, size: file.size, type: file.mimeType, downloadURL: null })),
         PIC: user.uid,
         Timestamp: time,
       };
@@ -307,7 +307,7 @@ export default function AddOrderScreen(props) {
       );
       setShowProgressModal(false);
 
-      await updateDoc(orderRef, { Attachment: attachment.map((file, index) => ({ name: file.name, size: file.size, downloadURL: downloadURLs[index] })) });
+      await updateDoc(orderRef, { Attachment: attachment.map((file, index) => ({ name: file.name, size: file.size, type: file.mimeType, downloadURL: downloadURLs[index] })) });
   
       const logEntry = {
         timestamp: time,
@@ -527,8 +527,17 @@ export default function AddOrderScreen(props) {
             {attachment.map((file, index) => (
               <View key={index} style={styles.attachedFileItem}>
                 <View>
-                  <Text style={styles.attachedFileName}>{file.name}</Text>
-                  <Text style={styles.attachedFileSize}>{((file.size / 1024) / 1024).toFixed(2)} MB</Text>
+                <TouchableOpacity
+                  onPress={() =>
+                    navigation.navigate('FilePreview', {
+                      fileURL: file.uri,
+                      fileType: file.mimeType,
+                    })
+                  }
+                >
+                    <Text style={styles.attachedFileName}>{file.name}</Text>
+                    <Text style={styles.attachedFileSize}>{((file.size / 1024) / 1024).toFixed(2)} MB</Text>
+                  </TouchableOpacity>
                 </View>
                 <TouchableOpacity onPress={() => handleRemoveFile(index)}>
                   <Text style={styles.deleteButton}>X</Text>
