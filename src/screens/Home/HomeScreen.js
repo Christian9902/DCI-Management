@@ -185,8 +185,7 @@ export default function HomeScreen(props) {
   };
 
   const onPressItem = (item) => {
-    //navigation.navigate("OrderDetails", { order: item });
-    console.log(item);
+    navigation.navigate("Order Update", { orderData: item, orderId: item.id });
   };
 
   const toggleExpanded = (itemId) => {

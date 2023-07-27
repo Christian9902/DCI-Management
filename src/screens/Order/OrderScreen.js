@@ -7,11 +7,9 @@ import MenuImage from "../../components/MenuImage/MenuImage";
 import { db, auth, storage } from '../Login/LoginScreen';
 import { addDoc, collection, getDocs } from 'firebase/firestore';
 import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
-import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { useNavigation } from '@react-navigation/native';
 import OrderUpdateScreen from './OrderUpdateScreen';
-
 
 export default function OrderScreen(props) {
   const [namaProject, setNamaProject] = useState('');
@@ -120,15 +118,17 @@ export default function OrderScreen(props) {
 
   const Stack = createStackNavigator();
 
-function MainNavigator() {
-  return (
-    <Stack.Navigator>
-      <Stack.Screen name="OrderScreen" component={OrderScreen} />
-      <Stack.Screen name="OrderUpdate" component={OrderUpdateScreen} />
-      {/* Add other screens here if needed */}
-    </Stack.Navigator>
-  );
-}
+  function MainNavigator() {
+    return (
+      <Stack.Navigator>
+        <Stack.Screen name="OrderScreen" component={OrderScreen} />
+        <Stack.Screen name="OrderUpdate" component={OrderUpdateScreen} />
+        {/* Add other screens here if needed */}
+      </Stack.Navigator>
+    );
+  }
+
+  // Rest of the code remains the same...
 
   const handleClientChange = (text) => {
     setNamaClient(text);
