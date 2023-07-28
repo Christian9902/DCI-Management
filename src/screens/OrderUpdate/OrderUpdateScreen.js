@@ -528,8 +528,17 @@ export default function OrderUpdateScreen({ navigation, route }) {
             {attachment.map((file, index) => (
               <View key={index} style={styles.attachedFileItem}>
                 <View>
-                  <Text style={styles.attachedFileName}>{file.name}</Text>
-                  <Text style={styles.attachedFileSize}>{((file.size / 1024) / 1024).toFixed(2)} MB</Text>
+                  <TouchableOpacity
+                    onPress={() =>
+                      navigation.navigate('File Preview', {
+                        fileURL: file.downloadURL,
+                        fileType: file.type,
+                      })
+                    }
+                  >
+                    <Text style={styles.attachedFileName}>{file.name}</Text>
+                    <Text style={styles.attachedFileSize}>{((file.size / 1024) / 1024).toFixed(2)} MB</Text>
+                  </TouchableOpacity>
                 </View>
                 <TouchableOpacity onPress={() => handleRemoveFile(index)}>
                   <Text style={styles.deleteButton}>X</Text>

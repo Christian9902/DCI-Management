@@ -30,6 +30,7 @@
     "react-native-pdf": "^6.7.1",
     "react-native-reanimated": "^2.14.4",
     "react-native-toast-message": "^2.1.6",
+    "react-native-webview": "^13.3.0",
     "react-navigation": "^4.4.4"
   },
   "devDependencies": {

@@ -527,17 +527,8 @@ export default function AddOrderScreen(props) {
             {attachment.map((file, index) => (
               <View key={index} style={styles.attachedFileItem}>
                 <View>
-                <TouchableOpacity
-                  onPress={() =>
-                    navigation.navigate('FilePreview', {
-                      fileURL: file.uri,
-                      fileType: file.mimeType,
-                    })
-                  }
-                >
-                    <Text style={styles.attachedFileName}>{file.name}</Text>
-                    <Text style={styles.attachedFileSize}>{((file.size / 1024) / 1024).toFixed(2)} MB</Text>
-                  </TouchableOpacity>
+                  <Text style={styles.attachedFileName}>{file.name}</Text>
+                  <Text style={styles.attachedFileSize}>{((file.size / 1024) / 1024).toFixed(2)} MB</Text>
                 </View>
                 <TouchableOpacity onPress={() => handleRemoveFile(index)}>
                   <Text style={styles.deleteButton}>X</Text>
