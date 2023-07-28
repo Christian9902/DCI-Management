@@ -41,6 +41,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     marginTop: 'auto',
+    marginBottom: 5,
   },
   createButtonText: {
     fontSize: 16,
@@ -232,6 +233,27 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: 'bold',
     alignSelf: 'flex-end',
+  },
+  openIcon: {
+    width: 20,
+    height: 20,
+    tintColor: 'grey',
+    marginRight: 20,
+  },
+  deleteButton2: {
+    width: 0.85 * width,
+    height: 25,
+    borderRadius: 10,
+    backgroundColor: 'red',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 'auto',
+    marginBottom: 5,
+  },
+  deleteButtonText: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#fff',
   },
 });
 

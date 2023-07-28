@@ -5,8 +5,9 @@ import * as DocumentPicker from 'expo-document-picker';
 import styles from './styles';
 import MenuImage from "../../components/MenuImage/MenuImage";
 import { db, auth, storage } from '../Login/LoginScreen';
-import { addDoc, collection, getDocs } from 'firebase/firestore';
-import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
+import { addDoc, collection, getDocs, doc, updateDoc, deleteDoc } from 'firebase/firestore';
+import { ref, uploadBytesResumable, getDownloadURL, deleteObject } from "firebase/storage";
+import { Web } from "react-native-openanything";
 
 export default function OrderUpdateScreen({ navigation, route }) {
   const { orderData } = route.params;
@@ -237,46 +238,118 @@ export default function OrderUpdateScreen({ navigation, route }) {
       const fileRef = ref(storageRef, file.name);
       const uploadTask = uploadBytesResumable(fileRef, file.fileBlob);
   
-      uploadTask.on(
-        'state_changed',
-        (snapshot) => {
-          const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-          setUploadProgress((prevProgress) => [
-            ...prevProgress.filter((item) => item.name !== file.name),
-            { name: file.name, progress },
-          ]);
-        },
-        (error) => {
-          console.log('Error uploading file:', error);
-        },
-        async () => {
-          try {
-            const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
-            console.log('File available at', downloadURL);
-          } catch (error) {
-            console.log('Error getting download URL:', error);
+      return new Promise((resolve, reject) => {
+        uploadTask.on(
+          'state_changed',
+          (snapshot) => {
+            const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+            setUploadProgress((prevProgress) => [
+              ...prevProgress.filter((item) => item.name !== file.name),
+              { name: file.name, progress },
+            ]);
+          },
+          (error) => {
+            console.log('Error uploading file:', error);
+            reject(error);
+          },
+          async () => {
+            try {
+              const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+              resolve(downloadURL);
+            } catch (error) {
+              console.log('Error getting download URL:', error);
+              reject(error);
+            }
           }
-        }
-      );
-  
-      await uploadTask;
-  
-      console.log(`File ${file.name} successfully uploaded.`);
+        );
+      });
     } catch (error) {
       console.log(`Error uploading file:`, error);
+      throw error;
     }
-  };  
+  }; 
 
-  const uploadFiles = async (storageRef) => {
+  const handleUpdate = async () => {
+    const filesToRemove = [];
+
+    for (const existingFile of orderData.attachment) {
+      if (!attachment.some(newFile => newFile.name === existingFile.name)) {
+        filesToRemove.push(existingFile.name);
+      }
+    }
+
+    const user = auth.currentUser;
+    const orderRef = doc(db, 'Order', orderData.orderID);
+    const logDataRef = collection(db, 'Log Data');
+    const time = new Date().toLocaleString('en-GB', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+    });
+
     try {
-      await Promise.all(attachment.map((file) => uploadFile(file, storageRef)));
+      const storageRef = ref(storage, `Order/${orderData.orderID}`);
+      for (const fileName of filesToRemove) {
+        try {
+          await deleteObject(ref(storageRef, fileName));
+          console.log(`File ${fileName} successfully removed from Firebase storage.`);
+        } catch (error) {
+          console.error(`Error removing file ${fileName} from Firebase storage:`, error);
+        }
+      }
+
+      const newFiles = attachment.filter(newFile => !orderData.attachment.some(existingFile => existingFile.name === newFile.name));
+      const existingFiles = attachment.filter(newFile => orderData.attachment.some(existingFile => existingFile.name === newFile.name));
+      setShowProgressModal(true);
+      const downloadURLs = await Promise.all(
+        newFiles.map((file) => uploadFile(file, storageRef))
+      );
+      setShowProgressModal(false);
+
+      const updatedAttachment = [
+        ...existingFiles,
+        ...newFiles.map((file, index) => ({
+          name: file.name,
+          size: file.size,
+          type: file.mimeType,
+          downloadURL: downloadURLs[index],
+        })),
+      ];
+
+      await updateDoc(orderRef, {
+        NamaProject: namaProject,
+        NamaClient: namaClient,
+        PTClient: PTClient,
+        NoTelpClient: noTelpClient,
+        EmailClient: emailClient,
+        Supplier: suppliers,
+        Spesifikasi: details,
+        Harga: harga,
+        Deadline : timeline,
+        Attachment: updatedAttachment,
+      });
+
+      const logEntry = {
+        timestamp: time,
+        action: 'Order Updated',
+        userID: user.uid,
+        refID: orderData.orderID,
+      };
+      await addDoc(logDataRef, logEntry);
+
+      navigation.navigate('Home');
+      ToastAndroid.show('Order updated successfully!', ToastAndroid.SHORT);
     } catch (error) {
-      console.log('Error uploading files:', error);
+      console.error('Error updating order:', error);
     }
   };
 
-  const handleCreate = async () => {
+  const handleDelete = async () => {
     const user = auth.currentUser;
+    const orderRef = doc(db, 'Order', orderData.orderID);
     const logDataRef = collection(db, 'Log Data');
     const time = new Date().toLocaleString('en-GB', {
       day: '2-digit',
@@ -288,72 +361,29 @@ export default function OrderUpdateScreen({ navigation, route }) {
     });
   
     try {
-      const data = {
-        NamaProject: namaProject,
-        NamaClient: namaClient,
-        PTClient: PTClient,
-        NoTelpClient: noTelpClient,
-        EmailClient: emailClient, 
-        Supplier: suppliers,
-        Spesifikasi: details,
-        Harga: harga,
-        Deadline: timeline,
-        Progress: progress,
-        Attachment: attachment.map(file => file.name),
-        PIC: user.uid,
-        Timestamp: time,
-      };
+      await deleteDoc(orderRef);
+      console.log('Order document successfully deleted from Firestore.');
   
-      const orderRef = await addDoc(collection(db, 'Order'), data);
-      const storageRef = ref(storage, `Order/${orderRef.id}`);
-      setShowProgressModal(true);
-      await uploadFiles(storageRef);
-      setShowProgressModal(false);
+      const storageRef = ref(storage, `Order/${orderData.orderID}`);
+      await deleteObject(storageRef);
+      console.log('Order folder successfully deleted from Firebase Storage.');
   
       const logEntry = {
         timestamp: time,
-        action: 'Order Created',
+        action: 'Order Deleted',
         userID: user.uid,
-        refID: orderRef.id,
+        refID: orderData.orderID,
       };
       await addDoc(logDataRef, logEntry);
-
-      setNamaProject('');
-      setNamaClient('');
-      setPTClient('');
-      setNoTelpClient('');
-      setEmailClient('');
-      setSuppliers([]);
-      setDetails('');
-      setHarga('');
-      setTimeline([new Date(), new Date(), new Date()]);
-      setProgress([false, false, false]);
-      setAttachment([]);
   
       navigation.navigate('Home');
-      ToastAndroid.show('Order created successfully!', ToastAndroid.SHORT);
+      ToastAndroid.show('Order deleted successfully!', ToastAndroid.SHORT);
     } catch (error) {
-      console.error('Error creating order:', error);
+      console.error('Error deleting order:', error);
     }
   };
 
-  const handleCancel = () => {
-    setNamaProject('');
-    setNamaClient('');
-    setPTClient('');
-    setNoTelpClient('');
-    setEmailClient('');
-    setSuppliers([]);
-    setDetails('');
-    setHarga('');
-    setTimeline([new Date(), new Date(), new Date()]);
-    setProgress([false, false, false]);
-    setAttachment([]);
-
-    navigation.navigate('Home');
-  };
-
-  return (
+  return ( 
     <View style={styles.container}>
       <ScrollView keyboardShouldPersistTaps="handled">
         <TextInput
@@ -482,7 +512,7 @@ export default function OrderUpdateScreen({ navigation, route }) {
         <Text style={styles.attachedFilesTitle}>Deadline:</Text>
         <View style={styles.deadlineContainer}>
           <TouchableOpacity style={styles.deadlineButton} onPress={() => setShowMockupPicker(true)}>
-            <Text style={styles.deadlineButtonText}>Mockup: {timeline[0].toLocaleDateString()}</Text>
+            <Text style={styles.deadlineButtonText}>Mockup: {timeline[0].toLocaleDateString('en-GB')}</Text>
           </TouchableOpacity>
           {showMockupPicker && (
             <DateTimePicker
@@ -493,7 +523,7 @@ export default function OrderUpdateScreen({ navigation, route }) {
             />
           )}
           <TouchableOpacity style={styles.deadlineButton} onPress={() => setShowDeadlinePicker(true)}>
-            <Text style={styles.deadlineButtonText}>Produksi: {timeline[1].toLocaleDateString()}</Text>
+            <Text style={styles.deadlineButtonText}>Produksi: {timeline[1].toLocaleDateString('en-GB')}</Text>
           </TouchableOpacity>
           {showDeadlinePicker && (
             <DateTimePicker
@@ -504,7 +534,7 @@ export default function OrderUpdateScreen({ navigation, route }) {
             />
           )}
           <TouchableOpacity style={styles.deadlineButton} onPress={() => setShowPengirimanPicker(true)}>
-            <Text style={styles.deadlineButtonText}>Pengiriman: {timeline[2].toLocaleDateString()}</Text>
+            <Text style={styles.deadlineButtonText}>Pengiriman: {timeline[2].toLocaleDateString('en-GB')}</Text>
           </TouchableOpacity>
           {showPengirimanPicker && (
             <DateTimePicker
@@ -528,31 +558,33 @@ export default function OrderUpdateScreen({ navigation, route }) {
             {attachment.map((file, index) => (
               <View key={index} style={styles.attachedFileItem}>
                 <View>
-                  <TouchableOpacity
-                    onPress={() =>
-                      navigation.navigate('File Preview', {
-                        fileURL: file.downloadURL,
-                        fileType: file.type,
-                      })
-                    }
-                  >
-                    <Text style={styles.attachedFileName}>{file.name}</Text>
-                    <Text style={styles.attachedFileSize}>{((file.size / 1024) / 1024).toFixed(2)} MB</Text>
+                  <Text style={styles.attachedFileName}>{file.name}</Text>
+                  <Text style={styles.attachedFileSize}>{((file.size / 1024) / 1024).toFixed(2)} MB</Text>
+                </View>
+                <View style={{flexDirection: 'row', justifyContent: 'space-between'}}>
+                  <TouchableOpacity onPress={() => Web(file.downloadURL)}>
+                    <Image
+                      style={styles.openIcon}
+                      source={require('../../../assets/icons/open.png')}
+                    />
+                  </TouchableOpacity>
+                  <TouchableOpacity onPress={() => handleRemoveFile(index)}>
+                    <Text style={styles.deleteButton}>X</Text>
                   </TouchableOpacity>
                 </View>
-                <TouchableOpacity onPress={() => handleRemoveFile(index)}>
-                  <Text style={styles.deleteButton}>X</Text>
-                </TouchableOpacity>
               </View>
             ))}
           </View>
         )}
       </ScrollView>
       <View style={styles.buttonContainer}>
-        <TouchableOpacity style={styles.createButton} onPress={handleCreate}>
-          <Text style={styles.createButtonText}>Create Order</Text>
+        <TouchableOpacity style={styles.createButton} onPress={handleUpdate}>
+          <Text style={styles.createButtonText}>Update</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.cancelButton} onPress={handleCancel}>
+        <TouchableOpacity style={styles.deleteButton2} onPress={handleDelete}>
+          <Text style={styles.deleteButtonText}>Delete</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.cancelButton} onPress={() => {navigation.navigate('Home')}}>
           <Text style={styles.cancelButtonText}>Cancel</Text>
         </TouchableOpacity>
       </View>
@@ -565,7 +597,6 @@ export default function OrderUpdateScreen({ navigation, route }) {
               {uploadProgress.map((fileProgress, index) => (
                 <View key={index}>
                   <Text>{`${fileProgress.name}: ${fileProgress.progress.toFixed(2)}%`}</Text>
-                  {console.log(fileProgress.name, fileProgress.progress.toFixed(2))}
                 </View>
               ))}
             </View>
