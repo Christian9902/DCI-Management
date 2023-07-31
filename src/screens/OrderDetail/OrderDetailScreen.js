@@ -92,9 +92,9 @@ export default function OrderDetailScreen({ navigation, route }) {
         </View>
         <View style={styles.infoContainer}>
           <Text style={styles.infoLabel}>Deadline:</Text>
-          <Text style={styles.infoText}>Mockup: {orderData.deadline[0].toDate().toLocaleDateString('en-GB')}</Text>
-          <Text style={styles.infoText}>Produksi: {orderData.deadline[1].toDate().toLocaleDateString('en-GB')}</Text>
-          <Text style={styles.infoText}>Pengiriman: {orderData.deadline[2].toDate().toLocaleDateString('en-GB')}</Text>
+          <Text style={styles.infoText}>Mockup: {orderData.deadlineTemp[0].toDate().toLocaleDateString('en-GB')}</Text>
+          <Text style={styles.infoText}>Produksi: {orderData.deadlineTemp[1].toDate().toLocaleDateString('en-GB')}</Text>
+          <Text style={styles.infoText}>Pengiriman: {orderData.deadlineTemp[2].toDate().toLocaleDateString('en-GB')}</Text>
         </View>
         <View style={styles.progressContainer}>
           <Text style={styles.infoLabel}>Progress:</Text>

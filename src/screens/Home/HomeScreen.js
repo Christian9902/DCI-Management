@@ -73,7 +73,7 @@ export default function HomeScreen(props) {
         const notelpClient = data?.NoTelpClient;
         const attachment = data?.Attachment;
         const supplier = data?.Supplier;
-        const deadlineTemp = data?.Deadline.map(timestamp => timestamp.toDate());;
+        const deadlineTemp = data?.Deadline;
         const time = data?.Timestamp;
         const harga = data?.Harga;
         const progress = data?.Progress;
@@ -103,7 +103,7 @@ export default function HomeScreen(props) {
       });
 
       const filteredOrderData = orderData.filter((order) => {
-        const formattedRefDate = timeToArray(order.deadlineTemp[deadline].toLocaleString('en-GB'));
+        const formattedRefDate = order.deadlineTemp.map(timestamp => timeToArray(timestamp.toDate().toLocaleString('en-GB')));
         let isInRange = true;
   
         if (startDate) {
