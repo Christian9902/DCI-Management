@@ -18,7 +18,6 @@ export default function AddOrderScreen(props) {
   const [details, setDetails] = useState('');
   const [harga, setHarga] = useState('');
   const [timeline, setTimeline] = useState([new Date, new Date, new Date]);
-  const [progress, setProgress] = useState([false, false, false]);
   const [attachment, setAttachment] = useState([]);
   
   const [clientRekomendasi, setClientRekomendasi] = useState([]);
@@ -293,10 +292,11 @@ export default function AddOrderScreen(props) {
         Spesifikasi: details,
         Harga: harga,
         Deadline : timeline,
-        Progress: progress,
+        Progress: [false, false, false],
         Attachment: attachment.map((file, index) => ({ name: file.name, size: file.size, type: file.mimeType, downloadURL: null })),
         PIC: user.uid,
         Timestamp: time,
+        isDone: false,
       };
 
       const orderRef = await addDoc(collection(db, 'Order'), data);
@@ -326,7 +326,6 @@ export default function AddOrderScreen(props) {
       setDetails('');
       setHarga('');
       setTimeline([new Date(), new Date(), new Date()]);
-      setProgress([false, false, false]);
       setAttachment([]);
   
       navigation.navigate('Home');
@@ -346,7 +345,6 @@ export default function AddOrderScreen(props) {
     setDetails('');
     setHarga('');
     setTimeline([new Date(), new Date(), new Date()]);
-    setProgress([false, false, false]);
     setAttachment([]);
 
     navigation.navigate('Home');

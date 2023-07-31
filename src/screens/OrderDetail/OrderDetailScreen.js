@@ -1,4 +1,4 @@
-import React, { useState, useLayoutEffect } from 'react';
+import React, { useState, useLayoutEffect, useEffect } from 'react';
 import { View, Text, TouchableOpacity, Image, ScrollView, ToastAndroid } from 'react-native';
 import styles from './styles';
 import MenuImage from "../../components/MenuImage/MenuImage";
@@ -9,6 +9,7 @@ import { Web } from "react-native-openanything";
 export default function OrderDetailScreen({ navigation, route }) {
   const { orderData } = route.params;
   const [progress, setProgress] = useState(orderData.progress);
+  const [isDone, setIsDone] = useState(orderData.isDone);
 
   useLayoutEffect(() => {
     navigation.setOptions({
@@ -33,10 +34,15 @@ export default function OrderDetailScreen({ navigation, route }) {
     });
   }, []);
 
+  useEffect(() => {
+    const allProgressDone = progress.every((item) => item === true);
+    setIsDone(allProgressDone);
+  }, [progress]);
+
   const handleReturnButtonPress = async () => {
     try {
       const orderRef = doc(db, 'Order', orderData.orderID);
-      await updateDoc(orderRef, { Progress: progress });
+      await updateDoc(orderRef, { Progress: progress, isDone: isDone });
       
       ToastAndroid.show('Progress updated!', ToastAndroid.SHORT);
       navigation.navigate('Home');
@@ -153,7 +159,7 @@ export default function OrderDetailScreen({ navigation, route }) {
           <Text style={styles.createButtonText}>Take Stock</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.returnButton} onPress={handleReturnButtonPress}>
-          <Text style={styles.returnButtonText}>Return</Text>
+          <Text style={styles.returnButtonText}>{isDone ? 'Finish' : 'Return'}</Text>
         </TouchableOpacity>
       </View>
     </View>

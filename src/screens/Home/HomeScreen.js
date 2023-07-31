@@ -18,8 +18,8 @@ export default function HomeScreen(props) {
   const [showFilterModal, setShowFilterModal] = useState(false);
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
-  const [status, setStatus] = useState(null);
-  const [quoSubmitted, setQuoSubmitted] = useState(null);
+  const [deadline, setDeadline] = useState(2);
+  const [isDone, setIsDone] = useState(false);
   const isInitialRender = useRef(true);
 
   const { navigation } = props;
@@ -57,7 +57,7 @@ export default function HomeScreen(props) {
     });
   }, [text]);
 
-  const fetchOrderData = useCallback(async () => {
+  const fetchOrderData = async () => {
     try {
       const [orderSnapshot, userSnapshot] = await Promise.all([
         getDocs(collection(db, 'Order')),
@@ -73,10 +73,11 @@ export default function HomeScreen(props) {
         const notelpClient = data?.NoTelpClient;
         const attachment = data?.Attachment;
         const supplier = data?.Supplier;
-        const deadline = data?.Deadline;
+        const deadlineTemp = data?.Deadline.map(timestamp => timestamp.toDate());;
         const time = data?.Timestamp;
         const harga = data?.Harga;
         const progress = data?.Progress;
+        const isDone = data?.isDone;
         const spesifikasi = data?.Spesifikasi;
         const userRef = userSnapshot.docs.find((doc) => doc.id === data?.PIC);
         const user = userRef ? userRef.data().Nama : '';
@@ -90,17 +91,45 @@ export default function HomeScreen(props) {
           notelpClient,
           attachment,
           supplier,
-          deadline,
+          deadlineTemp,
           time,
           harga,
           progress,
+          isDone,
           spesifikasi,
           user,
           isExpanded: isItemExpanded(orderID),
         };
       });
 
-      orderData.sort((a, b) => {
+      const filteredOrderData = orderData.filter((order) => {
+        const formattedRefDate = timeToArray(order.deadlineTemp[deadline].toLocaleString('en-GB'));
+        let isInRange = true;
+  
+        if (startDate) {
+          const formattedStartDate = timeToArray(startDate.toLocaleString('en-GB'));
+          isInRange =
+            formattedRefDate[2] > formattedStartDate[2] ||
+            (formattedRefDate[2] === formattedStartDate[2] &&
+              (formattedRefDate[1] > formattedStartDate[1] || (formattedRefDate[1] === formattedStartDate[1] && formattedRefDate[0] >= formattedStartDate[0])));
+        }
+  
+        if (endDate) {
+          const formattedEndDate = timeToArray(endDate.toLocaleString('en-GB'));
+          isInRange = isInRange && (
+            formattedRefDate[2] < formattedEndDate[2] ||
+            (formattedRefDate[2] === formattedEndDate[2] &&
+              (formattedRefDate[1] < formattedEndDate[1] || (formattedRefDate[1] === formattedEndDate[1] && formattedRefDate[0] <= formattedEndDate[0]))));
+        }
+
+        if(isDone !== null) {
+          isInRange = isInRange && order.isDone === isDone;
+        }
+  
+        return isInRange;
+      });
+
+      filteredOrderData.sort((a, b) => {
         const timeA = timeToArray(a.time);
         const timeB = timeToArray(b.time);
 
@@ -113,12 +142,12 @@ export default function HomeScreen(props) {
         return 0;
       });
 
-      setOrderData(orderData);
-      setFilteredOrderData(orderData.slice(0, 10));
+      setOrderData(filteredOrderData);
+      setFilteredOrderData(filteredOrderData.slice(0, 10));
     } catch (error) {
       console.log('Terjadi kesalahan saat mengambil data dari Firebase:', error);
     }
-  }, []);
+  };
 
   useEffect(() => {
     fetchOrderData();
@@ -248,28 +277,28 @@ export default function HomeScreen(props) {
       return;
     }
     onRefresh();
-  }, [startDate, endDate, status, quoSubmitted]);
+  }, [startDate, endDate, deadline, isDone]);
 
   const FilterModal = () => {
     const [startDateTemp, setStartDateTemp] = useState(startDate);
     const [endDateTemp, setEndDateTemp] = useState(endDate);
-    const [statusTemp, setStatusTemp] = useState(status);
-    const [quoSubmittedTemp, setQuoSubmittedTemp] = useState(quoSubmitted);
+    const [deadlineTemp, setDeadlineTemp] = useState(deadline);
+    const [isDoneTemp, setIsDoneTemp] = useState(isDone);
     const [showStartDatePicker, setShowStartDatePicker] = useState(false);
     const [showEndDatePicker, setShowEndDatePicker] = useState(false);
 
     const handleResetFilter = () => {
       setStartDateTemp(null);
       setEndDateTemp(null);
-      setStatusTemp(null);
-      setQuoSubmittedTemp(null);
+      setDeadlineTemp(2);
+      setIsDoneTemp(null);
     };
 
     const handleFilterApply = () => {
       setStartDate(startDateTemp);
       setEndDate(endDateTemp);
-      setStatus(statusTemp);
-      setQuoSubmitted(quoSubmittedTemp);
+      setDeadline(deadlineTemp);
+      setIsDone(isDoneTemp);
       setShowFilterModal(false);
     };
 
@@ -331,25 +360,20 @@ export default function HomeScreen(props) {
             </View>
 
             <View style={styles.modalFilterGroup}>
-              <Text style={styles.modalFilterTitle}>Status</Text>
-              <TouchableOpacity onPress={() => setStatusTemp('Contacting')}>
-                <Text style={[styles.modalFilterOption, statusTemp === 'Contacting' && styles.selectedOption]}>
-                  {statusTemp === 'Contacting' ? '●' : '○'} Contacting
+              <Text style={styles.modalFilterTitle}>Deadline:</Text>
+              <TouchableOpacity onPress={() => setDeadlineTemp(0)}>
+                <Text style={[styles.modalFilterOption, deadlineTemp === 0 && styles.selectedOption]}>
+                  {deadlineTemp === 0 ? '●' : '○'} Mockup
                 </Text>
               </TouchableOpacity>
-              <TouchableOpacity onPress={() => setStatusTemp('Compro Sent')}>
-                <Text style={[styles.modalFilterOption, statusTemp === 'Compro Sent' && styles.selectedOption]}>
-                  {statusTemp === 'Compro Sent' ? '●' : '○'} Compro Sent
+              <TouchableOpacity onPress={() => setDeadlineTemp(1)}>
+                <Text style={[styles.modalFilterOption, deadlineTemp === 1 && styles.selectedOption]}>
+                  {deadlineTemp === 1 ? '●' : '○'} Produksi
                 </Text>
               </TouchableOpacity>
-              <TouchableOpacity onPress={() => setStatusTemp('Appointment')}>
-                <Text style={[styles.modalFilterOption, statusTemp === 'Appointment' && styles.selectedOption]}>
-                  {statusTemp === 'Appointment' ? '●' : '○'} Appointment
-                </Text>
-              </TouchableOpacity>
-              <TouchableOpacity onPress={() => setStatusTemp('Schedule')}>
-                <Text style={[styles.modalFilterOption, statusTemp === 'Schedule' && styles.selectedOption]}>
-                  {statusTemp === 'Schedule' ? '●' : '○'} Schedule
+              <TouchableOpacity onPress={() => setDeadlineTemp(2)}>
+                <Text style={[styles.modalFilterOption, deadlineTemp === 2 && styles.selectedOption]}>
+                  {deadlineTemp === 2 ? '●' : '○'} Pengiriman
                 </Text>
               </TouchableOpacity>
             </View>
@@ -358,11 +382,11 @@ export default function HomeScreen(props) {
               <TouchableOpacity
                 style={styles.checkboxContainer}
                 onPress={() => {
-                  setQuoSubmittedTemp(!quoSubmittedTemp);
+                  setIsDoneTemp(!isDoneTemp);
                 }}
               >
                 <Text style={styles.modalFilterTitle}>
-                  Quo Submitted: {quoSubmittedTemp ? <Text style={styles.modalFilterOption}>✓</Text> : ''}
+                  Finished? {isDoneTemp ? <Text style={styles.modalFilterOption}>✓</Text> : ''}
                 </Text>
               </TouchableOpacity>
             </View>
