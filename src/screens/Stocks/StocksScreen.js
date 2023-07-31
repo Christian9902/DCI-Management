@@ -60,16 +60,20 @@ export default function StocksScreen(props) {
       const barangArray = [];
       inventorySnapshot.forEach((doc) => {
         const data = doc.data();
+        const stockID = doc.id;
         const namaBarang = data?.NamaBarang;
         const namaSupplier = data?.NamaSupplier;
         const jumlah = data?.Jumlah;
         const status = data?.Status;
+        const keterangan = data?.Keterangan;
         if (namaBarang) {
           barangArray.push({
+            stockID,
             namaBarang,
             namaSupplier,
             jumlah,
             status,
+            keterangan,
           });
         }
       });
@@ -139,7 +143,7 @@ export default function StocksScreen(props) {
   };
 
   const onPressItem = (item) => {
-    navigation.navigate("Home");
+    navigation.navigate('Stock Update', {stockData: item});
   };
 
   const renderItem = ({ item }) => (

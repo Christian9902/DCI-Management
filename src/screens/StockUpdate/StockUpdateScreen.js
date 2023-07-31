@@ -3,22 +3,21 @@ import { View, Text, TouchableOpacity, TextInput, FlatList, ToastAndroid } from 
 import styles from './styles';
 import MenuImage from "../../components/MenuImage/MenuImage";
 import { auth, db } from '../Login/LoginScreen';
-import { updateDoc, addDoc, collection, getDocs, query, where } from 'firebase/firestore';
+import { updateDoc, addDoc, collection, getDocs, doc } from 'firebase/firestore';
 
-export default function AddStockScreen(props) {
-  const [nama, setNama] = useState('');
-  const [supplier, setSupplier] = useState('');
-  const [jumlah, setJumlah] = useState(0);
-  const [keterangan, setKeterangan] = useState('');
-  const [barangBaru, setBarangBaru] = useState(true);
+export default function StockUpdateScreen({ navigation, route }) {
+  const { stockData } = route.params;
+  const [nama, setNama] = useState(stockData.namaBarang);
+  const [supplier, setSupplier] = useState(stockData.namaSupplier);
+  const [jumlah, setJumlah] = useState(stockData.jumlah);
+  const [keterangan, setKeterangan] = useState(stockData.keterangan);
+  const [barangBaru, setBarangBaru] = useState(stockData.status);
   const [isNamaActive, setIsNamaActive] = useState(false); 
   const [isSupplierActive, setIsSupplierActive] = useState(false); 
   const [namaBarangRekomendasi, setNamaBarangRekomendasi] = useState([]);
   const [supplierRekomendasi, setSupplierRekomendasi] = useState([]);
   const [namaBarangList, setNamaBarangList] = useState([]);
   const [supplierList, setSupplierList] = useState([]);
-
-  const { navigation } = props;
 
   useLayoutEffect(() => {
     navigation.setOptions({
@@ -89,96 +88,28 @@ export default function AddStockScreen(props) {
     fetchSupplier();
   }, []);
 
-  useEffect(() => {
-    if (nama && supplier) {
-      const inventoryRef = collection(db, 'Inventory');
-      const queryRef = query(
-        inventoryRef,
-        where('NamaBarang', '==', nama),
-        where('NamaSupplier', '==', supplier),
-        where('Status', '==', barangBaru)
-      );
-  
-      getDocs(queryRef)
-        .then((querySnapshot) => {
-          if (!querySnapshot.empty) {
-            querySnapshot.forEach((doc) => {
-              const data = doc.data();
-              const keterangan = data?.Keterangan || '';
-              setKeterangan(keterangan);
-            });
-          } else {
-            setKeterangan('');
-          }
-        })
-        .catch((error) => {
-          console.log('Error fetching data from Firestore:', error);
-        });
-    } else {
-      setKeterangan('');
-    }
-  }, [nama, supplier, barangBaru]);
-
-  const handleAddStock = async () => {
+  const handleUpdateStock = async () => {
     const user = auth.currentUser;
-    const inventoryRef = collection(db, 'Inventory');
+    const inventoryRef = doc(db, 'Inventory', stockData.stockID);
     const logDataRef = collection(db, 'Log Data');
-  
-    const inventoryQuery = await getDocs(
-      query(inventoryRef, where('NamaBarang', '==', nama), where('NamaSupplier', '==', supplier), where('Status', '==', barangBaru))
-    );
-  
-    if (!inventoryQuery.empty) {
-      inventoryQuery.forEach(async (doc) => {
-        const existingData = doc.data();
-        const existingJumlah = existingData?.Jumlah || 0;
-        const newJumlah = existingJumlah + jumlah;
-  
-        try {
-          await updateDoc(doc.ref, { Jumlah: newJumlah, Keterangan: keterangan });
-          ToastAndroid.show('Stock berhasil disimpan', ToastAndroid.SHORT);
-
-          const logEntry = {
-            timestamp: new Date().toLocaleString('en-GB', {
-              day: '2-digit',
-              month: '2-digit',
-              year: 'numeric',
-              hour: '2-digit',
-              minute: '2-digit',
-              second: '2-digit',
-            }),
-            action: 'Adding Stock',
-            userID: user.uid,
-            refID: doc.id,
-          };
-          await addDoc(logDataRef, logEntry);
-        } catch (error) {
-          ToastAndroid.show(`Terjadi error saat menyimpan data: ${error}`, ToastAndroid.SHORT);
-        }
-      });
-  
-      setNama('');
-      setSupplier('');
-      setJumlah(0);
-      setKeterangan('');
-  
-      if (!barangBaru) {
-        setBarangBaru(true);
-      }
-  
-      navigation.navigate('Home');
-    } else {
-      const data = {
-        NamaBarang: nama,
-        NamaSupplier: supplier,
-        Jumlah: jumlah,
-        Keterangan: keterangan,
-        Status: barangBaru,
-      };
+    const time = new Date().toLocaleString('en-GB', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+    });
   
       try {
-        const docRef = await addDoc(inventoryRef, data);
-        console.log('Data berhasil disimpan di Firestore dengan ID:', docRef.id);
+        await updateDoc(inventoryRef, { 
+          NamaBarang: nama,
+          NamaSupplier: supplier,
+          Status: barangBaru,
+          Jumlah: jumlah,
+          Keterangan: keterangan,
+        });
+        ToastAndroid.show('Stock berhasil diupdate', ToastAndroid.SHORT);
 
         const logEntry = {
           timestamp: new Date().toLocaleString('en-GB', {
@@ -189,39 +120,15 @@ export default function AddStockScreen(props) {
             minute: '2-digit',
             second: '2-digit',
           }),
-          action: barangBaru ? 'New Stock Added' : 'Remaining Production Stock Added',
+          action: 'updating Stock',
           userID: user.uid,
-          refID: docRef.id,
+          refID: stockData.stockID,
         };
         await addDoc(logDataRef, logEntry);
-        console.log('Log entry added successfully.');
       } catch (error) {
-        console.log('Terjadi kesalahan saat menyimpan data ke Firestore:', error);
+        ToastAndroid.show(`Terjadi error saat menyimpan data: ${error}`, ToastAndroid.SHORT);
       }
-  
-      setNama('');
-      setSupplier('');
-      setJumlah(0);
-      setKeterangan('');
-  
-      if (!barangBaru) {
-        setBarangBaru(true);
-      }
-  
-      navigation.navigate('Home');
-    }
-  };   
 
-  const handleCancel = () => {
-    setNama('');
-    setSupplier('');
-    setJumlah(0);
-    setKeterangan('');
-
-    if (!barangBaru) {
-      setBarangBaru(true);
-    }
-    
     navigation.navigate('Home');
   };
 
@@ -350,10 +257,10 @@ export default function AddStockScreen(props) {
         onChangeText={setKeterangan}
         multiline={true}
       />
-      <TouchableOpacity style={styles.addButton} onPress={handleAddStock}>
-        <Text style={styles.addButtonText}>Add Stock</Text>
+      <TouchableOpacity style={styles.addButton} onPress={handleUpdateStock}>
+        <Text style={styles.addButtonText}>Update</Text>
       </TouchableOpacity>
-      <TouchableOpacity style={styles.cancelButton} onPress={handleCancel}>
+      <TouchableOpacity style={styles.cancelButton} onPress={() => (navigation.navigate('Home'))}>
         <Text style={styles.cancelButtonText}>Cancel</Text>
       </TouchableOpacity>
     </View>
