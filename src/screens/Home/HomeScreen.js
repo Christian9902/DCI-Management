@@ -2,9 +2,8 @@ import React, { useState, useEffect, useLayoutEffect, useCallback, useRef } from
 import { View, Text, TouchableOpacity, TextInput, FlatList, Image, RefreshControl, ActivityIndicator, Pressable, ToastAndroid, Modal } from 'react-native';
 import styles from './styles';
 import MenuImage from "../../components/MenuImage/MenuImage";
-import { db, storage } from '../Login/LoginScreen';
+import { db } from '../Login/LoginScreen';
 import { collection, getDocs } from 'firebase/firestore';
-import { ref, getDownloadURL } from "firebase/storage";
 
 export default function HomeScreen(props) {
   const [orderData, setOrderData] = useState([]);
@@ -188,7 +187,7 @@ export default function HomeScreen(props) {
   };
 
   const onPressItem = (item) => {
-    navigation.navigate("Order Update", { orderData: item });
+    navigation.navigate("Order Detail", { orderData: item });
   };
 
   const toggleExpanded = (itemId) => {

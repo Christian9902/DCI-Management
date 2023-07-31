@@ -8,6 +8,8 @@ import {createDrawerNavigator} from '@react-navigation/drawer';
 import LoginScreen from './src/screens/Login/LoginScreen'; 
 import HomeScreen from './src/screens/Home/HomeScreen';
 import AddOrderScreen from './src/screens/AddOrder/AddOrderScreen';
+import OrderUpdateScreen from './src/screens/OrderUpdate/OrderUpdateScreen';
+import OrderDetailScreen from './src/screens/OrderDetail/OrderDetailScreen';
 import LogDataScreen from './src/screens/LogData/LogDataScreen';
 import StocksScreen from './src/screens/Stocks/StocksScreen';
 import AddStockScreen from './src/screens/AddStock/AddStockScreen';
@@ -22,7 +24,6 @@ import ClientUpdateScreen from './src/screens/ClientUpdate/ClientUpdateScreen';
 import IncomeScreen from './src/screens/Income/IncomeScreen';
 import ProfileScreen from './src/screens/Profile/ProfileScreen';
 import DrawerContainer from './src/screens/DrawerContainer/DrawerContainer';
-import OrderUpdateScreen from './src/screens/OrderUpdate/OrderUpdateScreen';
 
 const Stack = createStackNavigator();
 
@@ -41,13 +42,14 @@ function MainNavigator() {
       <Stack.Screen options={{ headerShown: false }} name="Login" component={LoginScreen} />
       <Stack.Screen name='Home' component={HomeScreen} />
       <Stack.Screen name='Add Order' component={AddOrderScreen} />
+      <Stack.Screen name='Order Update' component={OrderUpdateScreen} />
+      <Stack.Screen name='Order Detail' component={OrderDetailScreen} />
       <Stack.Screen name='Log Data' component={LogDataScreen} />
       <Stack.Screen name='Stocks' component={StocksScreen} />
       <Stack.Screen name='Add Stock' component={AddStockScreen} />
       <Stack.Screen name='Add Supplier' component={AddSupplierScreen} />
       <Stack.Screen name='Suppliers' component={SuppliersScreen} />
       <Stack.Screen name='Supplier Update' component={SupplierUpdateScreen} />
-      <Stack.Screen name='Order Update' component={OrderUpdateScreen} />
       <Stack.Screen name='Take' component={TakeScreen} />
       <Stack.Screen name='Client Info' component={ClientInfoScreen} />
       <Stack.Screen name='Income' component={IncomeScreen} />

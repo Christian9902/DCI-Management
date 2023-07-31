@@ -221,33 +221,31 @@ export default function LogData(props) {
   const isItemExpanded = (itemId) => expandedItems.includes(itemId);
 
   const renderItem = ({ item }) => (
-    <TouchableOpacity onPress={() => onPressItem(item)}>
-      <View style={styles.listItem}>
-        <View style={styles.itemContainer}>
-          <Text style={styles.title}>{item.Action}</Text>
-          <View style={styles.categoryContainer}>
-            <Text style={styles.category}>{item.Time}</Text>
-          </View>
-          {isItemExpanded(item.id) && (
-            <>
-              <View style={styles.separator} />
-              <View style={styles.categoryContainer}>
-                <Text style={styles.category}>LogID: {item.id}</Text>
-              </View>
-              <View style={styles.categoryContainer}>
-                <Text style={styles.category}>RefID: {item.RefID}</Text>
-              </View>
-              <View style={styles.categoryContainer}>
-                <Text style={styles.category}>User: {item.User}</Text>
-              </View>
-            </>
-          )}
+    <View style={styles.listItem}>
+      <View style={styles.itemContainer}>
+        <Text style={styles.title}>{item.Action}</Text>
+        <View style={styles.categoryContainer}>
+          <Text style={styles.category}>{item.Time}</Text>
         </View>
-        <TouchableOpacity onPress={() => toggleExpanded(item.id)}>
-          <Text style={styles.expandButton}>{isItemExpanded(item.id) ? '▲' : '▼'}</Text>
-        </TouchableOpacity>
+        {isItemExpanded(item.id) && (
+          <>
+            <View style={styles.separator} />
+            <View style={styles.categoryContainer}>
+              <Text style={styles.category}>LogID: {item.id}</Text>
+            </View>
+            <View style={styles.categoryContainer}>
+              <Text style={styles.category}>RefID: {item.RefID}</Text>
+            </View>
+            <View style={styles.categoryContainer}>
+              <Text style={styles.category}>User: {item.User}</Text>
+            </View>
+          </>
+        )}
       </View>
-    </TouchableOpacity>
+      <TouchableOpacity onPress={() => toggleExpanded(item.id)}>
+        <Text style={styles.expandButton}>{isItemExpanded(item.id) ? '▲' : '▼'}</Text>
+      </TouchableOpacity>
+    </View>
   );
 
   const onRefresh = async () => {
