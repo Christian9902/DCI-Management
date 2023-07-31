@@ -6,7 +6,7 @@ import styles from './styles';
 import MenuImage from "../../components/MenuImage/MenuImage";
 import { db, auth, storage } from '../Login/LoginScreen';
 import { addDoc, collection, getDocs, doc, updateDoc, deleteDoc } from 'firebase/firestore';
-import { ref, uploadBytesResumable, getDownloadURL, deleteObject } from "firebase/storage";
+import { ref, uploadBytesResumable, getDownloadURL, deleteObject, listAll } from "firebase/storage";
 import { Web } from "react-native-openanything";
 
 export default function OrderUpdateScreen({ navigation, route }) {
@@ -362,11 +362,18 @@ export default function OrderUpdateScreen({ navigation, route }) {
   
     try {
       await deleteDoc(orderRef);
-      console.log('Order document successfully deleted from Firestore.');
   
-      const storageRef = ref(storage, `Order/${orderData.orderID}`);
-      await deleteObject(storageRef);
-      console.log('Order folder successfully deleted from Firebase Storage.');
+      if (attachment !== []) {
+        const storageRef = ref(storage, `Order/${orderData.orderID}`);
+        listAll(storageRef)
+          .then((result) => {
+            const promises = result.items.map((itemRef) => deleteObject(itemRef));
+            return Promise.all(promises);
+          })
+          .catch((error) => {
+            console.error('Error deleting folder:', error);
+          });
+      }
   
       const logEntry = {
         timestamp: time,
