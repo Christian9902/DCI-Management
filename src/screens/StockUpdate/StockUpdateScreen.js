@@ -12,6 +12,7 @@ export default function StockUpdateScreen({ navigation, route }) {
   const [jumlah, setJumlah] = useState(stockData.jumlah);
   const [keterangan, setKeterangan] = useState(stockData.keterangan);
   const [barangBaru, setBarangBaru] = useState(stockData.status);
+  const [price, setPrice] = useState(stockData.harga);
   const [isNamaActive, setIsNamaActive] = useState(false); 
   const [isSupplierActive, setIsSupplierActive] = useState(false); 
   const [namaBarangRekomendasi, setNamaBarangRekomendasi] = useState([]);
@@ -108,6 +109,7 @@ export default function StockUpdateScreen({ navigation, route }) {
           Status: barangBaru,
           Jumlah: jumlah,
           Keterangan: keterangan,
+          Harga: price,
         });
         ToastAndroid.show('Stock berhasil diupdate', ToastAndroid.SHORT);
 
@@ -233,6 +235,13 @@ export default function StockUpdateScreen({ navigation, route }) {
         <Text style={styles.checkboxText}>Barang Baru?</Text>
         <Text style={styles.checkboxIcon}>{barangBaru ? '✓' : ''}</Text>
       </TouchableOpacity>
+      <TextInput
+        style={styles.input}
+        placeholder="Harga Satuan"
+        value={price.toString()}
+        onChangeText={(text) => setPrice(parseInt(text) || '')}
+        keyboardType="numeric"
+      />
       <View style={styles.jumlahContainer}>
         <Text style={styles.jumlahText}>Jumlah</Text>
         <View style={styles.jumlahContainer2}>

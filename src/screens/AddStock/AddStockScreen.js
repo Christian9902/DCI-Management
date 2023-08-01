@@ -17,6 +17,7 @@ export default function AddStockScreen(props) {
   const [supplierRekomendasi, setSupplierRekomendasi] = useState([]);
   const [namaBarangList, setNamaBarangList] = useState([]);
   const [supplierList, setSupplierList] = useState([]);
+  const [price, setPrice] = useState('');
 
   const { navigation } = props;
 
@@ -105,7 +106,9 @@ export default function AddStockScreen(props) {
             querySnapshot.forEach((doc) => {
               const data = doc.data();
               const keterangan = data?.Keterangan || '';
+              const price = data?.Harga || '';
               setKeterangan(keterangan);
+              setPrice(price);
             });
           } else {
             setKeterangan('');
@@ -135,7 +138,7 @@ export default function AddStockScreen(props) {
         const newJumlah = existingJumlah + jumlah;
   
         try {
-          await updateDoc(doc.ref, { Jumlah: newJumlah, Keterangan: keterangan });
+          await updateDoc(doc.ref, { Jumlah: newJumlah, Keterangan: keterangan, Harga: price });
           ToastAndroid.show('Stock berhasil disimpan', ToastAndroid.SHORT);
 
           const logEntry = {
@@ -161,6 +164,7 @@ export default function AddStockScreen(props) {
       setSupplier('');
       setJumlah(0);
       setKeterangan('');
+      setPrice('');
   
       if (!barangBaru) {
         setBarangBaru(true);
@@ -174,6 +178,7 @@ export default function AddStockScreen(props) {
         Jumlah: jumlah,
         Keterangan: keterangan,
         Status: barangBaru,
+        Harga: price,
       };
   
       try {
@@ -203,6 +208,7 @@ export default function AddStockScreen(props) {
       setSupplier('');
       setJumlah(0);
       setKeterangan('');
+      setPrice('');
   
       if (!barangBaru) {
         setBarangBaru(true);
@@ -217,6 +223,7 @@ export default function AddStockScreen(props) {
     setSupplier('');
     setJumlah(0);
     setKeterangan('');
+    setPrice('');
 
     if (!barangBaru) {
       setBarangBaru(true);
@@ -326,6 +333,13 @@ export default function AddStockScreen(props) {
         <Text style={styles.checkboxText}>Barang Baru?</Text>
         <Text style={styles.checkboxIcon}>{barangBaru ? '✓' : ''}</Text>
       </TouchableOpacity>
+      <TextInput
+        style={styles.input}
+        placeholder="Harga Satuan"
+        value={price.toString()}
+        onChangeText={(text) => setPrice(parseInt(text) || '')}
+        keyboardType="numeric"
+      />
       <View style={styles.jumlahContainer}>
         <Text style={styles.jumlahText}>Jumlah</Text>
         <View style={styles.jumlahContainer2}>

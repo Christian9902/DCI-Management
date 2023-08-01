@@ -96,6 +96,7 @@ export default function AddClientScreen(props) {
       JobPosition: jobPosition,
       PIC: user.uid,
       Added: time,
+      History: [],
     };
 
     try {

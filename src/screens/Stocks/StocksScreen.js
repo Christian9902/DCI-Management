@@ -66,6 +66,7 @@ export default function StocksScreen(props) {
         const jumlah = data?.Jumlah;
         const status = data?.Status;
         const keterangan = data?.Keterangan;
+        const harga = data?.Harga;
         if (namaBarang) {
           barangArray.push({
             stockID,
@@ -74,6 +75,7 @@ export default function StocksScreen(props) {
             jumlah,
             status,
             keterangan,
+            harga,
           });
         }
       });

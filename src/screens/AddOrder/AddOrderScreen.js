@@ -297,6 +297,7 @@ export default function AddOrderScreen(props) {
         PIC: user.uid,
         Timestamp: time,
         isDone: false,
+        Materials: [],
       };
 
       const orderRef = await addDoc(collection(db, 'Order'), data);
