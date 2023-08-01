@@ -213,6 +213,9 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: 'bold',
   },
+  takenItem: {
+    backgroundColor: '#c0c0c0',
+  },
 });
 
 export default styles;

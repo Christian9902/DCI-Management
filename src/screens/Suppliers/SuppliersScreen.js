@@ -156,7 +156,12 @@ export default function AddStockScreen(props) {
   return (
     <>
       {namaSupplierRekomendasi.length === 0 ? (
-        <Text>Loading...</Text>
+        <Text style={{
+          marginTop: 20,
+          fontSize: 16,
+          textAlign: 'center',
+          color: '#333333', 
+        }}>Loading... If the loading process takes too long, it's possible that no data is found at the moment.</Text>
       ) : (
         <FlatList
           vertical

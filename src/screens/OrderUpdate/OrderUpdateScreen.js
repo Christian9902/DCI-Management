@@ -19,8 +19,7 @@ export default function OrderUpdateScreen({ navigation, route }) {
   const [suppliers, setSuppliers] = useState(orderData.supplier);
   const [details, setDetails] = useState(orderData.spesifikasi);
   const [harga, setHarga] = useState(orderData.harga);
-  const [timeline, setTimeline] = useState(orderData.deadline.map(timestamp => timestamp.toDate()));
-  const [progress, setProgress] = useState(orderData.progress);
+  const [timeline, setTimeline] = useState(orderData.deadlineTemp.map(timestamp => timestamp.toDate()));
   const [attachment, setAttachment] = useState(orderData.attachment);
   const [clientRekomendasi, setClientRekomendasi] = useState([]);
   const [clientList, setClientList] = useState([]);

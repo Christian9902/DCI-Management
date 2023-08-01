@@ -132,27 +132,25 @@ export default function OrderDetailScreen({ navigation, route }) {
           <Text style={styles.infoLabel}>Spesifikasi:</Text>
           <Text style={styles.infoText}>{orderData.spesifikasi}</Text>
         </View>
-        {orderData.attachment.length > 0 && (
-          <View style={styles.attachedFilesContainer}>
-            <Text style={styles.attachedFilesTitle}>Attached Files:</Text>
-            {orderData.attachment.map((file, index) => (
-              <View key={index} style={styles.attachedFileItem}>
-                <View>
-                  <Text style={styles.attachedFileName}>{file.name}</Text>
-                  <Text style={styles.attachedFileSize}>{((file.size / 1024) / 1024).toFixed(2)} MB</Text>
-                </View>
-                <View style={{flexDirection: 'row', justifyContent: 'space-between'}}>
-                  <TouchableOpacity onPress={() => Web(file.downloadURL)}>
-                    <Image
-                      style={styles.openIcon}
-                      source={require('../../../assets/icons/open.png')}
-                    />
-                  </TouchableOpacity>
-                </View>
+        <View style={styles.attachedFilesContainer}>
+          <Text style={styles.attachedFilesTitle}>Attached Files:</Text>
+          {orderData.attachment.map((file, index) => (
+            <View key={index} style={styles.attachedFileItem}>
+              <View>
+                <Text style={styles.attachedFileName}>{file.name}</Text>
+                <Text style={styles.attachedFileSize}>{((file.size / 1024) / 1024).toFixed(2)} MB</Text>
               </View>
-            ))}
-          </View>
-        )}
+              <View style={{flexDirection: 'row', justifyContent: 'space-between'}}>
+                <TouchableOpacity onPress={() => Web(file.downloadURL)}>
+                  <Image
+                    style={styles.openIcon}
+                    source={require('../../../assets/icons/open.png')}
+                  />
+                </TouchableOpacity>
+              </View>
+            </View>
+          ))}
+        </View>
       </ScrollView>
       <View style={styles.buttonContainer}>
         <TouchableOpacity style={styles.createButton} onPress={() => (navigation.navigate('Take'))}>

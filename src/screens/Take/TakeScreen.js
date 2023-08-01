@@ -93,18 +93,7 @@ export default function TakeStockScreen(props) {
         return isInRange;
       });
 
-      filteredBarangArray.sort((a, b) => {
-        const productNameA = a.NamaBarang.toLowerCase();
-        const productNameB = b.NamaBarang.toLowerCase();
-        const supplierNameA = a.NamaSupplier.split('- ')[1]?.toLowerCase();
-        const supplierNameB = b.NamaSupplier.split('- ')[1]?.toLowerCase();
-
-        if (productNameA < productNameB) return -1;
-        if (productNameA > productNameB) return 1;
-        if (supplierNameA < supplierNameB) return -1;
-        if (supplierNameA > supplierNameB) return 1;
-        return 0;
-      });
+      sortData(filteredBarangArray);
 
       setBarangData(filteredBarangArray);
       setNamaBarangRekomendasi(filteredBarangArray.slice(0, 10));
@@ -143,6 +132,32 @@ export default function TakeStockScreen(props) {
     setNamaBarangRekomendasi(filteredBarang.slice(0, 10));
   };
 
+  const separateData = (data) => {
+    const takenItems = data.filter((item) => item.taken > 0);
+    const notTakenItems = data.filter((item) => item.taken === 0);
+    
+    sortData(takenItems);
+    sortData(notTakenItems);
+  
+    setBarangData([...takenItems, ...notTakenItems]);
+    setNamaBarangRekomendasi([...takenItems.slice(0, 10), ...notTakenItems.slice(0, 10)]);
+  };
+  
+  const sortData = (data) => {
+    data.sort((a, b) => {
+      const productNameA = a.NamaBarang.toLowerCase();
+      const productNameB = b.NamaBarang.toLowerCase();
+      const supplierNameA = a.NamaSupplier.split('- ')[1]?.toLowerCase();
+      const supplierNameB = b.NamaSupplier.split('- ')[1]?.toLowerCase();
+  
+      if (productNameA < productNameB) return -1;
+      if (productNameA > productNameB) return 1;
+      if (supplierNameA < supplierNameB) return -1;
+      if (supplierNameA > supplierNameB) return 1;
+      return 0;
+    });
+  };
+
   const handleIncreaseQuantity = (item) => {
     const updatedData = barangData.map((barangItem) => {
       if (barangItem === item) {
@@ -150,8 +165,7 @@ export default function TakeStockScreen(props) {
       }
       return barangItem;
     });
-    setBarangData(updatedData);
-    setNamaBarangRekomendasi(updatedData);
+    separateData(updatedData);
   };
   
   const handleDecreaseQuantity = (item) => {
@@ -162,8 +176,7 @@ export default function TakeStockScreen(props) {
         }
         return barangItem;
       });
-      setBarangData(updatedData);
-      setNamaBarangRekomendasi(updatedData);
+      separateData(updatedData);
     }
   };
   
@@ -220,8 +233,10 @@ export default function TakeStockScreen(props) {
   };
   
   const renderItem = ({ item }) => {
-    return(
-      <View style={styles.listItem}>
+    const isTaken = item.taken > 0;
+
+    return (
+      <View style={[styles.listItem, isTaken ? styles.takenItem : null]}>
         <View style={styles.itemContainer}>
           <View style={styles.itemInfoContainer}>
             <Text style={styles.title}>{item.NamaBarang}</Text>
@@ -250,8 +265,7 @@ export default function TakeStockScreen(props) {
                   }
                   return barangItem;
                 });
-                setBarangData(updatedData);
-                setNamaBarangRekomendasi(updatedData);
+                separateData(updatedData);
               }}
               keyboardType="numeric"
             />
@@ -401,7 +415,12 @@ export default function TakeStockScreen(props) {
   return (
     <View style={styles.container}>
       {namaBarangRekomendasi.length === 0 ? (
-        <Text>Loading...</Text>
+        <Text style={{
+          marginTop: 20,
+          fontSize: 16,
+          textAlign: 'center',
+          color: '#333333', 
+        }}>Loading... If the loading process takes too long, it's possible that no data is found at the moment.</Text>
       ) : (
         <FlatList
           vertical

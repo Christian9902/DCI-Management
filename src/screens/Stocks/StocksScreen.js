@@ -308,7 +308,12 @@ export default function StocksScreen(props) {
   return (
     <>
       {namaBarangRekomendasi.length === 0 ? (
-        <Text>Loading... if it takes to long to load maybe there is no data found</Text>
+        <Text style={{
+          marginTop: 20,
+          fontSize: 16,
+          textAlign: 'center',
+          color: '#333333', 
+        }}>Loading... If the loading process takes too long, it's possible that no data is found at the moment.</Text>
       ) : (
         <FlatList
           vertical
