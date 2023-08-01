@@ -5,7 +5,7 @@ import * as DocumentPicker from 'expo-document-picker';
 import styles from './styles';
 import MenuImage from "../../components/MenuImage/MenuImage";
 import { db, auth, storage } from '../Login/LoginScreen';
-import { addDoc, collection, getDocs, updateDoc } from 'firebase/firestore';
+import { addDoc, collection, getDocs, updateDoc, doc } from 'firebase/firestore';
 import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 
 export default function AddOrderScreen(props) {
@@ -309,7 +309,23 @@ export default function AddOrderScreen(props) {
       setShowProgressModal(false);
 
       await updateDoc(orderRef, { Attachment: attachment.map((file, index) => ({ name: file.name, size: file.size, type: file.mimeType, downloadURL: downloadURLs[index] })) });
-  
+
+      const clientSnapshot = await getDocs(collection(db, 'Client'));
+      let clientID;
+      let clientHistory
+      clientSnapshot.forEach((doc) => {
+        const data = doc.data();
+        if (data?.NamaClient === namaClient && data?.NamaPT === PTClient) {
+          clientID = doc.id;
+          clientHistory = data?.History || [];
+        } 
+      });
+
+      if (clientID) {
+        const clientRef = doc(db, 'Client', clientID);
+        updateDoc(clientRef, { History: Array.isArray(clientHistory) ? [...clientHistory, orderRef.id] : [orderRef.id] });
+      }
+      
       const logEntry = {
         timestamp: time,
         action: 'Order Created',

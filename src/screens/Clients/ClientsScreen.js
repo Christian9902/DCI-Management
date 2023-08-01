@@ -5,7 +5,6 @@ import MenuImage from "../../components/MenuImage/MenuImage";
 import { db } from '../Login/LoginScreen';
 import { collection, getDocs } from 'firebase/firestore';
 import DateTimePicker from '@react-native-community/datetimepicker';
-import RNDateTimePicker from '@react-native-community/datetimepicker';
 
 export default function ClientsScreen(props) {
   const [nama, setNama] = useState('');
