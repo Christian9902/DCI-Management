@@ -111,7 +111,10 @@ export default function DrawerContainer(props) {
               title="TAKE STOCK"
               source={require("../../../assets/icons/take.png")}
               onPress={() => {
-                navigation.navigate("Take");
+                navigation.navigate('Take', {
+                  orderData: [],
+                  isRecordingForOrder: false,
+                })
                 navigation.closeDrawer();
               }}
             />

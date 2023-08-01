@@ -3,10 +3,11 @@ import { ToastAndroid, View, Text, TextInput, FlatList, Image, Pressable, Toucha
 import styles from './styles';
 import MenuImage from "../../components/MenuImage/MenuImage";
 import { auth, db } from '../Login/LoginScreen';
-import { collection, getDocs, addDoc, writeBatch, doc, increment } from 'firebase/firestore';
+import { collection, getDocs, addDoc, writeBatch, doc, increment, getDoc, updateDoc, where, arrayUnion } from 'firebase/firestore';
 
 
-export default function TakeStockScreen(props) {
+export default function TakeStockScreen({ navigation, route }) {
+  const { isRecordingForOrder, orderData } = route.params;
   const [nama, setNama] = useState('');  
   const [namaBarangRekomendasi, setNamaBarangRekomendasi] = useState([]);
   const [barangData, setBarangData] = useState([]);
@@ -19,8 +20,6 @@ export default function TakeStockScreen(props) {
   const [status, setStatus] = useState(null);
   const [barValue, setBarValue] = useState(null);
   const isInitialRender = useRef(true);
-
-  const { navigation } = props;
 
   useLayoutEffect(() => {
     navigation.setOptions({
@@ -38,7 +37,7 @@ export default function TakeStockScreen(props) {
             style={styles.searchInput}
             onChangeText={handleNamaChange}
             value={nama}
-            placeholder='Barang1, Barang2, ...; Supplier1, Supplier2...'
+            placeholder={"Barang1, Barang2, ...; Supplier1, Supplier2..."}
           />
           <Pressable onPress={() => {setNama(""); handleNamaChange("")}}>
             <Image style={styles.searchIcon} source={require("../../../assets/icons/close.png")} />
@@ -53,7 +52,7 @@ export default function TakeStockScreen(props) {
         </View>
       ),
     });
-  }, [nama]);
+  }, [nama, isRecordingForOrder]);
 
   const fetchInventory = async () => {
     try {
@@ -183,6 +182,7 @@ export default function TakeStockScreen(props) {
   const handleTake = async () => {
     const user = auth.currentUser;
     const updatedData = [];
+    const materialsToUpdate = [];
   
     for (const item of barangData) {
       if (item.taken > 0) {
@@ -208,6 +208,7 @@ export default function TakeStockScreen(props) {
         } catch (error) {
           console.log('Failed to log data:', error);
         }
+        materialsToUpdate.push({ stockID: item.ref, amount: item.taken });
       } else {
         updatedData.push(item);
       }
@@ -215,21 +216,49 @@ export default function TakeStockScreen(props) {
   
     try {
       const batch = writeBatch(db);
-    
+  
       for (const item of updatedData) {
         const itemRef = doc(db, 'Inventory', item.ref);
         const incrementBy = -item.taken;
-    
+  
         batch.update(itemRef, { Jumlah: increment(incrementBy) });
       }
-    
+  
       await batch.commit();
       ToastAndroid.show('Stock Have Been Taken Sucessfully', ToastAndroid.SHORT);
+  
+      if (isRecordingForOrder && orderData?.orderID) {
+        const orderDocRef = doc(db, 'Order', orderData.orderID);
+        const orderDocSnap = await getDoc(orderDocRef);
+      
+        if (orderDocSnap.exists()) {
+          const orderDataToUpdate = orderDocSnap.data();
+      
+          const existingMaterials = orderDataToUpdate.Materials || [];
+          materialsToUpdate.forEach((materialToUpdate) => {
+            const existingIndex = existingMaterials.findIndex(
+              (material) => material.stockID === materialToUpdate.stockID
+            );
+      
+            if (existingIndex !== -1) {
+              existingMaterials[existingIndex].amount += materialToUpdate.amount;
+            } else {
+              existingMaterials.push(materialToUpdate);
+            }
+          });
+      
+          await updateDoc(orderDocRef, { Materials: existingMaterials });
+          
+          orderData.materials = existingMaterials;
+      
+          navigation.navigate('Order Detail', { orderData: orderData });
+        }
+      } else {
+        navigation.navigate('Home');
+      }      
     } catch (error) {
       console.log('Failed to update inventory:', error);
     }
-    
-    navigation.navigate('Home');
   };
   
   const renderItem = ({ item }) => {

@@ -79,6 +79,7 @@ export default function HomeScreen(props) {
         const progress = data?.Progress;
         const isDone = data?.isDone;
         const spesifikasi = data?.Spesifikasi;
+        const materials = data?.Materials;
         const userRef = userSnapshot.docs.find((doc) => doc.id === data?.PIC);
         const user = userRef ? userRef.data().Nama : '';
   
@@ -97,6 +98,7 @@ export default function HomeScreen(props) {
           progress,
           isDone,
           spesifikasi,
+          materials,
           user,
           isExpanded: isItemExpanded(orderID),
         };

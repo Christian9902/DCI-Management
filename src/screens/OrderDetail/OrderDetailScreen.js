@@ -2,14 +2,15 @@ import React, { useState, useLayoutEffect, useEffect } from 'react';
 import { View, Text, TouchableOpacity, Image, ScrollView, ToastAndroid } from 'react-native';
 import styles from './styles';
 import MenuImage from "../../components/MenuImage/MenuImage";
-import { db } from '../Login/LoginScreen';
-import { doc, updateDoc } from 'firebase/firestore';
+import { db, auth } from '../Login/LoginScreen';
+import { doc, updateDoc, collection, getDoc, addDoc } from 'firebase/firestore';
 import { Web } from "react-native-openanything";
 
 export default function OrderDetailScreen({ navigation, route }) {
   const { orderData } = route.params;
   const [progress, setProgress] = useState(orderData.progress);
   const [isDone, setIsDone] = useState(orderData.isDone);
+  const [materialDetails, setMaterialDetails] = useState([]);
 
   useLayoutEffect(() => {
     navigation.setOptions({
@@ -39,6 +40,33 @@ export default function OrderDetailScreen({ navigation, route }) {
     setIsDone(allProgressDone);
   }, [progress]);
 
+  useEffect(() => {
+    fetchMaterialDetails();
+  }, [orderData.materials]);
+
+  const fetchMaterialDetails = async () => {
+    try {
+      const materialDetailsArray = [];
+      for (const material of orderData.materials) {
+        const materialDocRef = doc(db, 'Inventory', material.stockID);
+        const materialDocSnap = await getDoc(materialDocRef);
+        if (materialDocSnap.exists()) {
+          const materialData = materialDocSnap.data();
+          const materialDetail = {
+            NamaBarang: materialData.NamaBarang,
+            NamaSupplier: materialData.NamaSupplier,
+            amount: material.amount,
+            stockID: material.stockID,
+          };
+          materialDetailsArray.push(materialDetail);
+        }
+      }
+      setMaterialDetails(materialDetailsArray);
+    } catch (error) {
+      console.log('Failed to fetch material details:', error);
+    }
+  };
+
   const handleReturnButtonPress = async () => {
     try {
       const orderRef = doc(db, 'Order', orderData.orderID);
@@ -56,6 +84,50 @@ export default function OrderDetailScreen({ navigation, route }) {
     updatedProgress[index] = !updatedProgress[index];
     setProgress(updatedProgress);
   };
+
+  const handleDeleteMaterial = async (material) => {
+    const user = auth.currentUser;
+    try {
+      const updatedMaterials = orderData.materials.filter(
+        (item) => item.stockID !== material.stockID
+      );
+      const orderRef = doc(db, 'Order', orderData.orderID);
+      await updateDoc(orderRef, { Materials: updatedMaterials });
+  
+      const inventoryDocRef = doc(db, 'Inventory', material.stockID);
+      const inventoryDocSnap = await getDoc(inventoryDocRef);
+      if (inventoryDocSnap.exists()) {
+        const inventoryData = inventoryDocSnap.data();
+        const returnedAmount = material.amount;
+        const newAmount = (inventoryData.Jumlah || 0) + returnedAmount;
+        await updateDoc(inventoryDocRef, { Jumlah: newAmount });
+  
+        const logData = {
+          timestamp: new Date().toLocaleString('en-GB', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit',
+          }),
+          refID: orderData.orderID,
+          userID: user.uid,
+          action: `Returned ${material.NamaBarang} (${material.NamaSupplier}) - x${returnedAmount} from order ${orderData.orderID}`,
+        };
+        await addDoc(collection(db, 'Log Data'), logData);
+      }
+  
+      setMaterialDetails((prevMaterials) =>
+        prevMaterials.filter((item) => item.stockID !== material.stockID)
+      );
+  
+      ToastAndroid.show('Material removed and returned to inventory!', ToastAndroid.SHORT);
+    } catch (error) {
+      console.log('Failed to remove material:', error);
+      ToastAndroid.show('Failed to remove material!', ToastAndroid.SHORT);
+    }
+  };  
 
   return ( 
     <View style={styles.container}>
@@ -151,9 +223,26 @@ export default function OrderDetailScreen({ navigation, route }) {
             </View>
           ))}
         </View>
+        <View style={styles.infoContainer}>
+          <Text style={styles.infoLabel}>Materials:</Text>
+          {materialDetails.map((material, index) => (
+            <View key={index} style={styles.attachedFileItem}>
+              <Text style={styles.infoText}>{material.NamaBarang} ({material.NamaSupplier}) x{material.amount}</Text>
+              <TouchableOpacity
+                style={styles.deleteButton}
+                onPress={() => handleDeleteMaterial(material)}
+              >
+                <Text style={styles.deleteButtonText}>X</Text>
+              </TouchableOpacity>
+            </View>
+          ))}
+        </View>
       </ScrollView>
       <View style={styles.buttonContainer}>
-        <TouchableOpacity style={styles.createButton} onPress={() => (navigation.navigate('Take'))}>
+        <TouchableOpacity style={styles.createButton} onPress={() => navigation.navigate('Take', {
+            orderData: orderData,
+            isRecordingForOrder: true,
+          })}>
           <Text style={styles.createButtonText}>Take Stock</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.returnButton} onPress={handleReturnButtonPress}>
