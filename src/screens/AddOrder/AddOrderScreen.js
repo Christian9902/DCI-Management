@@ -183,11 +183,11 @@ export default function AddOrderScreen(props) {
       const supplierPTNameB = b.PTSupplier.toLowerCase();
       const supplierNameA = a.namaSupplier.toLowerCase();
       const supplierNameB = b.namaSupplier.toLowerCase();
-  
-      if (supplierPTNameA < supplierPTNameB) return -1;
-      if (supplierPTNameA > supplierPTNameB) return 1;
+       
       if (supplierNameA < supplierNameB) return -1;
       if (supplierNameA > supplierNameB) return 1;
+      if (supplierPTNameA < supplierPTNameB) return -1;
+      if (supplierPTNameA > supplierPTNameB) return 1;
       return 0;
     });
     return supplierArray;
@@ -310,22 +310,6 @@ export default function AddOrderScreen(props) {
       setShowProgressModal(false);
 
       await updateDoc(orderRef, { Attachment: attachment.map((file, index) => ({ name: file.name, size: file.size, type: file.mimeType, downloadURL: downloadURLs[index] })) });
-
-      const clientSnapshot = await getDocs(collection(db, 'Client'));
-      let clientID;
-      let clientHistory
-      clientSnapshot.forEach((doc) => {
-        const data = doc.data();
-        if (data?.NamaClient === namaClient && data?.NamaPT === PTClient) {
-          clientID = doc.id;
-          clientHistory = data?.History || [];
-        } 
-      });
-
-      if (clientID) {
-        const clientRef = doc(db, 'Client', clientID);
-        updateDoc(clientRef, { History: Array.isArray(clientHistory) ? [...clientHistory, orderRef.id] : [orderRef.id] });
-      }
       
       const logEntry = {
         timestamp: time,

@@ -363,7 +363,7 @@ export default function ClientInfoScreen(props) {
       <View style={styles.container}>
         <Text>Access denied. You must be an admin to view this screen.</Text>
         <TouchableOpacity onPress={handleGoBack} style={styles.button}>
-          <Text style={styles.buttonText2}>Home</Text>
+          <Text style={styles.buttonText}>Home</Text>
         </TouchableOpacity>
         <StatusBar style="auto" />
       </View>

@@ -143,15 +143,22 @@ export default function OrderUpdateScreen({ navigation, route }) {
         const namaSupplier = data?.NamaSupplier;
         const PTSupplier = data?.NamaPT;
   
+        const selected = suppliers.some((supplier) => supplier.ref === ref);
+  
         supplierArray.push({
           ref,
           namaSupplier,
           PTSupplier,
-          selected: false,
+          selected,
         });
       });
   
-      const sortedSupplierArray = sortSupplierArray(supplierArray);
+      const sortedSupplierArray = supplierArray.sort((a, b) => {
+        if (a.selected && !b.selected) return -1;
+        if (!a.selected && b.selected) return 1;
+        return 0;
+      });
+  
       setSupplierList(sortedSupplierArray);
     } catch (error) {
       console.log('Terjadi kesalahan saat mengambil data dari Firebase:', error);
@@ -183,10 +190,10 @@ export default function OrderUpdateScreen({ navigation, route }) {
       const supplierNameA = a.namaSupplier.toLowerCase();
       const supplierNameB = b.namaSupplier.toLowerCase();
   
-      if (supplierPTNameA < supplierPTNameB) return -1;
-      if (supplierPTNameA > supplierPTNameB) return 1;
       if (supplierNameA < supplierNameB) return -1;
       if (supplierNameA > supplierNameB) return 1;
+      if (supplierPTNameA < supplierPTNameB) return -1;
+      if (supplierPTNameA > supplierPTNameB) return 1;
       return 0;
     });
     return supplierArray;
@@ -590,7 +597,7 @@ export default function OrderUpdateScreen({ navigation, route }) {
         <TouchableOpacity style={styles.deleteButton2} onPress={handleDelete}>
           <Text style={styles.deleteButtonText}>Delete</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.cancelButton} onPress={() => {navigation.navigate('Home')}}>
+        <TouchableOpacity style={styles.cancelButton} onPress={() => {navigation.goBack()}}>
           <Text style={styles.cancelButtonText}>Cancel</Text>
         </TouchableOpacity>
       </View>

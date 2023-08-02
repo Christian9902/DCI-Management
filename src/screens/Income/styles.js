@@ -1,49 +1,38 @@
-import { StyleSheet } from "react-native";
+import { StyleSheet } from 'react-native';
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     justifyContent: "flex-start",
     alignItems: "center",
-    paddingHorizontal: 16,
-    marginTop: 16,
+    backgroundColor: '#fff',
+    paddingHorizontal: 10,
+    paddingVertical: 10,
   },
-  headerTitle: {
-    fontSize: 20,
-    fontWeight: "bold",
-    marginBottom: 16,
+  point: {
+    marginHorizontal: 20,
   },
-  timeFrameContainer: {
-    flexDirection: "row",
-    marginBottom: 16,
+  datePickerContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
-  timeFrameButton: {
+  datePickerColumn: {
     flex: 1,
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-    borderRadius: 5,
-    marginRight: 8,
-    backgroundColor: "#ccc",
+    flexDirection: 'column',
+    marginRight: 10,
   },
-  activeTimeFrameButton: {
-    backgroundColor: "#333",
-  },
-  timeFrameButtonText: {
-    color: "#333",
-    fontWeight: "bold",
-    textAlign: "center",
-  },
-  activeTimeFrameButtonText: {
-    color: "#fff",
-  },
-  label: {
-    fontSize: 18,
-    fontWeight: "bold",
-    marginBottom: 8,
-  },
-  value: {
+  datePickerText: {
     fontSize: 16,
-    marginBottom: 16,
+    fontWeight: 'bold',
+  },
+  datePicker: {
+    fontSize: 16,
+    backgroundColor: '#eee',
+  },
+  buttonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-evenly',
   },
   button: {
     backgroundColor: "#333",
@@ -56,6 +45,81 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "bold",
     textAlign: "center",
+  },
+  separator: {
+    height: 1,
+    backgroundColor: 'gray',
+    marginVertical: 10,
+  },filterIcon: {
+    width: 24,
+    height: 24,
+    resizeMode: 'contain',
+    marginHorizontal: 16,
+  },
+  datePickerContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  datePickerColumn: {
+    flex: 1,
+    flexDirection: 'column',
+    marginRight: 10,
+  },
+  modalContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
+  modalContent: {
+    backgroundColor: '#FFF',
+    padding: 16,
+    borderRadius: 8,
+    width: '80%',
+  },
+  modalFilterGroup: {
+    marginBottom: 16,
+  },
+  modalFilterTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 8,
+  },
+  modalFilterOption: {
+    fontSize: 16,
+    marginBottom: 4,
+    color: '#007BFF',
+  },
+  modalFilterInput: {
+    borderWidth: 1,
+    borderColor: '#888',
+    borderRadius: 4,
+    paddingHorizontal: 8,
+    marginBottom: 8,
+  },
+  modalButtonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-evenly',
+    alignContent: 'center',
+    width: '100%',
+  },
+  modalApplyButton: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: 'blue',
+    textAlign: 'center',
+  },
+  modalResetButton: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: 'red',
+    textAlign: 'center',
+  },
+  dateRangeText: {
+    fontSize: 16,
+    fontWeight: "bold",
+    marginBottom: 10,
   },
 });
 

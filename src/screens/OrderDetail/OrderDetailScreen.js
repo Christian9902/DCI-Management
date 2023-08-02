@@ -3,7 +3,7 @@ import { View, Text, TouchableOpacity, Image, ScrollView, ToastAndroid } from 'r
 import styles from './styles';
 import MenuImage from "../../components/MenuImage/MenuImage";
 import { db, auth } from '../Login/LoginScreen';
-import { doc, updateDoc, collection, getDoc, addDoc } from 'firebase/firestore';
+import { doc, updateDoc, collection, getDoc, addDoc, getDocs } from 'firebase/firestore';
 import { Web } from "react-native-openanything";
 
 export default function OrderDetailScreen({ navigation, route }) {
@@ -108,6 +108,29 @@ export default function OrderDetailScreen({ navigation, route }) {
 
     try {
       await updateDoc(orderRef, { Progress: progress, isDone: isDone, Materials: orderData.materials, isDoneTime: (isDone ? time : '') });
+
+      const clientSnapshot = await getDocs(collection(db, 'Client'));
+      let clientID;
+      let clientHistory;
+      clientSnapshot.forEach((doc) => {
+        const data = doc.data();
+        if (data?.NamaClient === orderData.namaClient && data?.NamaPT === orderData.ptClient) {
+          clientID = doc.id;
+          clientHistory = data?.History || [];
+        }
+      });
+  
+      if (clientID) {
+        if (isDone) {
+          const clientRef = doc(db, 'Client', clientID);
+          await updateDoc(clientRef, { History: Array.isArray(clientHistory) ? [...clientHistory, orderRef.id] : [orderRef.id] });
+        } else {
+          if (clientHistory.includes(orderData.orderID)) {
+            const clientRef = doc(db, 'Client', clientID);
+            await updateDoc(clientRef, { History: clientHistory.filter((orderId) => orderId !== orderData.orderID) });
+          }
+        }
+      }
       
       const logEntry = {
         timestamp: time,

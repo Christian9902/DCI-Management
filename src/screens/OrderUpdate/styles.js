@@ -145,12 +145,10 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
   },
   modalContent: {
-    backgroundColor: '#fff',
-    borderRadius: 10,
-    padding: 20,
-    height: modalHeight,
-    width: modalWidth,
-    elevation: 5,
+    backgroundColor: '#FFF',
+    padding: 16,
+    borderRadius: 8,
+    width: '80%',
   },
   buttonContainerModal: {
     flexDirection: 'row',
