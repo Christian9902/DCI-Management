@@ -298,6 +298,7 @@ export default function AddOrderScreen(props) {
         Timestamp: time,
         isDone: false,
         Materials: [],
+        isDoneTime: '',
       };
 
       const orderRef = await addDoc(collection(db, 'Order'), data);

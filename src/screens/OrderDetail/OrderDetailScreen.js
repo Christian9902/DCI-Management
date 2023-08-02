@@ -94,9 +94,28 @@ export default function OrderDetailScreen({ navigation, route }) {
   };
 
   const handleReturnButtonPress = async () => {
+    const user = auth.currentUser;
+    const orderRef = doc(db, 'Order', orderData.orderID);
+    const logDataRef = collection(db, 'Log Data');
+    const time = new Date().toLocaleString('en-GB', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+    });
+
     try {
-      const orderRef = doc(db, 'Order', orderData.orderID);
-      await updateDoc(orderRef, { Progress: progress, isDone: isDone, Materials: orderData.materials });
+      await updateDoc(orderRef, { Progress: progress, isDone: isDone, Materials: orderData.materials, isDoneTime: (isDone ? time : '') });
+      
+      const logEntry = {
+        timestamp: time,
+        action: `${orderData.orderID}'s Progress updated`,
+        userID: user.uid,
+        refID: orderData.orderID,
+      };
+      await addDoc(logDataRef, logEntry);
       
       ToastAndroid.show('Progress updated!', ToastAndroid.SHORT);
       navigation.navigate('Home');
