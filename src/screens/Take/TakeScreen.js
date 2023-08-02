@@ -473,9 +473,6 @@ export default function TakeStockScreen({ navigation, route }) {
         <TouchableOpacity style={styles.addButton} onPress={handleTake}>
           <Text style={styles.addButtonText}>Take Stock</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.cancelButton} onPress={() => navigation.navigate('Home')}>
-          <Text style={styles.cancelButtonText}>Cancel</Text>
-        </TouchableOpacity>
       </View>
     </View>
   );  

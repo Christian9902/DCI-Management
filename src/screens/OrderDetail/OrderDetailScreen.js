@@ -1,4 +1,4 @@
-import React, { useState, useLayoutEffect, useEffect } from 'react';
+import React, { useState, useLayoutEffect, useEffect, useRef } from 'react';
 import { View, Text, TouchableOpacity, Image, ScrollView, ToastAndroid } from 'react-native';
 import styles from './styles';
 import MenuImage from "../../components/MenuImage/MenuImage";
@@ -11,6 +11,8 @@ export default function OrderDetailScreen({ navigation, route }) {
   const [progress, setProgress] = useState(orderData.progress);
   const [isDone, setIsDone] = useState(orderData.isDone);
   const [materialDetails, setMaterialDetails] = useState([]);
+
+  const isInitialRender = useRef(true);
 
   useLayoutEffect(() => {
     navigation.setOptions({
@@ -41,7 +43,10 @@ export default function OrderDetailScreen({ navigation, route }) {
   }, [progress]);
 
   useEffect(() => {
-    fetchMaterialDetails();
+    if (isInitialRender.current) {
+      fetchMaterialDetails();
+      isInitialRender.current = false;
+    }
   }, [orderData.materials]);
 
   const fetchMaterialDetails = async () => {
@@ -61,7 +66,28 @@ export default function OrderDetailScreen({ navigation, route }) {
           materialDetailsArray.push(materialDetail);
         }
       }
+
+      materialDetailsArray.sort((a, b) => {
+        const productNameA = a.NamaBarang.toLowerCase();
+        const productNameB = b.NamaBarang.toLowerCase();
+        const supplierNameA = a.NamaSupplier.split('- ')[1]?.toLowerCase();
+        const supplierNameB = b.NamaSupplier.split('- ')[1]?.toLowerCase();
+
+        if (productNameA < productNameB) return -1;
+        if (productNameA > productNameB) return 1;
+        if (supplierNameA < supplierNameB) return -1;
+        if (supplierNameA > supplierNameB) return 1;
+        return 0;
+      });
+
+      const sortedMaterials = orderData.materials.slice().sort((a, b) => {
+        const materialA = materialDetailsArray.find((m) => m.stockID === a.stockID);
+        const materialB = materialDetailsArray.find((m) => m.stockID === b.stockID);
+        return materialDetailsArray.indexOf(materialA) - materialDetailsArray.indexOf(materialB);
+      });
+  
       setMaterialDetails(materialDetailsArray);
+      orderData.materials = sortedMaterials;
     } catch (error) {
       console.log('Failed to fetch material details:', error);
     }
@@ -122,7 +148,8 @@ export default function OrderDetailScreen({ navigation, route }) {
       setMaterialDetails((prevMaterials) =>
         prevMaterials.filter((item) => item.stockID !== material.stockID)
       );
-  
+
+      fetchMaterialDetails();
       ToastAndroid.show('Material removed and returned to inventory!', ToastAndroid.SHORT);
     } catch (error) {
       console.log('Failed to remove material:', error);
@@ -240,10 +267,13 @@ export default function OrderDetailScreen({ navigation, route }) {
         </View>
       </ScrollView>
       <View style={styles.buttonContainer}>
-        <TouchableOpacity style={styles.createButton} onPress={() => navigation.navigate('Take', {
+        <TouchableOpacity style={styles.createButton} onPress={() => {
+          navigation.navigate('Take', {
             orderData: orderData,
             isRecordingForOrder: true,
-          })}>
+          })
+          isInitialRender.current = true;
+        }}>
           <Text style={styles.createButtonText}>Take Stock</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.returnButton} onPress={handleReturnButtonPress}>
