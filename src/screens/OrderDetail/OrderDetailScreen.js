@@ -70,7 +70,7 @@ export default function OrderDetailScreen({ navigation, route }) {
   const handleReturnButtonPress = async () => {
     try {
       const orderRef = doc(db, 'Order', orderData.orderID);
-      await updateDoc(orderRef, { Progress: progress, isDone: isDone });
+      await updateDoc(orderRef, { Progress: progress, isDone: isDone, Materials: orderData.materials });
       
       ToastAndroid.show('Progress updated!', ToastAndroid.SHORT);
       navigation.navigate('Home');
@@ -93,6 +93,7 @@ export default function OrderDetailScreen({ navigation, route }) {
       );
       const orderRef = doc(db, 'Order', orderData.orderID);
       await updateDoc(orderRef, { Materials: updatedMaterials });
+      orderData.materials = updatedMaterials;
   
       const inventoryDocRef = doc(db, 'Inventory', material.stockID);
       const inventoryDocSnap = await getDoc(inventoryDocRef);

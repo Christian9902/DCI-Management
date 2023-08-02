@@ -37,7 +37,7 @@ export default function TakeStockScreen({ navigation, route }) {
             style={styles.searchInput}
             onChangeText={handleNamaChange}
             value={nama}
-            placeholder={"Barang1, Barang2, ...; Supplier1, Supplier2..."}
+            placeholder={"Cari Nama Barang / Supplier"}
           />
           <Pressable onPress={() => {setNama(""); handleNamaChange("")}}>
             <Image style={styles.searchIcon} source={require("../../../assets/icons/close.png")} />
@@ -108,26 +108,26 @@ export default function TakeStockScreen({ navigation, route }) {
   const handleNamaChange = (text) => {
     setNama(text);
     let filteredBarang = [];
-
+  
     if (text === '') {
       filteredBarang = barangData;
     } else {
       const filterText = text.toLowerCase().trim();
-      const filterItems = filterText.split(';').map((item) => item.trim());
-      const filterNamaBarang = filterItems[1] ? filterItems[0].split(',').map((item) => item.trim().toLowerCase()) : [];
-      const filterNamaSupplier = filterItems[2] ? filterItems[1].split(',').map((item) => item.trim().toLowerCase()) : [];
-
+  
       filteredBarang = barangData.filter((item) => {
-        if (filterNamaBarang.length > 0 && !filterNamaBarang.some((nama) => item.namaBarang.toLowerCase().includes(nama))) {
-          return false;
+        const barangLowercase = item.NamaBarang.toLowerCase();
+        const supplierLowercase = item.NamaSupplier.toLowerCase();
+  
+        let isFound = false;
+  
+        if ((barangLowercase.includes(filterText) || supplierLowercase.includes(filterText))) {
+          isFound = true;
         }
-        if (filterNamaSupplier.length > 0 && !filterNamaSupplier.some((nama) => item.namaSupplier.toLowerCase().includes(nama))) {
-          return false;
-        }
-        return true;
+  
+        return isFound;
       });
     }
-
+  
     setNamaBarangRekomendasi(filteredBarang.slice(0, 10));
   };
 
@@ -202,7 +202,7 @@ export default function TakeStockScreen({ navigation, route }) {
             }),
             refID: item.ref,
             userID: user.uid,
-            action: `${item.NamaBarang}'s stock has been taken`,
+            action: !isRecordingForOrder ? `${item.NamaBarang} has been taken` : `${item.NamaBarang} (${item.NamaSupplier}) has been taken for ${orderData.orderID}`,
           };
           await addDoc(collection(db, 'Log Data'), logData);
         } catch (error) {

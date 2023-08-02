@@ -40,7 +40,7 @@ export default function ClientsScreen(props) {
             style={styles.searchInput}
             onChangeText={handleNamaChange}
             value={nama}
-            placeholder='Nama Client / PT Client'
+            placeholder='Cari Nama Client / PT Client'
           />
           <Pressable onPress={() => { setNama(""); handleNamaChange("") }}>
             <Image style={styles.searchIcon} source={require("../../../assets/icons/close.png")} />

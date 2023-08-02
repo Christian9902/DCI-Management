@@ -40,7 +40,7 @@ export default function HomeScreen(props) {
             style={styles.searchInput}
             onChangeText={handleSearch}
             value={text}
-            placeholder='Nama Project'
+            placeholder='Cari Nama Project'
           />
           <Pressable onPress={() => { setText(""); }}>
             <Image style={styles.searchIcon} source={require("../../../assets/icons/close.png")} />

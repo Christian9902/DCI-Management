@@ -32,7 +32,7 @@ export default function AddStockScreen(props) {
             style={styles.searchInput}
             onChangeText={handleNamaChange}
             value={nama}
-            placeholder='Nama Supplier / PT Supplier'
+            placeholder='Cari Nama Supplier / PT Supplier'
           />
           <Pressable onPress={() => {setNama(""), handleNamaChange("")}}>
             <Image style={styles.searchIcon} source={require("../../../assets/icons/close.png")} />
