@@ -111,7 +111,7 @@ export default function OrderDetailScreen({ navigation, route }) {
       
       const logEntry = {
         timestamp: time,
-        action: `${orderData.orderID}'s Progress updated`,
+        action: isDone ? `${orderData.orderID}'s Order Finished` : `${orderData.orderID}'s Progress updated`,
         userID: user.uid,
         refID: orderData.orderID,
       };
