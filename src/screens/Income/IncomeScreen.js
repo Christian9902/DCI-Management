@@ -122,7 +122,7 @@ export default function IncomeScreen(props) {
         }
       }
   
-      totalGrossIncome += order.Harga;
+      totalGrossIncome += parseInt(order.Harga);
       totalMaterialCost += materialCost;
     }
   
@@ -156,6 +156,11 @@ export default function IncomeScreen(props) {
     const [day, month, year] = dateString.split('/');
 
     return [day, month, year];
+  };
+
+  const calculatePercentageChange = (oldValue, newValue) => {
+    const percentageChange = ((newValue - oldValue) / Math.abs(oldValue)) * 100;
+    return percentageChange.toFixed(2);
   };
 
   useEffect(() => {
@@ -340,10 +345,42 @@ export default function IncomeScreen(props) {
       {startDate2 !== null && endDate2 !== null && (
         <Text style={styles.dateRangeText}>Comparison Date : {startDate2?.toLocaleString('en-GB').split(',')[0]} - {endDate2?.toLocaleString('en-GB').split(',')[0]}</Text>
       )}
-      <Text>Total Order Count: {orderCount}</Text>
-      <Text>Total Gross Income: {grossIncomeTotal}</Text>
-      <Text>Total Material Cost: {materialCostTotal}</Text>
-      <Text>Total Income: {incomeTotal}</Text>
+      <Text>
+        Total Order Count: {orderCount}
+        {showComparison && (
+          <Text>
+             // {orderCount2}
+             ({calculatePercentageChange(orderCount, orderCount2)}%)
+            </Text>
+        )}
+      </Text>
+      <Text>
+        Total Income: {grossIncomeTotal.toLocaleString('id-ID', { style: 'currency', currency: 'IDR' })}
+        {showComparison && (
+          <Text>
+             // {grossIncomeTotal2.toLocaleString('id-ID', { style: 'currency', currency: 'IDR' })}
+            ({calculatePercentageChange(grossIncomeTotal, grossIncomeTotal2)}%)
+          </Text>
+        )}
+      </Text>
+      <Text>
+        Total Material Cost: {materialCostTotal.toLocaleString('id-ID', { style: 'currency', currency: 'IDR' })}
+        {showComparison && (
+          <Text>
+             // {materialCostTotal2.toLocaleString('id-ID', { style: 'currency', currency: 'IDR' })}
+            ({calculatePercentageChange(materialCostTotal, materialCostTotal2)}%)
+          </Text>
+        )}
+      </Text>
+      <Text>
+        Total Revenue: {incomeTotal.toLocaleString('id-ID', { style: 'currency', currency: 'IDR' })}
+        {showComparison && (
+          <Text>
+             // {incomeTotal2.toLocaleString('id-ID', { style: 'currency', currency: 'IDR' })}
+            ({calculatePercentageChange(incomeTotal, incomeTotal2)}%)
+          </Text>
+        )}
+      </Text>
       {showFilterModal && (
         <FilterModal />
       )}
