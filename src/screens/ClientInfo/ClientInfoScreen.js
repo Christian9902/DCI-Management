@@ -371,7 +371,7 @@ export default function ClientInfoScreen(props) {
   }
 
   return (
-    <View style={styles.container}>
+    <View style={styles.container2}>
       {startDate !== null && endDate !== null && (
         <Text style={styles.dateRangeText}>{startDate?.toLocaleString('en-GB').split(',')[0]} - {endDate?.toLocaleString('en-GB').split(',')[0]}</Text>
       )}

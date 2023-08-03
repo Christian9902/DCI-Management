@@ -6,8 +6,14 @@ const styles = StyleSheet.create({
     justifyContent: "flex-start",
     alignItems: "center",
     backgroundColor: '#fff',
-    paddingHorizontal: 10,
-    paddingVertical: 10,
+    paddingHorizontal: 20,
+  },
+  container2: {
+    flex: 1,
+    justifyContent: "flex-start",
+    alignItems: "baseline",
+    backgroundColor: '#fff',
+    paddingHorizontal: 20,
   },
   searchButton: {
     marginRight: 10,

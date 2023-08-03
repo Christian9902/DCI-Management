@@ -18,8 +18,6 @@ export default function IncomeScreen(props) {
   const [incomeTotal2, setIncomeTotal2] = useState(0);
   const [orderCount, setOrderCount] = useState(0);
   const [orderCount2, setOrderCount2] = useState(0);
-  const [uniqueOrder, setUniqueOrder] = useState(0);
-  const [uniqueOrder2, setUniqueOrder2] = useState(0);
   const [grossIncomeTotal, setGrossIncomeTotal] = useState(0);
   const [grossIncomeTotal2, setGrossIncomeTotal2] = useState(0);
   const [materialCostTotal, setMaterialCostTotal] = useState(0);
@@ -338,7 +336,7 @@ export default function IncomeScreen(props) {
   }
 
   return (
-    <View style={styles.container}>
+    <View style={styles.container2}>
       {startDate !== null && endDate !== null && (
         <Text style={styles.dateRangeText}>{startDate?.toLocaleString('en-GB').split(',')[0]} - {endDate?.toLocaleString('en-GB').split(',')[0]}</Text>
       )}
@@ -349,8 +347,8 @@ export default function IncomeScreen(props) {
         Total Order Count: {orderCount}
         {showComparison && (
           <Text>
-             // {orderCount2}
-             ({calculatePercentageChange(orderCount, orderCount2)}%)
+            // {orderCount2}
+            ({calculatePercentageChange(orderCount, orderCount2)}%)
             </Text>
         )}
       </Text>
@@ -358,7 +356,7 @@ export default function IncomeScreen(props) {
         Total Income: {grossIncomeTotal.toLocaleString('id-ID', { style: 'currency', currency: 'IDR' })}
         {showComparison && (
           <Text>
-             // {grossIncomeTotal2.toLocaleString('id-ID', { style: 'currency', currency: 'IDR' })}
+            // {grossIncomeTotal2.toLocaleString('id-ID', { style: 'currency', currency: 'IDR' })}
             ({calculatePercentageChange(grossIncomeTotal, grossIncomeTotal2)}%)
           </Text>
         )}
@@ -367,7 +365,7 @@ export default function IncomeScreen(props) {
         Total Material Cost: {materialCostTotal.toLocaleString('id-ID', { style: 'currency', currency: 'IDR' })}
         {showComparison && (
           <Text>
-             // {materialCostTotal2.toLocaleString('id-ID', { style: 'currency', currency: 'IDR' })}
+            // {materialCostTotal2.toLocaleString('id-ID', { style: 'currency', currency: 'IDR' })}
             ({calculatePercentageChange(materialCostTotal, materialCostTotal2)}%)
           </Text>
         )}
@@ -376,7 +374,7 @@ export default function IncomeScreen(props) {
         Total Revenue: {incomeTotal.toLocaleString('id-ID', { style: 'currency', currency: 'IDR' })}
         {showComparison && (
           <Text>
-             // {incomeTotal2.toLocaleString('id-ID', { style: 'currency', currency: 'IDR' })}
+            // {incomeTotal2.toLocaleString('id-ID', { style: 'currency', currency: 'IDR' })}
             ({calculatePercentageChange(incomeTotal, incomeTotal2)}%)
           </Text>
         )}
