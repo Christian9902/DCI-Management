@@ -54,9 +54,10 @@ const styles = StyleSheet.create({
   },
   separator: {
     height: 1,
-    backgroundColor: 'gray',
+    backgroundColor: 'black',
     marginVertical: 10,
-  },filterIcon: {
+  },
+  filterIcon: {
     width: 24,
     height: 24,
     resizeMode: 'contain',

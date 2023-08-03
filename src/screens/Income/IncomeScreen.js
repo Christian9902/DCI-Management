@@ -1,5 +1,5 @@
 import React, { useEffect, useLayoutEffect, useState, useRef } from "react";
-import { Text, View, TouchableOpacity, Image, StatusBar, ToastAndroid, Modal } from "react-native";
+import { Text, View, TouchableOpacity, Image, StatusBar, ToastAndroid, Modal,FlatList } from "react-native";
 import styles from "./styles";
 import MenuImage from "../../components/MenuImage/MenuImage";
 import { db, auth } from "../Login/LoginScreen";
@@ -22,6 +22,12 @@ export default function IncomeScreen(props) {
   const [grossIncomeTotal2, setGrossIncomeTotal2] = useState(0);
   const [materialCostTotal, setMaterialCostTotal] = useState(0);
   const [materialCostTotal2, setMaterialCostTotal2] = useState(0);
+  const [supplierCostTotal, setSupplierCostTotal] = useState(0);
+  const [supplierCostTotal2, setSupplierCostTotal2] = useState(0);
+  const [topClients, setTopClients] = useState([]);
+  const [topClients2, setTopClients2] = useState([]);
+  const [topSuppliers, setTopSuppliers] = useState([]);
+  const [topSuppliers2, setTopSuppliers2] = useState([]);
   
   const [showComparison, setShowComparison] = useState(false);
   const [showFilterModal, setShowFilterModal] = useState(false);
@@ -98,9 +104,13 @@ export default function IncomeScreen(props) {
   const orderAnalytic = async (data, x) => {
     let totalGrossIncome = 0;
     let totalMaterialCost = 0;
+    let totalSupplierCost = 0;
+    let clientIncomeMap = new Map();
+    let supplierCostMap = new Map();
   
     for (const order of data) {
       let materialCost = 0;
+      let supplierCost = 0;
   
       for (let i = 0; i < order.Materials.length; i += 1) {
         const stockID = order.Materials[i].stockID;
@@ -119,16 +129,49 @@ export default function IncomeScreen(props) {
           console.log('Failed to fetch material data:', error);
         }
       }
-  
+
+      for (let i = 0; i < order.Supplier.length; i += 1) {
+        const supplierID = order.Supplier[i].namaSupplier + ' - ' + order.Supplier[i].PTSupplier;
+        const supplierPrice = parseInt(order.Supplier[i].harga);
+        supplierCost += supplierPrice;
+        if (supplierCostMap.has(supplierID)) {
+          supplierCostMap.set(supplierID, supplierCostMap.get(supplierID) + supplierPrice);
+        } else {
+          supplierCostMap.set(supplierID, supplierPrice);
+        }
+      }
+
       totalGrossIncome += parseInt(order.Harga);
       totalMaterialCost += materialCost;
+      totalSupplierCost += supplierCost;
+  
+      const clientID = order.NamaClient + ' - ' + order.PTClient;
+      const clientIncome = parseInt(order.Harga);
+      if (clientIncomeMap.has(clientID)) {
+        clientIncomeMap.set(clientID, clientIncomeMap.get(clientID) + clientIncome);
+      } else {
+        clientIncomeMap.set(clientID, clientIncome);
+      }
     }
   
+    const clientIncomeArray = Array.from(clientIncomeMap, ([ID, value]) => ({ ID, value }));
+    const supplierCostArray = Array.from(supplierCostMap, ([ID, value]) => ({ ID, value }));
+
+    clientIncomeArray.sort((a, b) => b.value - a.value);
+    supplierCostArray.sort((a, b) => b.value - a.value);
+
+    const top5Clients = clientIncomeArray.slice(0, 5);
+    const top5Suppliers = supplierCostArray.slice(0, 5);
+
     x ? setGrossIncomeTotal(totalGrossIncome) : setGrossIncomeTotal2(totalGrossIncome);
     x ? setMaterialCostTotal(totalMaterialCost) : setMaterialCostTotal2(totalMaterialCost);
+    x ? setSupplierCostTotal(totalSupplierCost) : setSupplierCostTotal2(totalSupplierCost);
     x ? setOrderCount(data.length) : setOrderCount2(data.length);
-    const totalIncome = totalGrossIncome - totalMaterialCost;
+    const totalIncome = totalGrossIncome - totalMaterialCost - totalSupplierCost;
     x ? setIncomeTotal(totalIncome) : setIncomeTotal2(totalIncome);
+
+    x ? setTopClients(top5Clients) : setTopClients2(top5Clients);
+    x ? setTopSuppliers(top5Suppliers) : setTopSuppliers2(top5Suppliers);
   };  
   
   const filterByDate = (startDate, endDate, x) => {
@@ -156,8 +199,26 @@ export default function IncomeScreen(props) {
     return [day, month, year];
   };
 
+  const renderTopClients = (clients) => {
+    return clients.map((client) => (
+      <View key={client.ID}>
+        <Text style={styles.point}>
+          {client.ID}: {client.value.toLocaleString('id-ID', { style: 'currency', currency: 'IDR' })}
+        </Text>
+      </View>
+    ));
+  };
+  
+  const renderTopSuppliers = (suppliers) => {
+    return suppliers.map((supplier) => (
+      <Text key={supplier.ID} style={styles.point}>
+        {supplier.ID}: {supplier.value.toLocaleString('id-ID', { style: 'currency', currency: 'IDR' })}
+      </Text>
+    ));
+  }
+
   const calculatePercentageChange = (oldValue, newValue) => {
-    const percentageChange = ((newValue - oldValue) / Math.abs(oldValue)) * 100;
+    const percentageChange = ((oldValue - newValue) / Math.abs(oldValue)) * 100;
     return percentageChange.toFixed(2);
   };
 
@@ -352,6 +413,7 @@ export default function IncomeScreen(props) {
             </Text>
         )}
       </Text>
+      <Text></Text>
       <Text>
         Total Income: {grossIncomeTotal.toLocaleString('id-ID', { style: 'currency', currency: 'IDR' })}
         {showComparison && (
@@ -361,6 +423,31 @@ export default function IncomeScreen(props) {
           </Text>
         )}
       </Text>
+      {renderTopClients(topClients)}
+      {showComparison && (
+        <>
+          <View style={styles.separator} />
+          {renderTopClients(topClients2)}
+        </>
+      )}
+      <Text></Text>
+      <Text>
+        Total Vendor Cost: {supplierCostTotal.toLocaleString('id-ID', { style: 'currency', currency: 'IDR' })}
+        {showComparison && (
+          <Text>
+            // {supplierCostTotal2.toLocaleString('id-ID', { style: 'currency', currency: 'IDR' })}
+            ({calculatePercentageChange(supplierCostTotal, supplierCostTotal2)}%)
+          </Text>
+        )}
+      </Text>
+      {renderTopSuppliers(topSuppliers)}
+      {showComparison && (
+        <>
+          <View style={styles.separator} />
+          {renderTopSuppliers(topSuppliers2)}
+        </>
+      )}
+      <Text></Text>
       <Text>
         Total Material Cost: {materialCostTotal.toLocaleString('id-ID', { style: 'currency', currency: 'IDR' })}
         {showComparison && (
@@ -370,6 +457,7 @@ export default function IncomeScreen(props) {
           </Text>
         )}
       </Text>
+      <Text></Text>
       <Text>
         Total Revenue: {incomeTotal.toLocaleString('id-ID', { style: 'currency', currency: 'IDR' })}
         {showComparison && (
