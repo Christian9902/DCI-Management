@@ -455,14 +455,34 @@ export default function OrderUpdateScreen({ navigation, route }) {
           <View style={styles.attachedFilesContainer}>
             <Text style={styles.attachedFilesTitle}>Vendor Selected:</Text>
             {suppliers.map((supplier, index) => (
-              <View key={index} style={styles.attachedFileItem}>
-                <View>
-                  <Text style={styles.attachedFileName}>{supplier.namaSupplier}</Text>
-                  <Text style={styles.attachedFileSize}>{supplier.PTSupplier}</Text>
+              <View key={supplier.ref}>
+                <View style={styles.attachedFileItem}>
+                  <View>
+                    <Text style={styles.attachedFileName}>{supplier.namaSupplier}</Text>
+                    <Text style={styles.attachedFileSize}>{supplier.PTSupplier}</Text>
+                  </View>
+                  <TouchableOpacity onPress={() => handleSelectVendor(supplier)}>
+                    <Text style={styles.deleteButton}>X</Text>
+                  </TouchableOpacity>
                 </View>
-                <TouchableOpacity onPress={() => handleSelectVendor(supplier)}>
-                  <Text style={styles.deleteButton}>X</Text>
-                </TouchableOpacity>
+                
+                <View style={styles.inputHargaContainer}>
+                  <TextInput
+                    style={styles.inputHarga}
+                    placeholder="Harga Vendor"
+                    value={supplier.harga}
+                    onChangeText={(text) => {
+                      const updatedSuppliers = suppliers.map((s) => {
+                        if (s.ref === supplier.ref) {
+                          return { ...s, harga: text };
+                        }
+                        return s;
+                      });
+                      setSuppliers(updatedSuppliers);
+                    }}
+                    keyboardType="numeric"
+                  />
+                </View>
               </View>
             ))}
           </View>
@@ -470,7 +490,7 @@ export default function OrderUpdateScreen({ navigation, route }) {
 
         <TouchableOpacity
           style={styles.listButton}
-          onPress={() => setModalVisible(true)}
+          onPress={() => {setModalVisible(true)}}
         >
           <Text style={styles.listTitle}>Select Vendor</Text>
         </TouchableOpacity>

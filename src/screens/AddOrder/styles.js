@@ -1,8 +1,6 @@
 import { StyleSheet, Dimensions } from 'react-native';
 
-const { width, height } = Dimensions.get('window');
-const modalHeight = height * 0.8;
-const modalWidth = width * 0.8;
+const { width } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
   container: {
@@ -208,6 +206,22 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
     marginBottom: 20,
+  },
+  inputHargaContainer: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'flex-end',
+    marginBottom: 5,
+  },
+  inputHarga: {
+    flex: 1,
+    height: 40,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#ccc',
+    paddingHorizontal: 10,
+    marginLeft: 10,
   },
 });
 

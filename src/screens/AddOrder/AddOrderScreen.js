@@ -15,6 +15,7 @@ export default function AddOrderScreen(props) {
   const [noTelpClient, setNoTelpClient] = useState('');
   const [emailClient, setEmailClient] = useState('');
   const [suppliers, setSuppliers] = useState([]);
+  const [vendorHarga, setVendorHarga] = useState({});
   const [details, setDetails] = useState('');
   const [harga, setHarga] = useState('');
   const [timeline, setTimeline] = useState([new Date, new Date, new Date]);
@@ -175,6 +176,12 @@ export default function AddOrderScreen(props) {
   
     setSupplierList(sortedSupplierList);
     setSuppliers(sortedSelectedVendors);
+
+    const hargaObj = { ...vendorHarga };
+    selectedVendors.forEach((vendor) => {
+      hargaObj[vendor.ref] = '';
+    });
+    setVendorHarga(hargaObj);
   };  
 
   const sortSupplierArray = (supplierArray) => {
@@ -288,7 +295,13 @@ export default function AddOrderScreen(props) {
         PTClient: PTClient,
         NoTelpClient: noTelpClient,
         EmailClient: emailClient,
-        Supplier: suppliers,
+        Suppliers: suppliers.map((vendor) => ({
+          ref: vendor.ref,
+          namaSupplier: vendor.namaSupplier,
+          PTSupplier: vendor.PTSupplier,
+          harga: vendorHarga[vendor.ref],
+          selected: vendor.selected,
+        })),
         Spesifikasi: details,
         Harga: harga,
         Deadline : timeline,
@@ -411,14 +424,30 @@ export default function AddOrderScreen(props) {
           <View style={styles.attachedFilesContainer}>
             <Text style={styles.attachedFilesTitle}>Vendor Selected:</Text>
             {suppliers.map((supplier, index) => (
-              <View key={index} style={styles.attachedFileItem}>
-                <View>
-                  <Text style={styles.attachedFileName}>{supplier.namaSupplier}</Text>
-                  <Text style={styles.attachedFileSize}>{supplier.PTSupplier}</Text>
+              <View key={supplier.ref}>
+                <View style={styles.attachedFileItem}>
+                  <View>
+                    <Text style={styles.attachedFileName}>{supplier.namaSupplier}</Text>
+                    <Text style={styles.attachedFileSize}>{supplier.PTSupplier}</Text>
+                  </View>
+                  <TouchableOpacity onPress={() => handleSelectVendor(supplier)}>
+                    <Text style={styles.deleteButton}>X</Text>
+                  </TouchableOpacity>
                 </View>
-                <TouchableOpacity onPress={() => handleSelectVendor(supplier)}>
-                  <Text style={styles.deleteButton}>X</Text>
-                </TouchableOpacity>
+                
+                <View style={styles.inputHargaContainer}>
+                  <TextInput
+                    style={styles.inputHarga}
+                    placeholder="Harga Vendor"
+                    value={vendorHarga[supplier.ref]}
+                    onChangeText={(text) => {
+                      const hargaObj = { ...vendorHarga };
+                      hargaObj[supplier.ref] = text;
+                      setVendorHarga(hargaObj);
+                    }}
+                    keyboardType="numeric"
+                  />
+                </View>
               </View>
             ))}
           </View>
