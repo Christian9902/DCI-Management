@@ -42,8 +42,8 @@ export default function SSClientScreen({ navigation, route }) {
     { key: 'NoTelp', title: 'Telp', width: 100 },
     { key: 'Email', title: 'Email', width: 150 },
     { key: 'Progress', title: 'Progress', width: 100 },
-    { key: 'Quo', title: 'Quo Submitted', width: 100 },
-    { key: 'Since', title: 'Since', width: 100 },
+    { key: 'Quo', title: 'Quo Submitted', width: 50 },
+    { key: 'Since', title: 'Since', width: 125 },
     { key: 'By', title: 'Via', width: 100 },
   ];
 
