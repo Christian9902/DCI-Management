@@ -137,6 +137,24 @@ const styles = StyleSheet.create({
     color: 'red',
     textAlign: 'center',
   },
+  addButton: {
+    position: "absolute",
+    bottom: 20,
+    right: 20,
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    backgroundColor: "#000",
+    alignItems: "center",
+    justifyContent: "center",
+    elevation: 5,
+  },
+  addButtonIcon: {
+    width: 24,
+    height: 24,
+    resizeMode: "contain",
+    tintColor: "#FFF",
+  },
 });
 
 export default styles;

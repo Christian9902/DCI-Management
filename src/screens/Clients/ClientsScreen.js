@@ -49,7 +49,7 @@ export default function ClientsScreen(props) {
       ),
       headerRight: () => (
         <View>
-          <TouchableOpacity onPress={() => {setShowFilterModal(true); console.log(clientData)}}>
+          <TouchableOpacity onPress={() => setShowFilterModal(true)}>
             <Image style={styles.filterIcon} source={require('../../../assets/icons/filter.png')} />
           </TouchableOpacity>
         </View>
@@ -396,19 +396,32 @@ export default function ClientsScreen(props) {
           color: '#333333', 
         }}>Loading... If the loading process takes too long, it's possible that no data is found at the moment.</Text>
       ) : (
-        <FlatList
-          vertical
-          showsVerticalScrollIndicator={false}
-          data={namaClientRekomendasi}
-          renderItem={renderItem}
-          keyExtractor={(item, index) => item.NamaClient + '-' + item.NamaPT + '-' + index}
-          refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-          }
-          onEndReached={loadMoreData}
-          onEndReachedThreshold={0.1}
-          ListFooterComponent={isLoading && <ActivityIndicator size="small" />}
-        />
+        <>
+          <FlatList
+            vertical
+            showsVerticalScrollIndicator={false}
+            data={namaClientRekomendasi}
+            renderItem={renderItem}
+            keyExtractor={(item, index) => item.NamaClient + '-' + item.NamaPT + '-' + index}
+            refreshControl={
+              <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+            }
+            onEndReached={loadMoreData}
+            onEndReachedThreshold={0.1}
+            ListFooterComponent={isLoading && <ActivityIndicator size="small" />}
+          />
+          <TouchableOpacity
+            style={styles.addButton}
+            onPress={() => {
+              navigation.navigate("SSClient", {clientDatabase: clientData});
+            }}
+          >
+            <Image
+              source={require("../../../assets/icons/spreadsheet.png")}
+              style={styles.addButtonIcon}
+            />
+          </TouchableOpacity>
+        </>
       )}
       {showFilterModal && (
         <FilterModal />
