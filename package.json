@@ -31,7 +31,8 @@
     "react-native-reanimated": "^2.14.4",
     "react-native-table-component": "^1.2.2",
     "react-native-toast-message": "^2.1.6",
-    "react-navigation": "^4.4.4"
+    "react-navigation": "^4.4.4",
+    "shadcn-ui": "^0.3.0"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0"

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, View, ScrollView, TouchableOpacity, Image } from 'react-native';
+import { StyleSheet, Text, View, ScrollView, TouchableOpacity, Image } from 'react-native';
 import { Table, Row, Rows } from 'react-native-table-component';
 import MenuImage from "../../components/MenuImage/MenuImage";
 
@@ -10,7 +10,28 @@ export default function SSClientScreen({ navigation, route }) {
   const [tableHead, setTableHead] = useState([]);
   const [widthArr, setWidthArr] = useState([]);
 
+  const [activeColumn, setActiveColumn] = useState('NamaClient');
   const [isSort, setIsSort] = useState(true);
+
+  const elementButton = (value) => (
+    <TouchableOpacity style={styles.btnContainer} onPress={() => handleColumnPress(value)}>
+      <View style={styles.btn}>
+        <Text style={styles.btnText}>{value}</Text>
+      </View>
+    </TouchableOpacity>
+  );
+
+  const handleColumnPress = (title) => {
+    fields.forEach((column) => {
+      if (column.title === title) {
+        if (column.key === activeColumn) {
+          setIsSort(!isSort);
+        } else {
+          setActiveColumn(column.key);
+        }
+      }
+    })
+  };
 
   const fields = [
     { key: 'Ref', title: '#ID', width: 150 },
@@ -44,7 +65,7 @@ export default function SSClientScreen({ navigation, route }) {
             <Image style={styles.filterIcon} source={isSort ? require('../../../assets/icons/ascending.png') : require('../../../assets/icons/descending.png')} />
           </TouchableOpacity>
           <TouchableOpacity onPress={() => {}}>
-            <Image style={styles.filterIcon} source={require('../../../assets/icons/filter.png')} />
+            <Image style={styles.filterIcon} source={require('../../../assets/icons/download.png')} />
           </TouchableOpacity>
         </View>
       ),
@@ -52,9 +73,18 @@ export default function SSClientScreen({ navigation, route }) {
   }, [isSort]);
 
   useEffect(() => {
-    const rows = clientDatabase;
+    const rows = clientDatabase.slice().sort((a, b) => {
+      const aValue = activeColumn === 'Quo' ? String(a[activeColumn]) : a[activeColumn];
+      const bValue = activeColumn === 'Quo' ? String(b[activeColumn]) : b[activeColumn];
+    
+      if (isSort) {
+        return aValue.localeCompare(bValue);
+      } else {
+        return bValue.localeCompare(aValue);
+      }
+    });
     const dataFields = fields;
-    const tableHead = dataFields.map((field) => field.title);
+    const tableHead = dataFields.map((field) => elementButton(field.title));
     const widthArr = dataFields.map((field) => field.width);
 
     setTableHead(tableHead);
@@ -70,7 +100,7 @@ export default function SSClientScreen({ navigation, route }) {
         });
       })
     );
-  }, [clientDatabase]);
+  }, [clientDatabase, isSort, activeColumn]);
 
   return (
     <View style={styles.container}>
@@ -115,4 +145,7 @@ const styles = StyleSheet.create({
     height: 25,
     marginHorizontal: 20,
   },
+  btnContainer: { flex: 1, alignItems: 'center', justifyContent: 'center' },
+  btn: { width: 58, height: 18 },
+  btnText: { textAlign: 'center', color: 'white' }
 });
