@@ -49,7 +49,7 @@ export default function ClientsScreen(props) {
       ),
       headerRight: () => (
         <View>
-          <TouchableOpacity onPress={() => setShowFilterModal(true)}>
+          <TouchableOpacity onPress={() => {setShowFilterModal(true); console.log(clientData)}}>
             <Image style={styles.filterIcon} source={require('../../../assets/icons/filter.png')} />
           </TouchableOpacity>
         </View>
@@ -77,6 +77,7 @@ export default function ClientsScreen(props) {
         const Quo = data?.QuoSubmitted;
         const Job = data?.JobPosition;
         const Since = data?.Added;
+        const History = data?.History;
 
         const user = userSnapshot.docs.find((doc) => doc.id === data?.PIC);
         const PIC = user ? user.data().Nama : '';
@@ -96,6 +97,7 @@ export default function ClientsScreen(props) {
             Quo,
             Job,
             Since,
+            History,
             isExpanded: isItemExpanded(Ref),
           });
         }

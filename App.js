@@ -21,6 +21,7 @@ import TakeScreen from './src/screens/Take/TakeScreen';
 import ClientInfoScreen from './src/screens/ClientInfo/ClientInfoScreen';
 import AddClientScreen from './src/screens/AddClient/AddClientScreen';
 import ClientsScreen from './src/screens/Clients/ClientsScreen';
+import SSClientScreen from './src/screens/Clients/SSClientScreen';
 import ClientUpdateScreen from './src/screens/ClientUpdate/ClientUpdateScreen';
 import IncomeScreen from './src/screens/Income/IncomeScreen';
 import ProfileScreen from './src/screens/Profile/ProfileScreen';
@@ -58,6 +59,7 @@ function MainNavigator() {
       <Stack.Screen name='Profile' component={ProfileScreen} />
       <Stack.Screen name='Add Client' component={AddClientScreen} />
       <Stack.Screen name='Clients' component={ClientsScreen} />
+      <Stack.Screen name='SSClient' component={SSClientScreen} />
       <Stack.Screen name='Client Update' component={ClientUpdateScreen} />
     </Stack.Navigator>
   )

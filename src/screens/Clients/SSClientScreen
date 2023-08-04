@@ -1,0 +1,97 @@
+import React, { useState, useEffect } from 'react';
+import { StyleSheet, View, ScrollView } from 'react-native';
+import { Table, Row, Rows } from 'react-native-table-component';
+
+export default function SSClientScreen({ navigation, route }) {
+  const { clientDatabase } = route.params;
+
+  const [data, setData] = useState([]);
+  const [tableHead, setTableHead] = useState([]);
+  const [widthArr, setWidthArr] = useState([]);
+
+  const fields = [
+    { key: 'ID', title: '#ID', width: 200 },
+    { key: 'NamaClient', title: 'Nama Client', width: 150 },
+    { key: 'NamaPT', title: 'PT Client', width: 100 },
+    { key: 'Job', title: 'Position', width: 100 },
+    { key: 'Alamat', title: 'Alamat', width: 100 },
+    { key: 'NoTelp', title: 'Telp', width: 100 },
+    { key: 'Email', title: 'Email', width: 100 },
+    { key: 'Progress', title: 'Progress', width: 100 },
+    { key: 'Quo', title: 'Quo Submitted', width: 100 },
+    { key: 'Since', title: 'Since', width: 100 },
+    { key: 'By', title: 'Via', width: 100 },
+  ];
+
+  useEffect(() => {
+    const rows = clientDatabase;
+    const dataFields = fields.slice(1);
+    const tableHead = dataFields.map((field) => field.title);
+    const widthArr = dataFields.map((field) => field.width);
+
+    setTableHead(tableHead);
+    setWidthArr(widthArr);
+    setData(
+      rows.map((row) => dataFields.map((field) => row[field.key]))
+    );
+  }, [clientDatabase]);
+
+  return (
+    <View style={styles.container}>
+      <ScrollView horizontal={true}>
+        <View>
+          <Table borderStyle={{ borderColor: '#C1C0B9' }}>
+            <Row data={[fields[0].title]} widthArr={[fields[0].width]} style={styles.header} textStyle={styles.headerText} />
+          </Table>
+          <View>
+            <ScrollView style={styles.dataWrapper}>
+              <Table borderStyle={{ borderColor: '#C1C0B9' }}>
+                <Rows data={data.map((row) => [row[0]])} textStyle={styles.text} widthArr={[fields[0].width]} />
+              </Table>
+            </ScrollView>
+          </View>
+        </View>
+
+        <ScrollView>
+          <View>
+            <Table borderStyle={{ borderColor: '#C1C0B9' }}>
+              <Row data={tableHead} widthArr={widthArr} style={styles.header} textStyle={styles.headerText} />
+            </Table>
+            <View>
+              <ScrollView style={styles.dataWrapper}>
+                <Table borderStyle={{ borderColor: '#C1C0B9' }}>
+                  <Rows data={data} textStyle={styles.text} widthArr={widthArr} />
+                </Table>
+              </ScrollView>
+            </View>
+          </View>
+        </ScrollView>
+      </ScrollView>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    paddingTop: 30,
+    backgroundColor: '#212732',
+  },
+  header: {
+    height: 50,
+    backgroundColor: '#242b38',
+  },
+  headerText: {
+    textAlign: 'center',
+    fontWeight: '100',
+    color: 'white',
+  },
+  text: {
+    textAlign: 'center',
+    fontWeight: '100',
+    color: '#fefefe',
+  },
+  dataWrapper: {
+    marginTop: -1,
+  },
+});
