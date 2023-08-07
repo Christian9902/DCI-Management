@@ -1,14 +1,35 @@
-import React, { useState } from "react";
-import { View } from "react-native";
+import React, { useState, useEffect } from "react";
+import { View, ToastAndroid } from "react-native";
 import PropTypes from "prop-types";
 import styles from "./styles";
 import MenuButton from "../../components/MenuButton/MenuButton";
-import { auth } from "../Login/LoginScreen";
+import { db, auth } from "../Login/LoginScreen";
+import { getDoc, doc } from 'firebase/firestore';
 
 export default function DrawerContainer(props) {
   const [isProductionGroupOpen, setIsProductionGroupOpen] = useState(false);
   const [isMarketingGroupOpen, setIsMarketingGroupOpen] = useState(false);
   const [isAnalyticsGroupOpen, setIsAnalyticsGroupOpen] = useState(false);
+  const [pass, setPass] = useState([]);
+
+  useEffect(() => {
+    checkUserPass();
+  }, []);
+
+  const checkUserPass = async () => {
+    const user = auth.currentUser;
+    if (user) {
+      try {
+        const userDoc = await getDoc(doc(db, 'Users', user.uid));
+        if (userDoc.exists()) {
+          const userData = userDoc.data();
+          setPass([user.uid, userData.Nama, userData.Status]);
+        }
+      } catch (error) {
+        console.trace(error);
+      }
+    }
+  };
 
   const handleSignOut = async () => {
     const user = auth.currentUser;
@@ -69,16 +90,24 @@ export default function DrawerContainer(props) {
              title="CLIENTS"
              source={require("../../../assets/icons/clients.png")}
              onPress={() => {
-               navigation.navigate("Clients");
-               navigation.closeDrawer();
+              if (pass[2] !== 'Production') {
+                navigation.navigate("Clients");
+                navigation.closeDrawer();
+              } else {
+                ToastAndroid.show('Not Permitted', ToastAndroid.SHORT);
+              }
              }}
             />
             <MenuButton
              title="ADD CLIENT"
              source={require("../../../assets/icons/addclient.png")}
              onPress={() => {
-               navigation.navigate("Add Client");
-               navigation.closeDrawer();
+              if (pass[2] !== 'Production') {
+                navigation.navigate("Add Client");
+                navigation.closeDrawer();
+              } else {
+                ToastAndroid.show('Not Permitted', ToastAndroid.SHORT);
+              }
              }}
             />
           </View>
@@ -95,43 +124,63 @@ export default function DrawerContainer(props) {
               title="INVENTORY"
               source={require("../../../assets/icons/inventory.png")}
               onPress={() => {
-                navigation.navigate("Stocks");
-                navigation.closeDrawer();
+                if (pass[2] !== 'Marketing') {
+                  navigation.navigate("Stocks");
+                  navigation.closeDrawer();
+                } else {
+                  ToastAndroid.show('Not Permitted', ToastAndroid.SHORT);
+                }
               }}
             />
             <MenuButton
               title="ADD STOCK"
               source={require("../../../assets/icons/addstock.png")}
               onPress={() => {
-                navigation.navigate("Add Stock");
-                navigation.closeDrawer();
+                if (pass[2] !== 'Marketing') {
+                  navigation.navigate("Add Stock");
+                  navigation.closeDrawer();
+                } else {
+                  ToastAndroid.show('Not Permitted', ToastAndroid.SHORT);
+                }
               }}
             />
             <MenuButton
               title="TAKE STOCK"
               source={require("../../../assets/icons/take.png")}
               onPress={() => {
-                navigation.navigate('Take', {
-                  orderData: [],
-                  isRecordingForOrder: false,
-                })
-                navigation.closeDrawer();
+                if (pass[2] !== 'Marketing') {
+                  navigation.navigate('Take', {
+                    orderData: [],
+                    isRecordingForOrder: false,
+                  })
+                  navigation.closeDrawer();
+                } else {
+                  ToastAndroid.show('Not Permitted', ToastAndroid.SHORT);
+                }
               }}
             />
             <MenuButton
              title="SUPPLIERS"
              source={require("../../../assets/icons/suppliers.png")}
              onPress={() => {
-               navigation.navigate("Suppliers");
-               navigation.closeDrawer();
+              if (pass[2] !== 'Marketing') {
+                navigation.navigate("Suppliers");
+                navigation.closeDrawer();
+              } else {
+                ToastAndroid.show('Not Permitted', ToastAndroid.SHORT);
+              }
              }}
             />
             <MenuButton
               title="ADD SUPPLIER"
               source={require("../../../assets/icons/addsupplier.png")}
               onPress={() => {
-                navigation.navigate("Add Supplier");
-                navigation.closeDrawer();
+                if (pass[2] !== 'Marketing') {
+                  navigation.navigate("Add Supplier");
+                  navigation.closeDrawer();
+                } else {
+                  ToastAndroid.show('Not Permitted', ToastAndroid.SHORT);
+                }
               }}
             />
           </View>
@@ -148,8 +197,12 @@ export default function DrawerContainer(props) {
               title="CLIENT INFO"
               source={require("../../../assets/icons/clientinfo.png")}
               onPress={() => {
-                navigation.navigate("Client Info");
-                navigation.closeDrawer();
+                if (pass[2] === 'Admin') {
+                  navigation.navigate("Client Info");
+                  navigation.closeDrawer();
+                } else {
+                  ToastAndroid.show('Not Permitted', ToastAndroid.SHORT);
+                }
               }}
             />
 
@@ -157,8 +210,12 @@ export default function DrawerContainer(props) {
               title="INCOME"
               source={require("../../../assets/icons/income.png")}
               onPress={() => {
-                navigation.navigate("Income");
-                navigation.closeDrawer();
+                if (pass[2] === 'Admin') {
+                  navigation.navigate("Income");
+                  navigation.closeDrawer();
+                } else {
+                  ToastAndroid.show('Not Permitted', ToastAndroid.SHORT);
+                }
               }}
             />
           </View>

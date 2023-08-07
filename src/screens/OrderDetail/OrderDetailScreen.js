@@ -5,12 +5,14 @@ import MenuImage from "../../components/MenuImage/MenuImage";
 import { db, auth } from '../Login/LoginScreen';
 import { doc, updateDoc, collection, getDoc, addDoc, getDocs } from 'firebase/firestore';
 import { Web } from "react-native-openanything";
+import { Alert } from 'react-native';
 
 export default function OrderDetailScreen({ navigation, route }) {
   const { orderData } = route.params;
   const [progress, setProgress] = useState(orderData.progress);
   const [isDone, setIsDone] = useState(orderData.isDone);
   const [materialDetails, setMaterialDetails] = useState([]);
+  const [pass, setPass] = useState([]);
 
   const isInitialRender = useRef(true);
 
@@ -27,27 +29,46 @@ export default function OrderDetailScreen({ navigation, route }) {
         />
       ),
       headerRight: () => (
-        <TouchableOpacity onPress={() => (navigation.navigate("Order Update", { orderData: orderData }))}>
-        <Image
-          style={styles.headerIcon}
-          source={require('../../../assets/icons/edit.png')}
-        />
-      </TouchableOpacity>
+        <TouchableOpacity onPress={() => (pass[2] !== 'Production' ? navigation.navigate("Order Update", { orderData: orderData }) : ToastAndroid.show('Not Permitted', ToastAndroid.SHORT))}>
+          <Image
+            style={styles.headerIcon}
+            source={require('../../../assets/icons/edit.png')}
+          />
+        </TouchableOpacity>
       ),
     });
   }, []);
 
   useEffect(() => {
+    checkUserPass();
+  }, []);
+
+  const checkUserPass = async () => {
+    const user = auth.currentUser;
+    if (user) {
+      try {
+        const userDoc = await getDoc(doc(db, 'Users', user.uid));
+        if (userDoc.exists()) {
+          const userData = userDoc.data();
+          setPass([user.uid, userData.Nama, userData.Status]);
+        }
+      } catch (error) {
+        console.trace(error);
+      }
+    }
+  };
+
+  useEffect(() => {
     const allProgressDone = progress.every((item) => item === true);
     setIsDone(allProgressDone);
-  }, [progress]);
+  }, [pass, progress]);
 
   useEffect(() => {
     if (isInitialRender.current) {
       fetchMaterialDetails();
       isInitialRender.current = false;
     }
-  }, [orderData.materials]);
+  }, [pass, orderData.materials]);
 
   const fetchMaterialDetails = async () => {
     try {
@@ -148,9 +169,13 @@ export default function OrderDetailScreen({ navigation, route }) {
   };
 
   const handleProgressButtonPress = (index) => {
-    const updatedProgress = [...progress];
-    updatedProgress[index] = !updatedProgress[index];
-    setProgress(updatedProgress);
+    if (pass[2] !== 'Marketing') {
+      const updatedProgress = [...progress];
+      updatedProgress[index] = !updatedProgress[index];
+      setProgress(updatedProgress);
+    } else {
+      ToastAndroid.show('Not Permitted', ToastAndroid.SHORT);
+    }
   };
 
   const handleDeleteMaterial = async (material) => {
@@ -308,20 +333,22 @@ export default function OrderDetailScreen({ navigation, route }) {
           ))}
         </View>
       </ScrollView>
-      <View style={styles.buttonContainer}>
-        <TouchableOpacity style={styles.createButton} onPress={() => {
-          navigation.navigate('Take', {
-            orderData: orderData,
-            isRecordingForOrder: true,
-          })
-          isInitialRender.current = true;
-        }}>
-          <Text style={styles.createButtonText}>Take Stock</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.returnButton} onPress={handleReturnButtonPress}>
-          <Text style={styles.returnButtonText}>{isDone ? 'Finish' : 'Return'}</Text>
-        </TouchableOpacity>
-      </View>
+      {pass[2] !== 'Marketing' ? (
+        <View style={styles.buttonContainer}>
+          <TouchableOpacity style={styles.createButton} onPress={() => {
+            navigation.navigate('Take', {
+              orderData: orderData,
+              isRecordingForOrder: true,
+            })
+            isInitialRender.current = true;
+          }}>
+            <Text style={styles.createButtonText}>Take Stock</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.returnButton} onPress={handleReturnButtonPress}>
+            <Text style={styles.returnButtonText}>{isDone ? 'Finish' : 'Return'}</Text>
+          </TouchableOpacity>
+        </View>
+      ) : <View /> }
     </View>
   );
 }

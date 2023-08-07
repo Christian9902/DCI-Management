@@ -2,8 +2,8 @@ import React, { useState, useLayoutEffect, useEffect, useRef } from 'react';
 import { View, Text, TouchableOpacity, TextInput, FlatList, Image, Pressable, RefreshControl, ActivityIndicator, ToastAndroid, Modal, Platform } from 'react-native';
 import styles from './styles';
 import MenuImage from "../../components/MenuImage/MenuImage";
-import { db } from '../Login/LoginScreen';
-import { collection, getDocs } from 'firebase/firestore';
+import { db, auth } from '../Login/LoginScreen';
+import { collection, getDocs, getDoc, doc } from 'firebase/firestore';
 import DateTimePicker from '@react-native-community/datetimepicker';
 
 export default function ClientsScreen(props) {
@@ -20,6 +20,7 @@ export default function ClientsScreen(props) {
   const [endDate, setEndDate] = useState(null);
   const [status, setStatus] = useState(null);
   const [quoSubmitted, setQuoSubmitted] = useState(null);
+  const [pass, setPass] = useState([]);
   const isInitialRender = useRef(true);
 
   const { navigation } = props;
@@ -40,7 +41,7 @@ export default function ClientsScreen(props) {
             style={styles.searchInput}
             onChangeText={handleNamaChange}
             value={nama}
-            placeholder='Cari Nama Client / PT Client'
+            placeholder={pass[2] !== 'Marketing' ? 'Cari Nama Client / PT Client' : 'Cari Nama Client'}
           />
           <Pressable onPress={() => { setNama(""); handleNamaChange("") }}>
             <Image style={styles.searchIcon} source={require("../../../assets/icons/close.png")} />
@@ -55,7 +56,7 @@ export default function ClientsScreen(props) {
         </View>
       ),
     });
-  }, [nama]);
+  }, [nama, pass]);
 
   const fetchClient = async () => {
     try {
@@ -106,13 +107,17 @@ export default function ClientsScreen(props) {
       const filteredClientArray = clientArray.filter((client) => {
         const formattedAddedDate = formatDate(client.Since);
         let isInRange = true;
+
+        if (pass[2] == 'Marketing' && pass[1] !== client.PIC) {
+          isInRange = false;
+        }
   
         if (startDate) {
           const formattedStartDate = formatDate(startDate.toLocaleString('en-GB'));
-          isInRange =
+          isInRange = isInRange && (
             formattedAddedDate[2] > formattedStartDate[2] ||
             (formattedAddedDate[2] === formattedStartDate[2] &&
-              (formattedAddedDate[1] > formattedStartDate[1] || (formattedAddedDate[1] === formattedStartDate[1] && formattedAddedDate[0] >= formattedStartDate[0])));
+              (formattedAddedDate[1] > formattedStartDate[1] || (formattedAddedDate[1] === formattedStartDate[1] && formattedAddedDate[0] >= formattedStartDate[0]))));
         }
   
         if (endDate) {
@@ -155,8 +160,29 @@ export default function ClientsScreen(props) {
   };
 
   useEffect(() => {
-    fetchClient();
+    checkUserPass();
   }, []);
+
+  useEffect(() => {
+    if (pass.length > 0) {
+      fetchClient();
+    }
+  }, [pass]);
+
+  const checkUserPass = async () => {
+    const user = auth.currentUser;
+    if (user) {
+      try {
+        const userDoc = await getDoc(doc(db, 'Users', user.uid));
+        if (userDoc.exists()) {
+          const userData = userDoc.data();
+          setPass([user.uid, userData.Nama, userData.Status]);
+        }
+      } catch (error) {
+        console.trace(error);
+      }
+    }
+  };
 
   const formatDate = (date) => {
     const [dateString, _] = date.split(', ');
@@ -410,17 +436,19 @@ export default function ClientsScreen(props) {
           ListFooterComponent={isLoading && <ActivityIndicator size="small" />}
         />
       )}
-      <TouchableOpacity
-        style={styles.addButton}
-        onPress={() => {
-          navigation.navigate("SSClient", {clientDatabase: clientData});
-        }}
-      >
-        <Image
-          source={require("../../../assets/icons/spreadsheet.png")}
-          style={styles.addButtonIcon}
-        />
-      </TouchableOpacity>
+      {pass[2] === 'Admin' && (
+        <TouchableOpacity
+          style={styles.addButton}
+          onPress={() => {
+            navigation.navigate("SSClient", {clientDatabase: clientData});
+          }}
+        >
+          <Image
+            source={require("../../../assets/icons/spreadsheet.png")}
+            style={styles.addButtonIcon}
+          />
+        </TouchableOpacity>
+      )}
       {showFilterModal && (
         <FilterModal />
       )}

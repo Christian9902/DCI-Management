@@ -9,7 +9,6 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 export default function IncomeScreen(props) {
   const { navigation } = props;
   const [orderData, setOrderData] = useState([]);
-  const [isAdmin, setIsAdmin] = useState(false);
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
   const [startDate2, setStartDate2] = useState(null);
@@ -46,40 +45,20 @@ export default function IncomeScreen(props) {
         />
       ),
       headerRight: () => {
-        if (isAdmin) {
-          return (
-            <View style={{flexDirection: 'row', justifyContent: 'flex-end'}}>
-              <TouchableOpacity onPress={() => setShowFilterModal(true)}>
-                <Image style={styles.filterIcon} source={require('../../../assets/icons/filter.png')} />
-              </TouchableOpacity>
-            </View>
-          );
-        } else {
-          return <View />;
-        }
+        return (
+          <View style={{flexDirection: 'row', justifyContent: 'flex-end'}}>
+            <TouchableOpacity onPress={() => setShowFilterModal(true)}>
+              <Image style={styles.filterIcon} source={require('../../../assets/icons/filter.png')} />
+            </TouchableOpacity>
+          </View>
+        );
       },
     });
-  }, [navigation, isAdmin]);
+  }, [navigation]);
 
   useEffect(() => {
-    checkAdminStatus();
     fetchOrderInfo();
   }, []);
-
-  const checkAdminStatus = async () => {
-    const user = auth.currentUser;
-    if (user) {
-      try {
-        const userDoc = await getDoc(doc(db, 'Users', user.uid));
-        if (userDoc.exists()) {
-          const userData = userDoc.data();
-          setIsAdmin(userData.Status === "Admin");
-        }
-      } catch (error) {
-        console.trace(error);
-      }
-    }
-  };
 
   const fetchOrderInfo = async () => {
     try {
@@ -383,18 +362,6 @@ export default function IncomeScreen(props) {
         </View>
       </Modal>
   )};
-  
-  if (!isAdmin) {
-    return (
-      <View style={styles.container}>
-        <Text>Access denied. You must be an admin to view this screen.</Text>
-        <TouchableOpacity onPress={() => navigation.navigate("Home")} style={styles.button}>
-          <Text style={styles.buttonText}>Home</Text>
-        </TouchableOpacity>
-        <StatusBar style="auto" />
-      </View>
-    );
-  }
 
   return (
     <View style={styles.container2}>

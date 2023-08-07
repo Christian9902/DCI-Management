@@ -2,8 +2,8 @@ import React, { useState, useEffect, useLayoutEffect, useCallback, useRef } from
 import { View, Text, TouchableOpacity, TextInput, FlatList, Image, RefreshControl, ActivityIndicator, Pressable, ToastAndroid, Modal } from 'react-native';
 import styles from './styles';
 import MenuImage from "../../components/MenuImage/MenuImage";
-import { db } from '../Login/LoginScreen';
-import { collection, getDocs } from 'firebase/firestore';
+import { db, auth } from '../Login/LoginScreen';
+import { collection, getDocs, getDoc, doc } from 'firebase/firestore';
 import DateTimePicker from '@react-native-community/datetimepicker';
 
 export default function HomeScreen(props) {
@@ -21,6 +21,7 @@ export default function HomeScreen(props) {
   const [endDate, setEndDate] = useState(null);
   const [deadline, setDeadline] = useState(2);
   const [isDone, setIsDone] = useState(false);
+  const [pass, setPass] = useState([]);
   const isInitialRender = useRef(true);
 
   const { navigation } = props;
@@ -56,7 +57,22 @@ export default function HomeScreen(props) {
         </View>
       ),
     });
-  }, [text]);
+  }, []);
+
+  const checkUserPass = async () => {
+    const user = auth.currentUser;
+    if (user) {
+      try {
+        const userDoc = await getDoc(doc(db, 'Users', user.uid));
+        if (userDoc.exists()) {
+          const userData = userDoc.data();
+          setPass([user.uid, userData.Nama, userData.Status]);
+        }
+      } catch (error) {
+        console.trace(error);
+      }
+    }
+  };
 
   const fetchOrderData = async () => {
     try {
@@ -108,13 +124,17 @@ export default function HomeScreen(props) {
       const filteredOrderData = orderData.filter((order) => {
         const formattedRefDate = order.deadlineTemp.map(timestamp => timeToArray(timestamp.toDate().toLocaleString('en-GB')));
         let isInRange = true;
+
+        if (pass[2] === 'Marketing') {
+          isInRange = (pass[1] === order.user);
+        }
   
         if (startDate) {
           const formattedStartDate = timeToArray(startDate.toLocaleString('en-GB'));
-          isInRange =
+          isInRange = isInRange && (
             formattedRefDate[2] > formattedStartDate[2] ||
             (formattedRefDate[2] === formattedStartDate[2] &&
-              (formattedRefDate[1] > formattedStartDate[1] || (formattedRefDate[1] === formattedStartDate[1] && formattedRefDate[0] >= formattedStartDate[0])));
+              (formattedRefDate[1] > formattedStartDate[1] || (formattedRefDate[1] === formattedStartDate[1] && formattedRefDate[0] >= formattedStartDate[0]))));
         }
   
         if (endDate) {
@@ -153,8 +173,14 @@ export default function HomeScreen(props) {
   };
 
   useEffect(() => {
-    fetchOrderData();
+    checkUserPass();
   }, []);
+
+  useEffect(() => {
+    if (pass.length > 0) {
+      fetchOrderData();
+    }
+  }, [pass]);
 
   const timeToArray = (time) => {
     const [day, month, yearOrTimeString] = time.split('/');
@@ -405,7 +431,8 @@ export default function HomeScreen(props) {
           </View>
         </View>
       </Modal>
-  )};
+    );
+  };
 
   return (
     <>

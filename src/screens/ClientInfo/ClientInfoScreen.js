@@ -8,7 +8,6 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 
 export default function ClientInfoScreen(props) {
   const { navigation } = props;
-  const [isAdmin, setIsAdmin] = useState(false);
   const [clientCount, setClientCount] = useState(0);
   const [clientCount2, setClientCount2] = useState(0);
   const [mostUsedMediaBy, setMostUsedMediaBy] = useState({});
@@ -42,49 +41,29 @@ export default function ClientInfoScreen(props) {
         />
       ),
       headerRight: () => {
-        if (isAdmin) {
-          return (
-            <View style={{flexDirection: 'row', justifyContent: 'flex-end'}}>
-              <TouchableOpacity
-                onPress={() => navigation.navigate("Clients")}
-                style={styles.searchButton}
-              >
-                <Image
-                  source={require("../../../assets/icons/search.png")}
-                  style={styles.searchButtonImage}
-                />
-              </TouchableOpacity>
-              <TouchableOpacity onPress={() => setShowFilterModal(true)}>
-                <Image style={styles.filterIcon} source={require('../../../assets/icons/filter.png')} />
-              </TouchableOpacity>
-            </View>
-          );
-        } else {
-          return <View />;
-        }
+        return (
+          <View style={{flexDirection: 'row', justifyContent: 'flex-end'}}>
+            <TouchableOpacity
+              onPress={() => navigation.navigate("Clients")}
+              style={styles.searchButton}
+            >
+              <Image
+                source={require("../../../assets/icons/search.png")}
+                style={styles.searchButtonImage}
+              />
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => setShowFilterModal(true)}>
+              <Image style={styles.filterIcon} source={require('../../../assets/icons/filter.png')} />
+            </TouchableOpacity>
+          </View>
+        );
       },
     });
-  }, [navigation, isAdmin]);
+  }, [navigation]);
 
   useEffect(() => {
-    checkAdminStatus();
     fetchClientInfo();
   }, []);
-
-  const checkAdminStatus = async () => {
-    const user = auth.currentUser;
-    if (user) {
-      try {
-        const userDoc = await getDoc(doc(db, 'Users', user.uid));
-        if (userDoc.exists()) {
-          const userData = userDoc.data();
-          setIsAdmin(userData.Status === "Admin");
-        }
-      } catch (error) {
-        console.log("Error checking admin status:", error);
-      }
-    }
-  };
 
   const fetchClientInfo = async () => {
     try {
@@ -357,18 +336,6 @@ export default function ClientInfoScreen(props) {
         </View>
       </Modal>
   )};
-  
-  if (!isAdmin) {
-    return (
-      <View style={styles.container}>
-        <Text>Access denied. You must be an admin to view this screen.</Text>
-        <TouchableOpacity onPress={handleGoBack} style={styles.button}>
-          <Text style={styles.buttonText}>Home</Text>
-        </TouchableOpacity>
-        <StatusBar style="auto" />
-      </View>
-    );
-  }
 
   return (
     <View style={styles.container2}>
