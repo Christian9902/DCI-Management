@@ -20,6 +20,8 @@
     "expo-constants": "^14.2.1",
     "expo-document-picker": "~11.2.2",
     "expo-file-system": "~15.2.2",
+    "expo-print": "~11.1.0",
+    "expo-sharing": "~11.2.2",
     "expo-status-bar": "~1.4.4",
     "firebase": "^9.23.0",
     "install": "^0.13.0",
