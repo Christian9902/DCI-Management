@@ -95,7 +95,7 @@ export default function SSClientScreen({ navigation, route }) {
       <head>
         <style>
           @page {
-            size: A4;
+            size: 1000px 1250px;
           }
 
           th {
