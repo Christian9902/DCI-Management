@@ -57,7 +57,7 @@ export default function HomeScreen(props) {
         </View>
       ),
     });
-  }, []);
+  }, [text]);
 
   const checkUserPass = async () => {
     const user = auth.currentUser;
