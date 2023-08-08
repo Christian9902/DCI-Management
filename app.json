@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "DCI Management App",
-    "slug": "DCI Management App",
+    "slug": "DCI-Management-App",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -21,10 +21,16 @@
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "package": "com.charane.DCIManagementApp"
     },
     "web": {
       "favicon": "./assets/favicon.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "508a94f2-ecbb-4488-8231-cda8d769452f"
+      }
     }
   }
 }
