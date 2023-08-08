@@ -14,7 +14,7 @@ export default function DrawerContainer(props) {
 
   useEffect(() => {
     checkUserPass();
-  }, []);
+  }, [isProductionGroupOpen, isMarketingGroupOpen, isAnalyticsGroupOpen]);
 
   const checkUserPass = async () => {
     const user = auth.currentUser;
