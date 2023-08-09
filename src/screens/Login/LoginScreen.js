@@ -86,7 +86,7 @@ const LoginScreen = () => {
     >
       <View style={styles.logoContainer}>
         <Image
-          source={require('../../../assets/icon.png')}
+          source={require('../../../assets/icon2.png')}
           style={styles.logo}
         />
         <Text style={styles.logoName}>Dapoer Creative Indonesia</Text>
