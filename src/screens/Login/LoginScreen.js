@@ -10,12 +10,12 @@ import { getStorage } from 'firebase/storage';
 import styles from './styles';
 
 const firebaseConfig = {
-  apiKey: "AIzaSyDe2PJ7aGcAREEmOLKeGQNAKucbGkl62ss",
-  authDomain: "inventarisgudangdci.firebaseapp.com",
-  projectId: "inventarisgudangdci",
-  storageBucket: "inventarisgudangdci.appspot.com",
-  messagingSenderId: "844624800675",
-  appId: "1:844624800675:web:8374b2378bc234f2d5c816"
+  apiKey: "AIzaSyANJEJdsMCcTMcjqNPbGoMK6xOxnbN6mnQ",
+  authDomain: "dci-management-app.firebaseapp.com",
+  projectId: "dci-management-app",
+  storageBucket: "dci-management-app.appspot.com",
+  messagingSenderId: "702924095017",
+  appId: "1:702924095017:web:fcecfd501ae5488ec76638"
 };
 
 const app = initializeApp(firebaseConfig);
@@ -66,7 +66,7 @@ const LoginScreen = () => {
   }, []);
 
   const handleLogin = () => {
-    signInWithEmailAndPassword(auth, (email + "@admin.com"), password)
+    signInWithEmailAndPassword(auth, (email + "@dapoercreative.com"), password)
       .then((userCredentials) => {
         const user = userCredentials.user;
         ToastAndroid.show(`Welcome! ${user.email}`, ToastAndroid.SHORT);

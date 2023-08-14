@@ -89,7 +89,7 @@ export default function HomeScreen(props) {
         const emailClient = data?.EmailClient;
         const notelpClient = data?.NoTelpClient;
         const attachment = data?.Attachment;
-        const supplier = data?.Supplier;
+        const supplier = data?.Suppliers;
         const deadlineTemp = data?.Deadline;
         const time = data?.Timestamp;
         const harga = data?.Harga;

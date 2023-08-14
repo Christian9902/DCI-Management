@@ -5,7 +5,6 @@ import MenuImage from "../../components/MenuImage/MenuImage";
 import { db, auth } from '../Login/LoginScreen';
 import { doc, updateDoc, collection, getDoc, addDoc, getDocs } from 'firebase/firestore';
 import { Web } from "react-native-openanything";
-import { Alert } from 'react-native';
 
 export default function OrderDetailScreen({ navigation, route }) {
   const { orderData } = route.params;
@@ -37,7 +36,7 @@ export default function OrderDetailScreen({ navigation, route }) {
         </TouchableOpacity>
       ),
     });
-  }, []);
+  }, [pass]);
 
   useEffect(() => {
     checkUserPass();

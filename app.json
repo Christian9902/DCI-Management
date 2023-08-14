@@ -22,7 +22,7 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#FFFFFF"
       },
-      "package": "com.charane.DCIManagementApp"
+      "package": "com.DCIManagement.app"
     },
     "web": {
       "favicon": "./assets/favicon.png"
